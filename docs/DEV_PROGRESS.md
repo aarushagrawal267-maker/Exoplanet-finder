@@ -15,11 +15,11 @@ Branch: `claude/hopeful-edison-jbmnjq`.
 - [x] P1  Backend core: astro pipeline, data acquisition, ML engine (+ unit tests) — commit 89cd2c6
 - [x] P1b Frontend design system + app shell — commit 89cd2c6
 - [x] P2  Services, job runner, FastAPI routers, CLI (+ API tests) -> docs/dev/API.md — DONE (two agents: ops = datasets/jobs/training/models/evaluation/experiments/reports/CLI; sci = system/catalog/targets/lightcurves/uploads/analysis/predictions/settings/docs). Shared helpers committed: services/{jsonutil,app_settings,signal_views}.py, tests/api/conftest.py
-- [ ] P3  Frontend pages wired to API — IN PROGRESS: agent P3a (science pages + shell + typed API via openapi-typescript); P3b (Dataset Explorer, Model Training, Model Evaluation, Experiments, job tray) next
-- [ ] P4  Real data: catalogue refresh, pilot + standard downloads, dataset builds
-- [ ] P5  Real training of 4 models + final evaluation, reference report
-- [ ] P6  Windows scripts, README, docs, research report template
-- [ ] P7  QA: full test suites, Playwright e2e, review/fix loop, acceptance checklist
+- [x] P3  Frontend pages wired to API (all 13 pages + job tray; typed client generated from OpenAPI)
+- [x] P4  Real data: catalogue refresh, pilot + standard + full downloads (9,866 stars, 0 errors), pilot + standard datasets built; full dataset building
+- [x] P5  Real training of 4 models + final evaluation, reference report (docs/reference-results.md); Full-tier study pending
+- [x] P6  Windows scripts, README, docs, research report template
+- [ ] P7  QA: IN PROGRESS — 88/88 Playwright vs real app on 8000/5173; independent backend-correctness and Windows-compat reviews running
 - [ ] P8  Delivery summary
 
 ## Environment notes
@@ -48,3 +48,9 @@ Branch: `claude/hopeful-edison-jbmnjq`.
   (b) active model = two-view CNN (#7), chosen by best validation PR-AUC (0.983);
   (c) one additional study on the Full tier with default suite settings; no configuration changes
       to the Standard models after their test results are seen.
+- Fixes from QA so far: job heartbeat (API start no longer fails CLI jobs; additive DB migration), UTC
+  timestamps, dataset provenance in API/UI, delete guard for CLI builds, feature-importance grouping,
+  setup.ps1 first-run abort (stderr + Stop), start.ps1 VITE_API_URL, safe stop scripts, start.sh pid bug,
+  UI density / reduced-motion settings wired.
+- Full DR24 build (dataset 4) started 22:38 UTC by CLI; heartbeat kept fresh by scratchpad hb_keeper.py
+  (restart it if it stops while the build runs). Then: train suite on dataset 4, evaluate on test once.
