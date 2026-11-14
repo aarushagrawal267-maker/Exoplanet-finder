@@ -113,6 +113,23 @@ interface DonePayload {
   message?: string | null;
 }
 
+const fetchActiveJobs = (signal?: AbortSignal) => api.get<JobOut[]>("/jobs", { status: "queued,running", limit: 100 }, signal);
+
+/**
+ * Queued / running jobs, optionally of some kinds. Shares its cache with the job feed's polling
+ * query, so pages can ask "is a training job running?" without extra requests.
+ */
+export function useActiveJobs(kinds?: readonly string[]) {
+  const q = useQuery({
+    queryKey: qkOps.jobFeed.active,
+    queryFn: ({ signal }) => fetchActiveJobs(signal),
+    refetchInterval: 15_000,
+    retry: false,
+  });
+  const data = useMemo(() => (kinds ? (q.data ?? []).filter((j) => kinds.includes(j.kind)) : (q.data ?? [])), [q.data, kinds]);
+  return { ...q, jobs: data };
+}
+
 export function useJobFeed({ recentLimit = 8, enabled = true }: UseJobFeedOptions = {}): JobFeed {
   const qc = useQueryClient();
   const [map, setMap] = useState<Record<string, JobOut>>({});
@@ -234,7 +251,7 @@ export function useJobFeed({ recentLimit = 8, enabled = true }: UseJobFeedOption
   // 3. Polling fallback (and the only source for command-line jobs).
   const active = useQuery({
     queryKey: qkOps.jobFeed.active,
-    queryFn: ({ signal }) => api.get<JobOut[]>("/jobs", { status: "queued,running", limit: 100 }, signal),
+    queryFn: ({ signal }) => fetchActiveJobs(signal),
     enabled,
     refetchInterval: live ? 15_000 : 3_000,
     refetchIntervalInBackground: false,

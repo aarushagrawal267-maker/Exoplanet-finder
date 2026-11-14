@@ -28,7 +28,6 @@ import { FeatureList, ModelInputViews, PredictionVerdict, WarningList } from "@/
 import { QualityReport } from "@/components/science/QualityReport";
 import { signalName, StarSignalPicker } from "@/components/science/StarSignalPicker";
 import { UploadFlow } from "@/components/science/UploadFlow";
-import { RESEARCH_LEAD_NOTE } from "@/components/science/VerdictPanel";
 import { ApiErrorBanner, hasErrorCode } from "@/components/ui/ApiErrorBanner";
 import { Badge } from "@/components/ui/Badge";
 import { Banner } from "@/components/ui/Banner";
@@ -77,7 +76,7 @@ function Results({ r }: { r: PredictResponse }) {
           </Badge>
         ) : null}
       </div>
-      <Banner tone="info" title={RESEARCH_LEAD_NOTE}>
+      <Banner tone="info" title="How to read these scores">
         {r.disclaimer}
       </Banner>
       {ephemeris ? <EphemerisLine ephemeris={ephemeris} /> : null}

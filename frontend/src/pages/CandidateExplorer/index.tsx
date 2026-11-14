@@ -40,10 +40,10 @@ import { formatDays, formatInt, formatKepid, formatPpm, formatProbability, forma
 import { useUrlState } from "@/lib/urlState";
 
 const SORTS: Array<{ value: CandidateSort; label: string }> = [
-  { value: "mean_probability", label: "Mean probability (high first)" },
-  { value: "max_probability", label: "Max probability (high first)" },
-  { value: "agreement", label: "Model agreement (most planet-like first)" },
-  { value: "uncertainty", label: "Uncertainty (most certain first)" },
+  { value: "mean_probability", label: "Mean probability" },
+  { value: "max_probability", label: "Max probability" },
+  { value: "agreement", label: "Model agreement" },
+  { value: "uncertainty", label: "Lowest uncertainty" },
 ];
 const PAGE_SIZES = [25, 50, 100];
 
@@ -77,8 +77,8 @@ function BatchPanel({ onDone }: { onDone: () => void }) {
             ]}
           />
         </Field>
-        <Field label="At most" help="Signals to score in this run (empty = all).">
-          <NumberInput value={limit} onChange={setLimit} min={1} step={50} precision={0} allowEmpty unit="signals" />
+        <Field label="At most (signals)" help="Signals to score in this run (empty = all).">
+          <NumberInput value={limit} onChange={setLimit} min={1} step={50} precision={0} allowEmpty />
         </Field>
       </div>
       <div>
@@ -172,7 +172,7 @@ function useColumns(): ColumnDef<CandidateOut>[] {
           );
         },
       },
-      { id: "unc", header: "± σ", meta: { numeric: true, headerLabel: "Mean uncertainty (standard deviation)" }, enableSorting: false, cell: (c) => formatProbability(c.row.original.uncertainty) },
+      { id: "unc", header: () => <span className="normal-case">±σ</span>, meta: { numeric: true, headerLabel: "Mean uncertainty (standard deviation)" }, enableSorting: false, cell: (c) => formatProbability(c.row.original.uncertainty) },
       {
         id: "grade",
         header: "Grade",
@@ -363,7 +363,7 @@ export default function CandidateExplorerPage() {
               <span className="flex flex-wrap items-center gap-2">
                 {page ? (
                   <span>
-                    <span className="num text-fg">{formatInt(page.total)}</span> scored signals · {SORTS.find((s) => s.value === sort)?.label.toLowerCase()}
+                    <span className="num text-fg">{formatInt(page.total)}</span> scored signals · ranked by {SORTS.find((s) => s.value === sort)?.label.toLowerCase()}
                   </span>
                 ) : null}
                 <ProvenanceChip kind="model" size="xs" />
@@ -376,7 +376,7 @@ export default function CandidateExplorerPage() {
                 : "No catalogue signal has been scored yet. Start a batch above (candidates first), or score single signals in Planet Detection."
             }
           />
-          {page ? (
+          {page && page.total > 0 ? (
             <Pagination
               total={page.total}
               offset={page.offset}

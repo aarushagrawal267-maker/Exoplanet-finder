@@ -73,7 +73,7 @@ function useColumns(): ColumnDef<PredictionOut>[] {
         ),
       },
       { id: "p", header: "P(planet-like)", meta: { numeric: true, headerLabel: "Calibrated probability" }, enableSorting: false, cell: (c) => <span className="text-fg">{formatProbability(c.row.original.probability)}</span> },
-      { id: "unc", header: "± σ", meta: { numeric: true }, enableSorting: false, cell: (c) => formatProbability(c.row.original.uncertainty) },
+      { id: "unc", header: () => <span className="normal-case">±σ</span>, meta: { numeric: true }, enableSorting: false, cell: (c) => formatProbability(c.row.original.uncertainty) },
       { id: "cls", header: "Verdict", enableSorting: false, cell: (c) => <ClassBadge cls={predictionClass(c.row.original)} /> },
       {
         id: "grade",
