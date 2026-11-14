@@ -12,9 +12,9 @@ Branch: `claude/hopeful-edison-jbmnjq`.
 
 ## Phases
 - [x] P0  Foundation: repo skeleton, config, DB schema, shared types, contracts (docs/dev/CONTRACTS.md)
-- [ ] P1  Backend core: astro pipeline, data acquisition, ML engine (+ unit tests)
-- [ ] P1b Frontend design system + app shell
-- [ ] P2  Services, job runner, FastAPI routers, CLI (+ API tests) -> docs/dev/API.md
+- [x] P1  Backend core: astro pipeline, data acquisition, ML engine (+ unit tests) — commit 89cd2c6
+- [x] P1b Frontend design system + app shell — commit 89cd2c6
+- [ ] P2  Services, job runner, FastAPI routers, CLI (+ API tests) -> docs/dev/API.md — IN PROGRESS (two agents: ops = datasets/jobs/training/models/evaluation/experiments/reports/CLI; sci = system/catalog/targets/lightcurves/uploads/analysis/predictions/settings/docs). Shared helpers committed: services/{jsonutil,app_settings,signal_views}.py, tests/api/conftest.py
 - [ ] P3  Frontend pages wired to API
 - [ ] P4  Real data: catalogue refresh, pilot + standard downloads, dataset builds
 - [ ] P5  Real training of 4 models + final evaluation, reference report
@@ -25,3 +25,14 @@ Branch: `claude/hopeful-edison-jbmnjq`.
 ## Environment notes
 - Dev container: Linux, 4 CPU, 15 GB RAM, no GPU. venv at .venv (Python 3.11), `pip install -e backend`.
 - MAST deterministic download URL works through the proxy; lightkurve search ~5 s/target.
+
+## Status notes
+- P1 results (real data): Kepler-2 grade A, depth 6529 vs 6675 ppm catalogue, blind BLS P rel. err 6.8e-5.
+  Catalogue in data/app.db: 14,233 targets, 22,644 signals (confirmed 2,760; FP 14,114; candidate 2,002;
+  unknown 3,768), 150 label conflicts. astronet_dr24 labels: 3,600 pos / 12,137 neg.
+  Tiers (seed 42): pilot 309 signals / 167 stars; standard 3,009 signals / 1,976 stars.
+- Downloads: pilot complete; standard running (script in scratchpad, log logs/download_tiers.log, ~2.4 stars/s).
+- Test counts at P1 commit: backend 323 passed; frontend vitest 119, playwright 34 (backend offline).
+- README timing claims (pilot "a few minutes", suite "30-90 minutes") MUST be replaced by measured values in P5.
+- Ruff rule set pinned in backend/pyproject.toml (E,F,W,I,B,UP,SIM; ignore E501,SIM300).
+- Vite proxy now targets http://127.0.0.1:8000.

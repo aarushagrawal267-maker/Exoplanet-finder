@@ -6,7 +6,7 @@ AstroNet-style two-view CNN, which shows how much each step in complexity actual
 
 | Type id | Name | Inputs | Trainable parameters |
 |---|---|---|---|
-| `logreg` | Logistic regression | downsampled global view (201) + local view (201) + 15 physical features | ≈ 420 |
+| `logreg` | Logistic regression | downsampled global view (201) + local view (201) + 15 physical features | 418 (417 weights + bias) |
 | `random_forest` | Random forest | same as logistic regression | 300 trees |
 | `cnn_single` | Single-view CNN | global view (2001 bins) | 9 177 393 |
 | `cnn_two_view` | Two-view CNN (AstroNet-style) | global view (2001) + local view (201) | 9 940 193 |
