@@ -1,6 +1,8 @@
 /** Chart components (Plotly for dense astronomy data, Recharts for ML metrics). */
 export { CalibrationChart } from "./CalibrationChart";
 export type { CalibrationChartProps, CalibrationSeries, ReliabilityBin } from "./CalibrationChart";
+export { CategoryHistogram, centralRange, pow10Label } from "./CategoryHistogram";
+export type { CategoryHistogramProps } from "./CategoryHistogram";
 export { ChartLegend, ChartTooltipCard } from "./ChartParts";
 export type { LegendItem } from "./ChartParts";
 export { ConfusionMatrix } from "./ConfusionMatrix";

@@ -56,5 +56,7 @@ export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
 export { Tabs } from "./Tabs";
 export type { TabItem, TabsProps } from "./Tabs";
+export { ToggleChips } from "./ToggleChips";
+export type { ToggleChipOption, ToggleChipsProps } from "./ToggleChips";
 export { Tooltip } from "./Tooltip";
 export type { TooltipProps, TooltipSide } from "./Tooltip";
