@@ -19,9 +19,16 @@ export function useMediaQuery(query: string): boolean {
   );
 }
 
-/** True when the user asked the OS to minimise motion. */
+/**
+ * True when motion should be minimised: the operating-system preference, unless the Settings page
+ * forces it (`<html data-motion="reduce|full">`, see lib/uiPreferences.ts).
+ */
 export function usePrefersReducedMotion(): boolean {
-  return useMediaQuery("(prefers-reduced-motion: reduce)");
+  const os = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const forced = typeof document !== "undefined" ? document.documentElement.dataset.motion : undefined;
+  if (forced === "reduce") return true;
+  if (forced === "full") return false;
+  return os;
 }
 
 /**

@@ -6,6 +6,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useJobFeed } from "@/api/endpoints/jobStream";
+import { useUiPreferences } from "@/lib/uiPreferences";
 import type { JobOut } from "@/api/types";
 import { TransitLoader } from "@/components/brand/TransitLoader";
 import { Drawer } from "@/components/ui/Drawer";
@@ -44,6 +45,7 @@ export function AppShell({ jobs, onCancelJob, onSearch, children }: AppShellProp
   const navigate = useNavigate();
   const status = useSystemStatus();
   const jobFeed = useJobFeed({ enabled: jobs === undefined });
+  useUiPreferences();
 
   // Close the mobile drawer on navigation / when growing past the breakpoint.
   useEffect(() => setDrawerOpen(false), [location.pathname, isMobile]);
