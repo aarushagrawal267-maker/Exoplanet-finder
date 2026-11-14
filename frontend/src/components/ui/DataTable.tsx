@@ -9,6 +9,7 @@
  * - Density toggle (comfortable 40 px / compact 32 px rows) and a built-in empty state.
  * - `manualSorting` for server-sorted, server-paginated data (the header still drives the state).
  */
+import { preferredDensity } from "@/lib/uiPreferences";
 import {
   flexRender,
   getCoreRowModel,
@@ -88,7 +89,7 @@ export function DataTable<T>({
   onSortingChange,
   manualSorting = false,
   density: densityProp,
-  defaultDensity = "comfortable",
+  defaultDensity,
   onDensityChange,
   showDensityToggle = true,
   toolbar,
@@ -104,7 +105,7 @@ export function DataTable<T>({
   className,
 }: DataTableProps<T>) {
   const [innerSorting, setInnerSorting] = useState<SortingState>(initialSorting);
-  const [innerDensity, setInnerDensity] = useState<Density>(defaultDensity);
+  const [innerDensity, setInnerDensity] = useState<Density>(() => defaultDensity ?? preferredDensity());
   const sorting = sortingProp ?? innerSorting;
   const density = densityProp ?? innerDensity;
 
