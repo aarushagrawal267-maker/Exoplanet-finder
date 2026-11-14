@@ -207,6 +207,7 @@ def list_signals(
     min_period: float | None = None,
     max_period: float | None = None,
     min_snr: float | None = None,
+    max_snr: float | None = None,
     kepid: int | None = None,
     sort: str = "signal_key",
     order: str = "asc",
@@ -248,6 +249,8 @@ def list_signals(
         conds.append(Signal.period_days <= float(max_period))
     if min_snr is not None:
         conds.append(Signal.model_snr >= float(min_snr))
+    if max_snr is not None:
+        conds.append(Signal.model_snr <= float(max_snr))
     if kepid is not None:
         conds.append(Signal.kepid == int(kepid))
     if has_lightcurve is not None:

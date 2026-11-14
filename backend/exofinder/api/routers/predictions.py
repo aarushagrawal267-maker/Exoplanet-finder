@@ -110,6 +110,11 @@ def candidates(
     )
 
 
-@router.get("/{prediction_id}", response_model=PredictionDetailOut, summary="Prediction detail incl. views")
+@router.get(
+    "/{prediction_id}",
+    response_model=PredictionDetailOut,
+    summary="Prediction detail incl. views",
+    responses={404: {"model": ErrorOut, "description": "code=prediction_not_found"}},
+)
 def detail(db: DbSession, prediction_id: int) -> dict:
     return svc.get_prediction(db, prediction_id)

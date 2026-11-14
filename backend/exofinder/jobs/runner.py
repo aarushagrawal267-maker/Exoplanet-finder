@@ -30,6 +30,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import socket
 import threading
 import time
 import traceback
@@ -37,7 +39,7 @@ import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from exofinder.db.models import Job, utcnow
@@ -188,6 +190,63 @@ JobFn = Callable[[JobContext], dict[str, Any] | None]
 
 
 # --------------------------------------------------------------------------------------------------
+# Liveness heartbeat
+# --------------------------------------------------------------------------------------------------
+#: How often an owning process refreshes ``Job.heartbeat_at`` for its queued/running jobs.
+HEARTBEAT_SECONDS = 15.0
+#: A queued/running job whose heartbeat is older than this is considered orphaned (owner died).
+STALE_AFTER_SECONDS = 90.0
+
+_hb_lock = threading.Lock()
+_hb_jobs: set[str] = set()
+_hb_thread: threading.Thread | None = None
+_hb_stop = threading.Event()
+
+
+def process_owner(role: str) -> str:
+    """Identifier of this process stored on job rows (informational)."""
+    return f"{role}:{socket.gethostname()}:{os.getpid()}"[:128]
+
+
+def _write_heartbeats(job_ids: list[str], owner: str | None = None) -> None:
+    if not job_ids:
+        return
+    try:
+        with session_scope() as s:
+            now = utcnow()
+            for job in s.query(Job).filter(Job.id.in_(job_ids)).all():
+                job.heartbeat_at = now
+                if owner is not None:
+                    job.owner = owner
+    except Exception:  # pragma: no cover - liveness bookkeeping must never break a job
+        log.exception("failed to write job heartbeats")
+
+
+def _heartbeat_loop() -> None:
+    while not _hb_stop.wait(HEARTBEAT_SECONDS):
+        with _hb_lock:
+            ids = list(_hb_jobs)
+        _write_heartbeats(ids)
+
+
+def heartbeat_register(job_id: str, role: str = "api") -> None:
+    """Start refreshing the heartbeat of ``job_id`` from this process (until unregistered)."""
+    global _hb_thread
+    with _hb_lock:
+        _hb_jobs.add(job_id)
+        if _hb_thread is None or not _hb_thread.is_alive():
+            _hb_stop.clear()
+            _hb_thread = threading.Thread(target=_heartbeat_loop, name="job-heartbeat", daemon=True)
+            _hb_thread.start()
+    _write_heartbeats([job_id], owner=process_owner(role))
+
+
+def heartbeat_unregister(job_id: str) -> None:
+    with _hb_lock:
+        _hb_jobs.discard(job_id)
+
+
+# --------------------------------------------------------------------------------------------------
 # Runner
 # --------------------------------------------------------------------------------------------------
 class JobRunner:
@@ -208,6 +267,7 @@ class JobRunner:
         ctx = JobContext(job_id=job_id, kind=kind, params=params, bus=self.bus)
         with self._lock:
             self._contexts[job_id] = ctx
+        heartbeat_register(job_id, "api")
         pool = self._heavy if kind in HEAVY_KINDS else self._light
         pool.submit(self._run, ctx, fn, title)
         self.bus.publish(job_id, "progress", {"progress": 0.0, "message": "Queued", "status": "queued"})
@@ -283,6 +343,7 @@ class JobRunner:
             "done",
             {"status": status, "result": _jsonable(result), "error": error, "message": message},
         )
+        heartbeat_unregister(ctx.job_id)
         with self._lock:
             self._contexts.pop(ctx.job_id, None)
 
@@ -311,11 +372,19 @@ def _jsonable(obj: Any) -> Any:
     return str(obj)
 
 
-def mark_interrupted_jobs() -> int:
-    """At startup: jobs left queued/running by a previous process can never finish — mark them failed."""
+def mark_interrupted_jobs(stale_after: float = STALE_AFTER_SECONDS) -> int:
+    """At startup: mark queued/running jobs whose owning process has died as failed.
+
+    A job is orphaned when its heartbeat is missing or older than ``stale_after`` seconds. Jobs owned
+    by another live process (e.g. a dataset build started from the command line) keep refreshing
+    their heartbeat and are left alone.
+    """
     n = 0
+    cutoff = utcnow() - timedelta(seconds=stale_after)
     with session_scope() as s:
         for job in s.query(Job).filter(Job.status.in_(["queued", "running"])).all():
+            if job.heartbeat_at is not None and job.heartbeat_at >= cutoff:
+                continue
             job.status = "failed"
             job.error = "Interrupted: the server stopped before this job finished. Start it again."
             job.finished_at = utcnow()
@@ -338,6 +407,8 @@ def get_runner() -> JobRunner:
 
 def reset_runner_for_tests() -> None:
     global _runner
+    with _hb_lock:
+        _hb_jobs.clear()
     with _runner_lock:
         if _runner is not None:
             _runner.shutdown(wait=False)
