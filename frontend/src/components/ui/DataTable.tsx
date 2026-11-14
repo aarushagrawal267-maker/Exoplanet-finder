@@ -7,6 +7,7 @@
  *   numerals. Missing values should be `undefined` so they always sort last.
  * - Rows are virtualised automatically above `virtualizeThreshold` rows (padding-row technique).
  * - Density toggle (comfortable 40 px / compact 32 px rows) and a built-in empty state.
+ * - `manualSorting` for server-sorted, server-paginated data (the header still drives the state).
  */
 import {
   flexRender,
@@ -54,6 +55,8 @@ export interface DataTableProps<T> {
   initialSorting?: SortingState;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
+  /** Rows arrive already sorted by the server: sorting only updates state (see `onSortingChange`). */
+  manualSorting?: boolean;
   density?: Density;
   defaultDensity?: Density;
   onDensityChange?: (d: Density) => void;
@@ -83,6 +86,7 @@ export function DataTable<T>({
   initialSorting = [],
   sorting: sortingProp,
   onSortingChange,
+  manualSorting = false,
   density: densityProp,
   defaultDensity = "comfortable",
   onDensityChange,
@@ -121,7 +125,8 @@ export function DataTable<T>({
     state: { sorting },
     onSortingChange: onSortingChange ?? setInnerSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    manualSorting,
     getRowId,
     enableSortingRemoval: true,
   });

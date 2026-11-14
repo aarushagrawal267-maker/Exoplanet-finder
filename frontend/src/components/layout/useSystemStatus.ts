@@ -1,41 +1,27 @@
 /**
- * System status for the sidebar footer. Reads `/api/health` (always available) and, when the
- * backend provides it, `/api/system/summary` for device / active model / latest dataset. Nothing
- * is invented: unknown values render as "—".
+ * System status for the sidebar footer. Reads `/api/health` (always available) and
+ * `/api/system/summary` for the compute device, the model used for predictions and the latest
+ * dataset. Nothing is invented: unknown values render as "—".
  */
-import { useQuery } from "@tanstack/react-query";
-import { api, ApiError } from "@/api/client";
-import type { HealthOut } from "@/api/types";
+import { ApiError } from "@/api/client";
+import { useHealth, useSystemSummary } from "@/api/endpoints/system";
+import type { DeviceInfo, SystemSummaryOut } from "@/api/schemas";
 import type { StatusRow } from "./StatusFooter";
 
-interface SummaryLike {
-  device?: { name?: string; type?: string; device?: string } | string | null;
-  models?: { active?: { name?: string; model_type?: string; is_fixture?: boolean } | null; count?: number } | null;
-  datasets?: { latest?: { name?: string } | null; count?: number } | null;
-}
-
-function deviceText(d: SummaryLike["device"]): string | null {
+export function deviceText(d: DeviceInfo | null | undefined): string | null {
   if (!d) return null;
-  if (typeof d === "string") return d.toUpperCase();
-  const raw = d.type ?? d.device ?? d.name;
-  return raw ? String(raw).toUpperCase() : null;
+  const raw = d.device ?? d.preference;
+  if (!raw) return null;
+  const name = String(raw).toUpperCase();
+  return d.device === "cuda" && d.cuda_device ? `${name} · ${d.cuda_device}` : name;
 }
 
-export function useSystemStatus(): StatusRow[] {
-  const health = useQuery({
-    queryKey: ["health"],
-    queryFn: ({ signal }) => api.get<HealthOut>("/health", undefined, signal),
-    refetchInterval: 30_000,
-    retry: false,
-  });
-  const summary = useQuery({
-    queryKey: ["system", "summary"],
-    queryFn: ({ signal }) => api.get<SummaryLike>("/system/summary", undefined, signal),
-    enabled: health.isSuccess,
-    refetchInterval: 60_000,
-    retry: false,
-  });
+/** The model predictions use by default: the settings default, else the active model. */
+export function predictionModel(s: SystemSummaryOut | undefined) {
+  return s?.models.default_for_predictions ?? s?.models.active ?? null;
+}
 
+export function statusRows(health: ReturnType<typeof useHealth>, summary: ReturnType<typeof useSystemSummary>): StatusRow[] {
   const offline = health.isError;
   const apiRow: StatusRow = health.isSuccess
     ? { key: "api", label: "API", value: `online · v${health.data.version}`, tone: "ok", title: `Pipeline v${health.data.pipeline_version}` }
@@ -51,24 +37,30 @@ export function useSystemStatus(): StatusRow[] {
 
   const s = summary.data;
   const device = deviceText(s?.device);
-  const activeModel = s?.models?.active;
-  const latestDataset = s?.datasets?.latest;
+  const model = predictionModel(s);
+  const latestDataset = s?.datasets.latest;
 
   return [
     apiRow,
-    { key: "device", label: "Device", value: device ?? "—", tone: device ? "ok" : "idle" },
+    { key: "device", label: "Device", value: device ?? "—", tone: device ? "ok" : "idle", title: s?.device.torch ? `PyTorch ${s.device.torch}` : undefined },
     {
       key: "model",
       label: "Model",
-      value: activeModel?.name ?? (s?.models ? "none trained" : "—"),
-      tone: activeModel ? (activeModel.is_fixture ? "warn" : "model") : "idle",
-      title: activeModel?.is_fixture ? "Fixture model (pipeline test only)" : undefined,
+      value: model?.name ?? (s ? "none trained" : "—"),
+      tone: model ? (model.is_fixture ? "warn" : "model") : "idle",
+      title: model?.is_fixture ? "Fixture model (pipeline test only)" : model ? `${model.model_type} · used for predictions` : undefined,
     },
     {
       key: "dataset",
       label: "Dataset",
-      value: latestDataset?.name ?? (s?.datasets ? "none built" : "—"),
-      tone: latestDataset ? "ok" : "idle",
+      value: latestDataset ? `${latestDataset.name}${latestDataset.status !== "ready" ? ` (${latestDataset.status})` : ""}` : s ? "none built" : "—",
+      tone: latestDataset ? (latestDataset.status === "ready" ? "ok" : latestDataset.status === "failed" ? "error" : "warn") : "idle",
     },
   ];
+}
+
+export function useSystemStatus(): StatusRow[] {
+  const health = useHealth();
+  const summary = useSystemSummary({ enabled: health.isSuccess });
+  return statusRows(health, summary);
 }

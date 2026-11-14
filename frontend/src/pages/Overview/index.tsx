@@ -1,66 +1,393 @@
 /**
- * Overview — hero introduction, live system status and the end-to-end research workflow.
- * Catalogue / dataset / model counts are added when the summary API is wired; until then the
- * page shows only real status (API health) and guidance, never placeholder numbers.
+ * Overview — hero introduction, live system status from `/api/system/summary` (catalogue, light
+ * curves, datasets, the model used for predictions, recent predictions, running jobs), the setup
+ * checklist with actions, and quick links. Every number comes from the API; nothing is invented.
  */
-import { ArrowRight, BookOpen } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowRight, BookOpen, CircleCheck, Cpu, Database, History, RefreshCw, Telescope } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { useRefreshCatalog } from "@/api/endpoints/catalog";
+import { qk } from "@/api/endpoints/keys";
+import { useSystemSummary } from "@/api/endpoints/system";
+import type { JobOut, ModelBrief, NextStep, SystemSummaryOut } from "@/api/schemas";
 import { TransitDiagram } from "@/components/brand/TransitDiagram";
-import { StatusFooter } from "@/components/layout/StatusFooter";
-import { useSystemStatus } from "@/components/layout/useSystemStatus";
-import { buttonClasses } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
+import { JobProgress } from "@/components/jobs/JobProgress";
+import { predictionModel } from "@/components/layout/useSystemStatus";
+import { CATEGORY_INFO, CATEGORY_ORDER } from "@/components/science/CatalogueLabels";
+import { ApiErrorBanner } from "@/components/ui/ApiErrorBanner";
+import { Badge } from "@/components/ui/Badge";
+import { Banner } from "@/components/ui/Banner";
+import { Button, buttonClasses } from "@/components/ui/Button";
+import { Card, CardHeader } from "@/components/ui/Card";
 import { ClassBadge } from "@/components/ui/ClassBadge";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { ProvenanceChip } from "@/components/ui/ProvenanceChip";
+import { Readout } from "@/components/ui/Readout";
 import { Section } from "@/components/ui/Section";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Stepper, type Step } from "@/components/ui/Stepper";
+import { cn } from "@/lib/cn";
+import { formatBytes, formatDateTime, formatInt, formatPercent, formatProbability, formatRelativeTime } from "@/lib/format";
+import { predictionClass } from "../_shared/prediction";
 
-const WORKFLOW = [
-  {
-    n: "01",
-    title: "Refresh the catalogue",
-    body: "Snapshot the DR24 TCE, KOI and confirmed-planet tables from the NASA Exoplanet Archive, with exact queries and checksums.",
-    path: "/datasets",
-    cta: "Dataset Explorer",
-  },
-  {
-    n: "02",
-    title: "Download light curves",
-    body: "Fetch Kepler long-cadence PDCSAP photometry from MAST, quarter by quarter, and cache it locally.",
-    path: "/signals",
-    cta: "Signal Explorer",
-  },
-  {
-    n: "03",
-    title: "Build a dataset",
-    body: "Clean, detrend and fold each signal into global and local views; split by star so no target leaks between sets.",
-    path: "/datasets",
-    cta: "Dataset Explorer",
-  },
-  {
-    n: "04",
-    title: "Train your models",
-    body: "Train logistic regression, a random forest and AstroNet-style CNNs from scratch on your own machine.",
-    path: "/training",
-    cta: "Model Training",
-  },
-  {
-    n: "05",
-    title: "Evaluate honestly",
-    body: "Measure PR-AUC, ROC-AUC and calibration on a held-out test split, with bootstrap confidence intervals.",
-    path: "/evaluation",
-    cta: "Model Evaluation",
-  },
-  {
-    n: "06",
-    title: "Score candidates",
-    body: "Rank unconfirmed signals as research leads, with uncertainty, data-quality grades and catalogue context.",
-    path: "/candidates",
-    cta: "Candidate Explorer",
-  },
+/** Where each checklist step is done in the UI (summary `page` → route). */
+const STEP_LINKS: Record<string, { path: string; label: string }> = {
+  refresh_catalog: { path: "/signals", label: "Browse the catalogue" },
+  download_lightcurves: { path: "/signals?lc=no", label: "Find stars to download" },
+  build_dataset: { path: "/datasets", label: "Open Dataset Explorer" },
+  train_model: { path: "/training", label: "Open Model Training" },
+  evaluate_model: { path: "/evaluation", label: "Open Model Evaluation" },
+  run_prediction: { path: "/detect", label: "Open Planet Detection" },
+};
+
+const QUICK_LINKS = [
+  { path: "/signals", title: "Signal Explorer", body: "Filter 20,000+ catalogue signals, view light curves." },
+  { path: "/transit", title: "Transit Analysis", body: "BLS periodogram, transit fit, odd/even and secondary checks." },
+  { path: "/detect", title: "Planet Detection", body: "Score a signal or your own light curve with trained models." },
+  { path: "/candidates", title: "Candidate Explorer", body: "Rank unconfirmed candidates as research leads." },
+  { path: "/datasets", title: "Dataset Explorer", body: "Build labelled datasets with star-level splits." },
+  { path: "/docs", title: "Research Docs", body: "Methodology, data sources and limitations." },
 ] as const;
 
+const METRICS: Array<{ key: string; label: string }> = [
+  { key: "pr_auc", label: "PR-AUC" },
+  { key: "roc_auc", label: "ROC-AUC" },
+  { key: "f1", label: "F1" },
+  { key: "precision", label: "Precision" },
+  { key: "recall", label: "Recall" },
+];
+
+function metric(m: Record<string, unknown> | undefined, key: string): number | null {
+  const v = m?.[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+function useCatalogRefresh() {
+  const qc = useQueryClient();
+  const refresh = useRefreshCatalog();
+  const [job, setJob] = useState<JobOut | null>(null);
+  const start = () => refresh.mutate(null, { onSuccess: (j) => setJob(j) });
+  const onDone = () => {
+    void qc.invalidateQueries({ queryKey: qk.system.all });
+    void qc.invalidateQueries({ queryKey: qk.catalog.all });
+  };
+  return { refresh, job, setJob, start, onDone };
+}
+
+function StatusCard({ icon, eyebrow, title, children, footer, className }: { icon: ReactNode; eyebrow: string; title?: ReactNode; children: ReactNode; footer?: ReactNode; className?: string }) {
+  return (
+    <Card className={cn("flex flex-col", className)}>
+      <div className="mb-4 flex items-center gap-2 text-fg-secondary [&_svg]:size-4">
+        {icon}
+        <span className="eyebrow">{eyebrow}</span>
+      </div>
+      {title ? <div className="mb-3">{title}</div> : null}
+      <div className="flex-1">{children}</div>
+      {footer ? <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-hairline pt-3">{footer}</div> : null}
+    </Card>
+  );
+}
+
+function CatalogueCard({ s, refresh }: { s: SystemSummaryOut; refresh: ReturnType<typeof useCatalogRefresh> }) {
+  const c = s.catalog;
+  const runningRefresh = s.running_jobs.find((j) => j.kind === "catalog_refresh");
+  const jobToShow = refresh.job ?? runningRefresh ?? null;
+  const max = Math.max(1, ...CATEGORY_ORDER.map((k) => c.by_category[k] ?? 0));
+  return (
+    <StatusCard
+      icon={<Telescope aria-hidden="true" />}
+      eyebrow="NASA catalogue"
+      title={
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+          <Readout label="Signals" value={formatInt(c.n_signals)} provenance="catalogue" provenanceSource="DR24 TCE + KOI cumulative + confirmed planets" />
+          <Readout label="Stars" value={formatInt(c.n_targets)} size="sm" />
+        </div>
+      }
+      footer={
+        jobToShow ? null : (
+          <>
+            <Button size="sm" variant="secondary" icon={<RefreshCw />} loading={refresh.refresh.isPending} onClick={refresh.start}>
+              Refresh catalogue
+            </Button>
+            <span className="text-xs text-fg-secondary">{c.last_refresh ? `Snapshot ${formatRelativeTime(c.last_refresh)}` : "Never refreshed"}</span>
+          </>
+        )
+      }
+    >
+      <ul className="flex flex-col gap-2" aria-label="Signals by catalogue category">
+        {CATEGORY_ORDER.map((k) => {
+          const n = c.by_category[k] ?? 0;
+          const info = CATEGORY_INFO[k];
+          return (
+            <li key={k} className="grid grid-cols-[110px_minmax(0,1fr)_64px] items-center gap-3 text-sm">
+              <span className="text-fg-secondary">{info?.label ?? k}</span>
+              <span className="h-1.5 rounded-full bg-hairline" aria-hidden="true">
+                <span
+                  className={cn("block h-full rounded-full", k === "confirmed" ? "bg-signal-planet" : k === "false_positive" ? "bg-signal-fp" : k === "candidate" ? "bg-cosmic" : "bg-signal-uncertain")}
+                  style={{ width: `${(n / max) * 100}%` }}
+                />
+              </span>
+              <span className="num text-right text-fg">{formatInt(n)}</span>
+            </li>
+          );
+        })}
+      </ul>
+      {c.label_conflicts ? (
+        <p className="mt-3 text-xs text-fg-secondary">
+          <span className="num text-warn">{formatInt(c.label_conflicts)}</span> signals where the DR24 Autovetter label and the KOI disposition disagree.
+        </p>
+      ) : null}
+      {jobToShow ? <JobProgress className="mt-4" jobId={jobToShow.id} initial={jobToShow} onDone={refresh.onDone} onDismiss={() => refresh.setJob(null)} /> : null}
+      {refresh.refresh.isError ? <ApiErrorBanner className="mt-3" error={refresh.refresh.error} /> : null}
+    </StatusCard>
+  );
+}
+
+function LightCurveCard({ s }: { s: SystemSummaryOut }) {
+  const l = s.lightcurves;
+  const total = l.available + l.not_downloaded + l.queued + l.downloading + l.no_data + l.error;
+  return (
+    <StatusCard
+      icon={<Database aria-hidden="true" />}
+      eyebrow="Light curves"
+      title={<Readout label="Stars cached" value={formatInt(l.available)} caption={total ? `${formatPercent(l.available / total, { digits: 0 })} of ${formatInt(total)} stars · ${formatBytes(l.disk_bytes)}` : formatBytes(l.disk_bytes)} />}
+      footer={
+        <Link to="/signals?lc=no" className={buttonClasses({ variant: "ghost", size: "sm" })}>
+          Find stars to download <ArrowRight aria-hidden="true" />
+        </Link>
+      }
+    >
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        {[
+          ["Not downloaded", l.not_downloaded],
+          ["Queued", l.queued],
+          ["Downloading", l.downloading],
+          ["No Kepler data", l.no_data],
+          ["Failed", l.error],
+        ].map(([label, n]) => (
+          <div key={label as string} className="flex justify-between gap-2 border-b border-hairline pb-1.5">
+            <dt className="text-fg-secondary">{label}</dt>
+            <dd className={cn("num", (label === "Failed" && (n as number) > 0) ? "text-danger" : "text-fg")}>{formatInt(n as number)}</dd>
+          </div>
+        ))}
+      </dl>
+    </StatusCard>
+  );
+}
+
+function DatasetCard({ s }: { s: SystemSummaryOut }) {
+  const d = s.datasets;
+  return (
+    <StatusCard
+      icon={<Database aria-hidden="true" />}
+      eyebrow="Datasets"
+      title={<Readout label="Ready" value={`${formatInt(d.n_ready)} / ${formatInt(d.count)}`} caption="built datasets" />}
+      footer={
+        <Link to="/datasets" className={buttonClasses({ variant: "ghost", size: "sm" })}>
+          Dataset Explorer <ArrowRight aria-hidden="true" />
+        </Link>
+      }
+    >
+      {d.latest ? (
+        <div className="text-sm">
+          <div className="eyebrow mb-1 text-fg-secondary">Latest</div>
+          <p className="font-medium text-fg">{d.latest.name}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-fg-secondary">
+            <Badge tone={d.latest.status === "ready" ? "planet" : d.latest.status === "failed" ? "danger" : "warn"} dot>
+              {d.latest.status}
+            </Badge>
+            <span className="num">{d.latest.tier}</span>·<span className="num">{d.latest.label_mode}</span>·
+            <span className="num">{formatInt(d.latest.n_examples)} examples</span>
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-fg-secondary">No dataset yet. Build one from labelled catalogue signals to train models.</p>
+      )}
+    </StatusCard>
+  );
+}
+
+function ModelCard({ s }: { s: SystemSummaryOut }) {
+  const m: ModelBrief | null = predictionModel(s);
+  const test = m?.test_metrics && Object.keys(m.test_metrics).length ? m.test_metrics : null;
+  const shown = test ?? (m?.val_metrics && Object.keys(m.val_metrics).length ? m.val_metrics : null);
+  return (
+    <StatusCard
+      icon={<Cpu aria-hidden="true" />}
+      eyebrow="Model for predictions"
+      title={
+        m ? (
+          <div className="min-w-0">
+            <p className="flex flex-wrap items-center gap-2 text-md font-medium text-fg">
+              {m.name}
+              <ProvenanceChip kind="model" size="xs" />
+            </p>
+            <p className="mt-1 text-xs text-fg-secondary">
+              <span className="num">{m.model_type}</span>
+              {m.dataset_name ? <> · trained on {m.dataset_name}</> : null} · <span className="num">{formatInt(s.models.n_real)}</span> real model
+              {s.models.n_real === 1 ? "" : "s"}
+              {m.threshold !== null && m.threshold !== undefined ? (
+                <>
+                  {" "}
+                  · threshold <span className="num">{formatProbability(m.threshold, { digits: 2 })}</span>
+                </>
+              ) : null}
+            </p>
+          </div>
+        ) : null
+      }
+      footer={
+        <>
+          <Link to={m ? "/evaluation" : "/training"} className={buttonClasses({ variant: "ghost", size: "sm" })}>
+            {m ? "Model Evaluation" : "Train a model"} <ArrowRight aria-hidden="true" />
+          </Link>
+        </>
+      }
+    >
+      {!m ? (
+        <p className="text-sm text-fg-secondary">No trained model yet. Train one on a dataset; until then Planet Detection cannot score signals.</p>
+      ) : (
+        <>
+          {m.is_fixture ? (
+            <Banner tone="fixture-model" className="mb-3" title="Fixture model">
+              A pipeline-test model trained on synthetic data — its scores mean nothing.
+            </Banner>
+          ) : null}
+          {shown ? (
+            <>
+              <div className="eyebrow mb-2 text-fg-secondary">{test ? "Test split (held-out stars)" : "Validation split — not yet evaluated on test"}</div>
+              <dl className="grid grid-cols-3 gap-x-3 gap-y-3">
+                {METRICS.map((k) => (
+                  <div key={k.key}>
+                    <dt className="text-xs text-fg-secondary">{k.label}</dt>
+                    <dd className="num text-md text-fg">{formatProbability(metric(shown, k.key))}</dd>
+                  </div>
+                ))}
+                <div>
+                  <dt className="text-xs text-fg-secondary">n</dt>
+                  <dd className="num text-md text-fg">{formatInt(metric(shown, "n"))}</dd>
+                </div>
+              </dl>
+            </>
+          ) : (
+            <p className="text-sm text-fg-secondary">No metrics recorded for this model.</p>
+          )}
+        </>
+      )}
+    </StatusCard>
+  );
+}
+
+function RecentPredictions({ s }: { s: SystemSummaryOut }) {
+  const items = s.predictions.recent.slice(0, 6);
+  return (
+    <Card>
+      <CardHeader
+        eyebrow="Recent predictions"
+        title={
+          <span>
+            <span className="num">{formatInt(s.predictions.count)}</span> stored
+          </span>
+        }
+        actions={
+          <Link to="/predictions" className={buttonClasses({ variant: "ghost", size: "sm" })}>
+            <History aria-hidden="true" /> History
+          </Link>
+        }
+      />
+      {items.length === 0 ? (
+        <p className="text-sm text-fg-secondary">No predictions yet. Score a catalogue signal or an uploaded light curve in Planet Detection.</p>
+      ) : (
+        <ul className="divide-y divide-hairline">
+          {items.map((p) => (
+            <li key={p.id}>
+              <Link to={`/predictions?id=${p.id}`} className="flex items-center justify-between gap-3 py-2.5 hover:bg-fg/[0.03]">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm text-fg">{p.signal_key ?? p.input_name}</span>
+                  <span className="block truncate text-xs text-fg-secondary">
+                    {p.model_name} · {formatRelativeTime(p.created_at)}
+                  </span>
+                </span>
+                <ClassBadge cls={predictionClass(p)} probability={p.probability} className="shrink-0" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+function stepStatus(step: NextStep, firstPendingKey: string | undefined): Step["status"] {
+  if (step.done) return "complete";
+  return step.key === firstPendingKey ? "current" : "upcoming";
+}
+
+function Checklist({ s, refresh }: { s: SystemSummaryOut; refresh: ReturnType<typeof useCatalogRefresh> }) {
+  const first = s.next_steps[0];
+  return (
+    <Card>
+      <CardHeader eyebrow="Setup checklist" title={`${s.checklist.filter((c) => c.done).length} of ${s.checklist.length} steps done`} />
+      <Stepper
+        orientation="vertical"
+        aria-label="Setup checklist"
+        steps={s.checklist.map((c) => ({
+          id: c.key,
+          status: stepStatus(c, first?.key),
+          label: c.title,
+          description: (
+            <span className="flex flex-col items-start gap-2">
+              <span>{c.description}</span>
+              {c.key === first?.key || (c.key === "refresh_catalog" && !c.done) ? <StepAction step={c} refresh={refresh} primary /> : null}
+            </span>
+          ),
+        }))}
+      />
+    </Card>
+  );
+}
+
+function StepAction({ step, refresh, primary = false }: { step: NextStep; refresh: ReturnType<typeof useCatalogRefresh>; primary?: boolean }) {
+  if (step.key === "refresh_catalog") {
+    return (
+      <Button size="sm" variant={primary ? "primary" : "secondary"} icon={<RefreshCw />} loading={refresh.refresh.isPending} disabled={Boolean(refresh.job)} onClick={refresh.start}>
+        Refresh catalogue
+      </Button>
+    );
+  }
+  const link = STEP_LINKS[step.key];
+  if (!link) return null;
+  return (
+    <Link to={link.path} className={buttonClasses({ variant: primary ? "primary" : "secondary", size: "sm" })}>
+      {link.label}
+      <ArrowRight aria-hidden="true" />
+    </Link>
+  );
+}
+
+function StatusSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" aria-hidden="true">
+      {Array.from({ length: 4 }, (_, i) => (
+        <Card key={i} className="flex flex-col gap-3">
+          <Skeleton width="40%" />
+          <Skeleton height={28} width="60%" />
+          <Skeleton height={10} />
+          <Skeleton height={10} width="80%" />
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export default function OverviewPage() {
-  const status = useSystemStatus();
+  const summary = useSystemSummary();
+  const refresh = useCatalogRefresh();
+  const s = summary.data;
+  const next = s?.next_steps[0];
+  const otherJobs = s?.running_jobs.filter((j) => j.kind !== "catalog_refresh") ?? [];
+
   return (
     <div className="flex flex-col gap-10">
       {/* Hero */}
@@ -86,8 +413,8 @@ export default function OverviewPage() {
                 Explore signals
                 <ArrowRight aria-hidden="true" />
               </Link>
-              <Link to="/training" className={buttonClasses({ variant: "secondary", size: "lg" })}>
-                Train a model
+              <Link to="/detect" className={buttonClasses({ variant: "secondary", size: "lg" })}>
+                Score a signal
               </Link>
               <Link to="/docs" className={buttonClasses({ variant: "ghost", size: "lg" })}>
                 <BookOpen aria-hidden="true" />
@@ -101,54 +428,87 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      {/* Workflow, with system status and a reading guide alongside (below on narrower screens) */}
-      <Section eyebrow="Workflow" title="From catalogue to candidate" description="Six steps, each on its own page. Everything runs locally against public NASA data.">
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-6">
-          <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {WORKFLOW.map((s) => (
-              <li key={s.n}>
-                <Link to={s.path} className="card-surface group flex h-full flex-col p-5 transition-colors duration-fast hover:border-hairline-strong">
-                  <span className="num text-sm text-cosmic">{s.n}</span>
-                  <span className="mt-2 text-md font-semibold text-fg">{s.title}</span>
-                  <span className="mt-1.5 flex-1 text-sm text-fg-secondary">{s.body}</span>
-                  <span className="mt-4 flex items-center gap-1.5 text-sm text-fg-secondary transition-colors group-hover:text-fg">
-                    {s.cta}
-                    <ArrowRight className="size-3.5 transition-transform duration-fast group-hover:translate-x-0.5" aria-hidden="true" />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ol>
+      {summary.isError ? (
+        <ErrorState error={summary.error} onRetry={() => void summary.refetch()} title={undefined} />
+      ) : null}
 
-          <aside aria-label="System status and reading guide" className="grid grid-cols-1 content-start gap-3 sm:grid-cols-2 xl:grid-cols-1">
+      {next ? (
+        <Banner
+          tone="info"
+          title={
+            <span>
+              Next step: {next.title}
+            </span>
+          }
+          action={<StepAction step={next} refresh={refresh} primary />}
+        >
+          {next.description}
+        </Banner>
+      ) : s ? (
+        <Banner tone="info" title="All setup steps are done">
+          Score more signals in Planet Detection or rank candidates in the Candidate Explorer.
+        </Banner>
+      ) : null}
+
+      <Section eyebrow="Live status" title="What is on this machine" description="Read from the local database and caches; refreshed every minute (every few seconds while jobs run).">
+        {!s ? (
+          summary.isPending ? <StatusSkeleton /> : null
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <CatalogueCard s={s} refresh={refresh} />
+            <LightCurveCard s={s} />
+            <DatasetCard s={s} />
+            <ModelCard s={s} />
+          </div>
+        )}
+      </Section>
+
+      {s ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <Checklist s={s} refresh={refresh} />
+          <div className="flex min-w-0 flex-col gap-6">
             <Card>
-              <div className="eyebrow mb-3 text-fg-secondary">System</div>
-              <StatusFooter rows={status} />
+              <CardHeader eyebrow="Background jobs" title={otherJobs.length ? `${otherJobs.length} running` : "Nothing running"} />
+              {otherJobs.length ? (
+                <div className="flex flex-col gap-3">
+                  {otherJobs.map((j) => (
+                    <JobProgress key={j.id} jobId={j.id} initial={j} onDone={() => void summary.refetch()} />
+                  ))}
+                </div>
+              ) : (
+                <p className="flex items-center gap-2 text-sm text-fg-secondary">
+                  <CircleCheck className="size-4 text-cosmic" aria-hidden="true" /> No dataset builds, downloads, training or batch scoring in progress.
+                </p>
+              )}
             </Card>
-            <Card>
-              <div className="eyebrow mb-3 text-fg-secondary">Reading results</div>
-              <ul className="flex flex-col gap-3 text-sm text-fg-secondary">
-                <li className="flex flex-col gap-1.5">
-                  <span className="flex flex-wrap gap-1.5">
-                    <ProvenanceChip kind="catalogue" />
-                    <ProvenanceChip kind="measured" />
-                    <ProvenanceChip kind="estimate" />
-                    <ProvenanceChip kind="model" />
-                  </span>
-                  Every number says where it came from.
-                </li>
-                <li className="flex flex-col gap-1.5">
-                  <span className="flex flex-wrap gap-1.5">
-                    <ClassBadge cls="planet" />
-                    <ClassBadge cls="false_positive" />
-                    <ClassBadge cls="uncertain" />
-                  </span>
-                  Scores are calibrated probabilities with uncertainty; borderline or low-quality inputs read as uncertain.
-                </li>
-              </ul>
-            </Card>
-          </aside>
+            <RecentPredictions s={s} />
+          </div>
         </div>
+      ) : null}
+
+      <Section eyebrow="Quick links" title="Where to go next">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {QUICK_LINKS.map((q) => (
+            <li key={q.path}>
+              <Link to={q.path} className="card-surface group flex h-full flex-col p-4 transition-colors duration-fast hover:border-hairline-strong">
+                <span className="flex items-center justify-between text-base font-semibold text-fg">
+                  {q.title}
+                  <ArrowRight className="size-4 text-fg-secondary transition-transform duration-fast group-hover:translate-x-0.5" aria-hidden="true" />
+                </span>
+                <span className="mt-1 text-sm text-fg-secondary">{q.body}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {s ? (
+          <p className="mt-6 flex items-start gap-2 text-xs text-fg-secondary">
+            <ProvenanceChip kind="model" size="xs" />
+            <span>
+              {s.disclaimer} App v<span className="num">{s.app_version}</span>, pipeline v<span className="num">{s.pipeline_version}</span>
+              {s.catalog.last_refresh ? <>, catalogue snapshot {formatDateTime(s.catalog.last_refresh)}</> : null}.
+            </span>
+          </p>
+        ) : null}
       </Section>
     </div>
   );

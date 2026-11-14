@@ -31,23 +31,29 @@ export function Banner({ tone = "info", title, children, action, onDismiss, clas
   return (
     <div
       role={tone === "danger" ? "alert" : "status"}
-      className={cn("flex items-start gap-3 rounded-lg border px-4 py-3", t.className, className)}
+      // Grid: icon | text | (action) | dismiss. Below sm the action drops under the text so it never
+      // squeezes the message on phones.
+      className={cn(
+        "grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 rounded-lg border px-4 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto]",
+        t.className,
+        className,
+      )}
       data-tone={tone}
     >
-      <span className={cn("mt-0.5 flex shrink-0 [&_svg]:size-4", t.iconClass)} aria-hidden="true">
+      <span className={cn("col-start-1 row-start-1 mt-0.5 flex shrink-0 [&_svg]:size-4", t.iconClass)} aria-hidden="true">
         {t.icon}
       </span>
-      <div className="min-w-0 flex-1 text-sm">
+      <div className="col-start-2 row-start-1 min-w-0 text-sm">
         {title ? <p className="font-semibold text-fg">{title}</p> : null}
         {children ? <div className={cn("text-fg-secondary", title && "mt-0.5")}>{children}</div> : null}
       </div>
-      {action ? <div className="shrink-0 self-center">{action}</div> : null}
+      {action ? <div className="col-start-2 row-start-2 sm:col-start-3 sm:row-start-1 sm:self-center">{action}</div> : null}
       {onDismiss ? (
         <button
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss"
-          className="-mr-1 flex size-6 shrink-0 items-center justify-center rounded-sm text-fg-secondary hover:bg-fg/[0.06] hover:text-fg"
+          className="col-start-3 row-start-1 -mr-1 flex size-6 shrink-0 items-center justify-center rounded-sm text-fg-secondary hover:bg-fg/[0.06] hover:text-fg sm:col-start-4"
         >
           <X className="size-4" aria-hidden="true" />
         </button>

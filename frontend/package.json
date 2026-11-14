@@ -2,7 +2,7 @@
   "name": "exoplanet-finder-frontend",
   "private": true,
   "version": "0.1.0",
-  "description": "Exoplanet Finder web UI — Observatory Night design system, app shell, charts and science components.",
+  "description": "Exoplanet Finder web UI \u2014 Observatory Night design system, app shell, charts and science components.",
   "type": "module",
   "engines": {
     "node": ">=20.19.0"
@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "gen:api": "node scripts/gen-api.mjs"
   },
   "dependencies": {
     "@fontsource/instrument-serif": "5.3.0",
@@ -30,9 +31,12 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-is": "18.3.1",
+    "react-markdown": "10.1.0",
     "react-plotly.js": "2.6.0",
     "react-router-dom": "6.30.6",
     "recharts": "3.10.1",
+    "remark-gfm": "4.0.1",
+    "remark-math": "6.0.0",
     "tailwind-merge": "2.6.1"
   },
   "devDependencies": {
@@ -50,6 +54,7 @@
     "@vitejs/plugin-react": "5.2.0",
     "autoprefixer": "10.6.1",
     "jsdom": "27.4.0",
+    "openapi-typescript": "7.13.0",
     "postcss": "8.5.31",
     "tailwindcss": "3.4.19",
     "typescript": "5.9.3",

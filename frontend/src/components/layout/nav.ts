@@ -203,6 +203,11 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
     const id = decodeURIComponent(target[1] ?? "");
     return [{ label: "Targets", path: "/candidates" }, { label: /^\d+$/.test(id) ? `KIC ${id}` : id }];
   }
+  const doc = clean.match(/^\/docs\/([^/]+)$/);
+  if (doc) {
+    const slug = decodeURIComponent(doc[1] ?? "").replace(/[-_]+/g, " ");
+    return [{ label: "Reference" }, { label: "Research Docs", path: "/docs" }, { label: slug.charAt(0).toUpperCase() + slug.slice(1) }];
+  }
   for (const g of NAV_GROUPS) {
     const item = g.items.find((i) => i.path === clean);
     if (item) return [{ label: g.label }, { label: item.label }];
