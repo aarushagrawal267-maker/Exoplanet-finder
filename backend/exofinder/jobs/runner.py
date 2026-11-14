@@ -279,7 +279,9 @@ class JobRunner:
             log=ctx.log_text(),
         )
         self.bus.publish(
-            ctx.job_id, "done", {"status": status, "result": _jsonable(result), "error": error, "message": message}
+            ctx.job_id,
+            "done",
+            {"status": status, "result": _jsonable(result), "error": error, "message": message},
         )
         with self._lock:
             self._contexts.pop(ctx.job_id, None)

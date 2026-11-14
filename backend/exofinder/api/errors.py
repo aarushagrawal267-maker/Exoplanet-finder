@@ -31,7 +31,9 @@ def not_found(what: str, code: str = "not_found", hint: str | None = None) -> Ap
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, exc: ApiError) -> JSONResponse:
-        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail, "code": exc.code, "hint": exc.hint})
+        return JSONResponse(
+            status_code=exc.status_code, content={"detail": exc.detail, "code": exc.code, "hint": exc.hint}
+        )
 
     @app.exception_handler(RequestValidationError)
     async def _validation(_: Request, exc: RequestValidationError) -> JSONResponse:
@@ -42,7 +44,12 @@ def install_error_handlers(app: FastAPI) -> None:
             parts.append(f"{loc}: {e.get('msg')}" if loc else str(e.get("msg")))
         return JSONResponse(
             status_code=422,
-            content={"detail": "; ".join(parts) or "Invalid request", "code": "validation_error", "hint": None, "errors": errors[:20]},
+            content={
+                "detail": "; ".join(parts) or "Invalid request",
+                "code": "validation_error",
+                "hint": None,
+                "errors": errors[:20],
+            },
         )
 
     @app.exception_handler(Exception)
@@ -50,6 +57,9 @@ def install_error_handlers(app: FastAPI) -> None:
         log.exception("Unhandled error")
         return JSONResponse(
             status_code=500,
-            content={"detail": f"Internal error: {type(exc).__name__}: {exc}", "code": "internal_error",
-                     "hint": "See logs/backend.log for details."},
+            content={
+                "detail": f"Internal error: {type(exc).__name__}: {exc}",
+                "code": "internal_error",
+                "hint": "See logs/backend.log for details.",
+            },
         )

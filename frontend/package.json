@@ -1,0 +1,64 @@
+{
+  "name": "exoplanet-finder-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Exoplanet Finder web UI — Observatory Night design system, app shell, charts and science components.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@fontsource/instrument-serif": "5.3.0",
+    "@fontsource/inter-tight": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@tanstack/react-query": "5.105.0",
+    "@tanstack/react-table": "8.21.3",
+    "@tanstack/react-virtual": "3.14.24",
+    "clsx": "2.1.1",
+    "lucide-react": "1.63.0",
+    "plotly.js-dist-min": "3.7.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-is": "18.3.1",
+    "react-plotly.js": "2.6.0",
+    "react-router-dom": "6.30.6",
+    "recharts": "3.10.1",
+    "tailwind-merge": "2.6.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "22.20.5",
+    "@types/plotly.js": "3.0.15",
+    "@types/plotly.js-dist-min": "2.3.4",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@types/react-plotly.js": "2.6.4",
+    "@vitejs/plugin-react": "5.2.0",
+    "autoprefixer": "10.6.1",
+    "jsdom": "27.4.0",
+    "postcss": "8.5.31",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vitest": "4.0.18"
+  },
+  "overrides": {
+    "react-plotly.js": {
+      "plotly.js": "npm:plotly.js-dist-min@3.7.0"
+    }
+  }
+}
