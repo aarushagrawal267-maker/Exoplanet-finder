@@ -42,3 +42,9 @@ Branch: `claude/hopeful-edison-jbmnjq`.
   issues only; grade C kept on purpose).
 - Parallel dataset processing: 3 worker processes, measured 2.74x speed-up (1.79 s -> 0.65 s per signal).
 - Full-tier download running (logs/download_full.log).
+- P5 Standard DR24 (dataset 2: 2,934 examples; train 2,335 / val 290 / test 309): suite trained
+  (models 2 LR, 3 RF, 4 cnn_single, 7 cnn_two_view). Decisions recorded BEFORE any test evaluation:
+  (a) final Standard models = 2,3,4,7, each evaluated on test exactly once;
+  (b) active model = two-view CNN (#7), chosen by best validation PR-AUC (0.983);
+  (c) one additional study on the Full tier with default suite settings; no configuration changes
+      to the Standard models after their test results are seen.
