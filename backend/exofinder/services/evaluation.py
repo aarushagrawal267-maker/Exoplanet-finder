@@ -16,6 +16,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import re
 from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
@@ -499,15 +500,16 @@ def feature_importance(
     base = average_precision(y, positive_proba(est, X))
     if base is None:
         raise conflict("The evaluated split has a single class; PR-AUC is undefined", "split_single_class")
+    # View bins are named global_000.. / local_000..; physical features such as local_asymmetry or
+    # global_secondary_min share the prefix but must stay separate groups.
+    global_bins = [i for i, n in enumerate(names) if re.fullmatch(r"global_\d+", n)]
+    local_bins = [i for i, n in enumerate(names) if re.fullmatch(r"local_\d+", n)]
     groups: list[tuple[str, str, list[int]]] = [
-        (
-            "global_view",
-            "Global view (all 201 downsampled bins)",
-            [i for i, n in enumerate(names) if n.startswith("global_")],
-        ),
-        ("local_view", "Local view (all bins)", [i for i, n in enumerate(names) if n.startswith("local_")]),
+        ("global_view", f"Global view (all {len(global_bins)} downsampled bins)", global_bins),
+        ("local_view", f"Local view (all {len(local_bins)} bins)", local_bins),
     ]
-    groups += [(n, n, [i]) for i, n in enumerate(names) if not n.startswith(("global_", "local_"))]
+    view_cols = set(global_bins) | set(local_bins)
+    groups += [(n, n, [i]) for i, n in enumerate(names) if i not in view_cols]
     rng = np.random.default_rng(int(seed))
     rows = []
     for key, label, cols in groups:

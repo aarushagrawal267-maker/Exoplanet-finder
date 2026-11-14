@@ -168,10 +168,22 @@ export function formatKepid(kepid: Num | string): string {
   return `KIC ${Math.trunc(n)}`;
 }
 
+/**
+ * Parse a timestamp from the API. The backend sends UTC with an explicit zone ("…Z"); older or
+ * hand-written values without a zone are also treated as UTC (never as the browser's local time).
+ */
+export function toDate(value: string | number | Date): Date {
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+  const hasZone = /([zZ]|[+-]\d{2}:?\d{2})$/.test(value);
+  const isDateTime = /^\d{4}-\d{2}-\d{2}T/.test(value);
+  return new Date(isDateTime && !hasZone ? `${value}Z` : value);
+}
+
 /** ISO date-time → "2026-11-14 19:42 UTC" (always UTC, so logs and reports agree). */
 export function formatDateTime(value: string | number | Date | null | undefined): string {
   if (value === null || value === undefined || value === "") return EMPTY;
-  const d = value instanceof Date ? value : new Date(value);
+  const d = toDate(value);
   if (Number.isNaN(d.getTime())) return EMPTY;
   const p = (n: number) => String(n).padStart(2, "0");
   return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} UTC`;
@@ -180,7 +192,7 @@ export function formatDateTime(value: string | number | Date | null | undefined)
 /** Relative time: "just now", "5 min ago", "3 h ago", "2 d ago" (falls back to the date). */
 export function formatRelativeTime(value: string | number | Date | null | undefined, now: Date = new Date()): string {
   if (value === null || value === undefined || value === "") return EMPTY;
-  const d = value instanceof Date ? value : new Date(value);
+  const d = toDate(value);
   if (Number.isNaN(d.getTime())) return EMPTY;
   const diff = (now.getTime() - d.getTime()) / 1000;
   if (diff < 0) return formatDateTime(d);

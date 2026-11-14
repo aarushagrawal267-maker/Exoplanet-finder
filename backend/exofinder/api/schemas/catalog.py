@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from exofinder.api.schemas.common import UtcDatetime
 
 
 class RefreshIn(BaseModel):
@@ -24,7 +25,7 @@ class SnapshotOut(BaseModel):
     table_name: str
     query: str = Field(description="Exact ADQL text")
     url: str = Field(description="Equivalent TAP GET URL")
-    retrieved_at: datetime
+    retrieved_at: UtcDatetime
     row_count: int
     sha256: str
     file_path: str
@@ -91,5 +92,5 @@ class CatalogStatsOut(BaseModel):
     label_conflicts: int
     with_lightcurve: int
     histograms: list[HistogramOut]
-    snapshots_retrieved_at: dict[str, datetime | None]
+    snapshots_retrieved_at: dict[str, UtcDatetime | None]
     note: str

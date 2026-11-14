@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from exofinder.api.schemas.common import JobOut
+from exofinder.api.schemas.common import JobOut, UtcDatetime
 from exofinder.api.schemas.predictions import PredictionOut
 from exofinder.api.schemas.settings import StorageOut
 
@@ -19,7 +18,7 @@ class CatalogSummary(BaseModel):
     by_av_label: dict[str, int]
     by_koi_disposition: dict[str, int]
     label_conflicts: int
-    last_refresh: datetime | None = None
+    last_refresh: UtcDatetime | None = None
     snapshot_ids: dict[str, int] = Field(description="Latest snapshot id per source")
 
 
@@ -40,7 +39,7 @@ class DatasetBrief(BaseModel):
     tier: str
     label_mode: str
     n_examples: int
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class DatasetSummary(BaseModel):
@@ -60,7 +59,7 @@ class ModelBrief(BaseModel):
     threshold: float | None = None
     val_metrics: dict[str, Any] = {}
     test_metrics: dict[str, Any] = {}
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class ModelSummary(BaseModel):

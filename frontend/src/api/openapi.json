@@ -492,6 +492,22 @@
             }
           },
           {
+            "name": "max_snr",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Snr"
+            }
+          },
+          {
             "name": "kepid",
             "in": "query",
             "required": false,
@@ -3141,6 +3157,16 @@
               }
             }
           },
+          "404": {
+            "description": "code=prediction_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -4042,6 +4068,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UploadOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "code=upload_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
                 }
               }
             }
@@ -6003,6 +6039,19 @@
                 "type": "null"
               }
             ]
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provenance",
+            "description": "From manifest.json: catalogue snapshots (id, table, retrieved_at, sha256), light-curve digest, pipeline version/config, label mode, split seed/fractions, reserved stars, content hash"
           }
         },
         "type": "object",

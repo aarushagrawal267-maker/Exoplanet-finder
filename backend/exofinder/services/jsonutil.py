@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import dataclasses
 import math
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +43,11 @@ def to_jsonable(obj: Any, *, float_digits: int | None = None) -> Any:
         return {str(k): to_jsonable(v, float_digits=float_digits) for k, v in obj.items()}
     if isinstance(obj, (list, tuple, set)):
         return [to_jsonable(v, float_digits=float_digits) for v in obj]
-    if isinstance(obj, (datetime, date)):
+    if isinstance(obj, datetime):
+        # stored timestamps are naive UTC: make the zone explicit so clients do not read local time
+        aware = obj.replace(tzinfo=UTC) if obj.tzinfo is None else obj.astimezone(UTC)
+        return aware.isoformat().replace("+00:00", "Z")
+    if isinstance(obj, date):
         return obj.isoformat()
     if isinstance(obj, Path):
         return str(obj)

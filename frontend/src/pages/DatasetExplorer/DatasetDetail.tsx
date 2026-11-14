@@ -128,10 +128,64 @@ function Provenance({ ds, stats }: { ds: DatasetDetailOut; stats: DatasetStats }
   return (
     <div className="flex flex-col gap-3">
       <KeyValueList items={items} dense />
+<CatalogueSnapshots provenance={ds.provenance} />
+    </div>
+  );
+}
+
+interface SnapshotRecord {
+  id?: number;
+  source?: string;
+  table?: string;
+  retrieved_at?: string;
+  rows?: number;
+  sha256?: string;
+}
+
+/** NASA catalogue snapshots this dataset was built from (from manifest.json via the API). */
+function CatalogueSnapshots({ provenance }: { provenance: DatasetDetailOut["provenance"] }) {
+  const snaps = (Array.isArray(provenance?.catalogue_snapshots) ? provenance?.catalogue_snapshots : []) as SnapshotRecord[];
+  const lc = (provenance?.lightcurves ?? null) as { n_stars?: number; digests_sha256?: string } | null;
+  if (!snaps.length) {
+    return (
       <Banner tone="info" title="Catalogue snapshots">
-        The build records the NASA catalogue snapshot ids and SHA-256 checksums in <span className="num">manifest.json</span> next to the arrays; the API does not
-        return them yet, so they are not shown here.
+        No catalogue snapshot record was found in this dataset&apos;s <span className="num">manifest.json</span>.
       </Banner>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <h4 className="text-sm font-medium text-text-primary">NASA catalogue snapshots</h4>
+      <div className="overflow-x-auto rounded-md border border-hairline">
+        <table className="w-full min-w-[560px] text-left text-xs">
+          <thead className="text-text-secondary">
+            <tr>
+              <th scope="col" className="px-3 py-2 font-medium">Snapshot</th>
+              <th scope="col" className="px-3 py-2 font-medium">Archive table</th>
+              <th scope="col" className="px-3 py-2 font-medium">Retrieved</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Rows</th>
+              <th scope="col" className="px-3 py-2 font-medium">SHA-256</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snaps.map((snap) => (
+              <tr key={`${snap.id}-${snap.source}`} className="border-t border-hairline">
+                <td className="px-3 py-2">#{snap.id} {snap.source}</td>
+                <td className="num px-3 py-2">{snap.table ?? "—"}</td>
+                <td className="px-3 py-2">{snap.retrieved_at ? formatDateTime(snap.retrieved_at) : "—"}</td>
+                <td className="num px-3 py-2 text-right">{typeof snap.rows === "number" ? formatInt(snap.rows) : "—"}</td>
+                <td className="num px-3 py-2" title={snap.sha256}>{short(snap.sha256)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {lc ? (
+        <p className="text-xs text-text-secondary">
+          Light curves: {typeof lc.n_stars === "number" ? formatInt(lc.n_stars) : "—"} stars; combined digest{" "}
+          <span className="num" title={lc.digests_sha256}>{short(lc.digests_sha256)}</span> (per-star SHA-256 in lightcurves.json).
+        </p>
+      ) : null}
     </div>
   );
 }

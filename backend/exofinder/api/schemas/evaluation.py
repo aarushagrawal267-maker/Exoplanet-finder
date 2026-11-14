@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from exofinder.api.schemas.common import UtcDatetime
 
 
 class EvaluationCreate(BaseModel):
@@ -37,7 +38,7 @@ class EvaluationOut(BaseModel):
     test_evaluation_number: int | None = Field(
         None, description="1 for the first test evaluation of this model, ..."
     )
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class EvaluationDetailOut(EvaluationOut):

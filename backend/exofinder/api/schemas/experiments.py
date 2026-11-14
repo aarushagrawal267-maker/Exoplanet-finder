@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from exofinder.api.schemas.common import UtcDatetime
 from exofinder.api.schemas.evaluation import EvaluationOut
 from exofinder.api.schemas.models import ModelVersionOut
 
@@ -45,8 +45,8 @@ class ExperimentOut(BaseModel):
     archived: bool = False
     job_id: str | None = None
     error: str | None = None
-    created_at: datetime
-    finished_at: datetime | None = None
+    created_at: UtcDatetime
+    finished_at: UtcDatetime | None = None
 
 
 class ExperimentDetailOut(ExperimentOut):
