@@ -23,7 +23,14 @@ from sqlalchemy.orm import Session
 
 from exofinder.db.models import Job, utcnow
 from exofinder.db.session import session_scope
-from exofinder.jobs.runner import EventBus, JobCancelled, JobContext, get_runner
+from exofinder.jobs.runner import (
+    EventBus,
+    JobCancelled,
+    JobContext,
+    get_runner,
+    heartbeat_register,
+    heartbeat_unregister,
+)
 from exofinder.services.jsonutil import to_jsonable
 from exofinder.services.ops_errors import conflict, not_found
 
@@ -120,6 +127,7 @@ def run_inline(spec: JobSpec, echo: Echo | None = print, handle_sigint: bool = T
     if spec.on_created is not None:
         spec.on_created(job_id)
     ctx = InlineJobContext(job_id=job_id, kind=spec.kind, params=params, bus=EventBus(), echo=echo)
+    heartbeat_register(job_id, "cli")
 
     previous_handler = None
     if handle_sigint and threading.current_thread() is threading.main_thread():
@@ -151,6 +159,7 @@ def run_inline(spec: JobSpec, echo: Echo | None = print, handle_sigint: bool = T
     finally:
         if previous_handler is not None:
             signal.signal(signal.SIGINT, previous_handler)
+    heartbeat_unregister(job_id)
     ctx.log(f"Finished with status: {status}" + (f" ({error})" if error else ""))
     _set_job(
         job_id,

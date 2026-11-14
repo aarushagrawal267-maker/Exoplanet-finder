@@ -39,8 +39,31 @@ def _session_factory(url: str | None = None) -> sessionmaker[Session]:
 
 
 def init_db(url: str | None = None) -> None:
-    """Create all tables (idempotent)."""
-    Base.metadata.create_all(get_engine(url))
+    """Create all tables and add any columns missing from an older database (idempotent)."""
+    engine = get_engine(url)
+    Base.metadata.create_all(engine)
+    _add_missing_columns(engine)
+
+
+def _add_missing_columns(engine: Engine) -> list[str]:
+    """Additive schema migration: ``ALTER TABLE ... ADD COLUMN`` for nullable model columns that an
+    existing database lacks (databases created by an earlier version). Never drops or changes data."""
+    from sqlalchemy import inspect, text
+
+    added: list[str] = []
+    insp = inspect(engine)
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if not insp.has_table(table.name):
+                continue
+            existing = {c["name"] for c in insp.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in existing or not col.nullable or col.primary_key:
+                    continue
+                ddl = col.type.compile(dialect=engine.dialect)
+                conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {ddl}'))
+                added.append(f"{table.name}.{col.name}")
+    return added
 
 
 @contextmanager

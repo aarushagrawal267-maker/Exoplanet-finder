@@ -36,7 +36,12 @@ def upload(
         file.file.close()
 
 
-@router.get("/{upload_id}", response_model=UploadOut, summary="Upload details")
+@router.get(
+    "/{upload_id}",
+    response_model=UploadOut,
+    summary="Upload details",
+    responses={404: {"model": ErrorOut, "description": "code=upload_not_found"}},
+)
 def get_upload(upload_id: str) -> dict:
     return svc.upload_response(svc.read_meta(upload_id))
 

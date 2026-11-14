@@ -206,6 +206,10 @@ class Job(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     started_at: Mapped[datetime | None] = mapped_column(DateTime)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # Liveness: the owning process refreshes heartbeat_at every few seconds while the job is queued or
+    # running, so a server start only marks jobs whose owner has died (see jobs.runner).
+    heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime)
+    owner: Mapped[str | None] = mapped_column(String(128))  # "<kind>:<host>:<pid>" of the owning process
 
 
 # --------------------------------------------------------------------------------------------------
