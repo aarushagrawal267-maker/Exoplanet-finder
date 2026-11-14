@@ -145,11 +145,18 @@ The **Overview** page always shows the next step for your installation. A typica
 3. **Explore the signal.** In **Signal Explorer** and **Transit Analysis**, view the light curve at
    each processing stage, fold it on a planet's period, run BLS, and fit the transit.
 4. **Build a dataset.** In **Dataset Explorer**, choose the *Pilot* tier for a quick end-to-end run
-   (≈300 signals, a few minutes) or *Standard* for real experiments (≈3 000 signals). Missing light
-   curves are downloaded automatically.
+   (≈300 signals on 167 stars) or *Standard* for real experiments (≈3 000 signals on 1 976 stars).
+   Missing light curves are downloaded automatically. Each star is about 8 MB of FITS data (raw files
+   are deleted after conversion; the stored cache is about 0.7 MB per star). The Standard tier
+   therefore downloads about 16 GB, which takes roughly 15 minutes on a fast connection and longer on
+   a home connection. Downloads resume if interrupted.
 5. **Train.** In **Model Training**, train one model or the whole suite (all four models on the same
-   dataset). Training curves update live. A CPU laptop trains the Standard tier in roughly 30–90 minutes
-   for the full suite.
+   dataset). Training curves update live.
+
+   *Measured on a 4-core CPU (no GPU), with other work running:* building the Standard dataset took
+   31 minutes of processing; training the suite took 14 minutes (logistic regression 9 s, random
+   forest 18 s, single-view CNN 3 min, two-view CNN 10 min). A Pilot dataset is processed in about
+   2–3 minutes. Results: [Reference results](docs/reference-results.md).
 6. **Evaluate.** In **Model Evaluation**, run the final evaluation on the held-out **test** set and
    compare models. The test set is used only here; model choices are made on the validation set.
 7. **Detect.** In **Planet Detection**, score a catalogue signal or upload your own light curve.
@@ -297,6 +304,7 @@ setup.ps1, start.ps1, stop.ps1   Windows scripts
 * [Pipeline](docs/pipeline.md): light-curve processing and quality gates
 * [Models](docs/models.md) and [Training](docs/training.md)
 * [Evaluation](docs/evaluation.md): metrics, confidence intervals, calibration
+* [Reference results](docs/reference-results.md): real results of the four models on the Standard tier
 * [Predictions](docs/prediction.md): how to read a score
 * [Experiments and reports](docs/experiments.md)
 * [Limitations](docs/limitations.md)
