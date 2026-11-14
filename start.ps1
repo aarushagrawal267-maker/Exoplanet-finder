@@ -55,7 +55,9 @@ $backend = Start-Process -FilePath $venvPy `
     -WindowStyle Hidden -PassThru
 
 Write-Host "  Starting frontend -> http://localhost:$FrontendPort" -ForegroundColor Cyan
-$env:EXOF_BACKEND_PORT = "$BackendPort"
+# The Vite dev server proxies /api to this URL (frontend/vite.config.ts reads VITE_API_URL).
+# 127.0.0.1, not localhost: Node may resolve localhost to the IPv6 address ::1 on Windows.
+$env:VITE_API_URL = "http://127.0.0.1:$BackendPort"
 $frontend = Start-Process -FilePath 'cmd.exe' `
     -ArgumentList @('/c', "npm run dev -- --port $FrontendPort --strictPort") `
     -WorkingDirectory (Join-Path $PSScriptRoot 'frontend') `

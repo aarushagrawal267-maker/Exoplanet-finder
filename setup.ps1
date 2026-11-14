@@ -89,9 +89,10 @@ if ($LASTEXITCODE -ne 0) { Fail "pip upgrade failed." "Check your internet conne
 
 # ------------------------------------------------------------------------------------------------
 Write-Step "Installing PyTorch"
-$hasTorch = $false
-& $venvPy -c "import torch" 2>$null
-if ($LASTEXITCODE -eq 0) { $hasTorch = $true }
+# find_spec prints nothing: with $ErrorActionPreference = 'Stop', Windows PowerShell 5.1 turns any
+# redirected stderr output of a native command (e.g. "No module named torch") into a terminating error.
+& $venvPy -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('torch') else 1)"
+$hasTorch = ($LASTEXITCODE -eq 0)
 if ($hasTorch) {
     Write-Ok "PyTorch already installed"
 } else {
