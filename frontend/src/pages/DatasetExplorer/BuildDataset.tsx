@@ -132,8 +132,10 @@ export function BuildDataset({ onBuilt, onStarted, existingNames }: BuildDataset
   const tierInfo = (t: DatasetTier) => tiers.data?.find((x) => x.tier === t) ?? null;
   const chosen = tierInfo(tier);
 
-  // Suggest a name until the user types one.
-  const suggested = `${TIER_NAME[tier]} ${labelMode === "astronet_dr24" ? "DR24" : "KOI"}${tier === "custom" && maxSignals ? ` ${maxSignals}` : ""}`;
+  // Suggest a unique name until the user types one.
+  const base = `${TIER_NAME[tier]} ${labelMode === "astronet_dr24" ? "DR24" : "KOI"}${tier === "custom" && maxSignals ? ` ${maxSignals}` : ""}`;
+  let suggested = base;
+  for (let i = 2; existingNames.includes(suggested); i += 1) suggested = `${base} (${i})`;
   useEffect(() => {
     if (!nameTouched) setName(suggested);
   }, [suggested, nameTouched]);
@@ -173,10 +175,9 @@ export function BuildDataset({ onBuilt, onStarted, existingNames }: BuildDataset
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-fg" id="label-mode-label">
-          Label mode
-        </span>
+        <span className="text-sm font-medium text-fg">Label mode</span>
         <SegmentedControl<LabelMode>
+          className="self-start"
           aria-label="Label mode"
           value={labelMode}
           onChange={setLabelMode}
@@ -227,6 +228,7 @@ export function BuildDataset({ onBuilt, onStarted, existingNames }: BuildDataset
           </Field>
           <Field label="Detrending" help="Spline (default, robust) or Savitzky–Golay filter before folding.">
             <SegmentedControl<DetrendMethod>
+              className="self-start"
               aria-label="Detrending method"
               value={detrend}
               onChange={setDetrend}

@@ -29,7 +29,7 @@ export function ClassBalance({ perSplit, className }: { perSplit: Record<string,
           const posW = (c.n_pos / max) * 100;
           const negW = (c.n_neg / max) * 100;
           return (
-            <li key={s} className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-3 text-sm sm:grid-cols-[88px_minmax(0,1fr)_150px]">
+            <li key={s} className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-3 text-sm sm:grid-cols-[88px_minmax(0,1fr)_200px]">
               <span className="text-fg-secondary">{SPLIT_LABEL[s] ?? s}</span>
               <span className="flex h-3 overflow-hidden rounded-sm bg-hairline/60" aria-hidden="true">
                 <span className="h-full" style={{ width: `${posW}%`, background: PLANET }} />

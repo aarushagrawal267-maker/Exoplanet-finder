@@ -32,10 +32,13 @@ export function useSystemSummary(options: { enabled?: boolean } = {}) {
   });
 }
 
-export function useDiagnostics(checkNetwork: boolean) {
+/** Diagnostics; with `checkNetwork` the server also probes NASA endpoints (a few seconds). */
+export function useDiagnostics(checkNetwork: boolean, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: qk.system.diagnostics(checkNetwork),
     queryFn: ({ signal }) => fetchDiagnostics(checkNetwork, signal),
     staleTime: checkNetwork ? 0 : 30_000,
+    enabled: options.enabled ?? true,
+    retry: false,
   });
 }
