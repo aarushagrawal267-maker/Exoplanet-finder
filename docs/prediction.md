@@ -42,25 +42,34 @@ report.
 |---|---|
 | *was in the TRAINING set* | The model has seen this star, so the score is not an unbiased test. Use a star from the test split or an uncatalogued signal. |
 | *was in the VALIDATION set* | The star influenced early stopping, the threshold and calibration, so the score is not fully independent. |
-| *Data-quality grade C/D* | Misalignment, depth mismatch, no clear dip, too few transits or sparse views. Treat the score with caution. |
+| *Data-quality grade C* | Misalignment, depth mismatch or no clear dip. Treat the score with caution. (Signals with blocking problems are not scored at all; see below.) |
 | *NASA labels disagree* | DR24 Autovetter and the KOI disposition conflict for this signal. |
 | *Ephemeris from a BLS search* | Check that the period is not an alias or another planet of the same star. |
 | *not Kepler long cadence / out of distribution* | Uploaded data with a different cadence, mission or time span. The models were trained only on Kepler 29.4-min data. |
 | *TEST FIXTURE* | The model was trained on synthetic data for testing; its scores are meaningless. |
 
-A result is shown as **Uncertain** when the uncertainty band crosses the decision threshold or the
-quality grade is D.
+A result is shown as **Uncertain** when its uncertainty band crosses the decision threshold.
 
 ## Unscorable signals
-If the views have empty bins (no data around the transit, for example a single transit inside a data
-gap), the signal cannot be scored and the app says so (`unscorable_signal`). It never fills the gap
-with an invented score.
+A signal is **not scored** (`unscorable_signal`, with the reasons) when:
+
+* its views have empty bins (no data around the transit, e.g. a single transit inside a data gap); or
+* it fails the **same data-quality gate used to build training datasets**: fewer than two observed
+  transits, a period longer than half the observing baseline, a sparse local view (more than 30 % of
+  bins without data) or NaNs in the views.
+
+The models never saw such inputs, so a score would be an unvalidated extrapolation. The app reports
+the reasons instead of producing a number. Grade C signals (misaligned, depth mismatch, no clear dip)
+are scored, with a warning.
 
 ## Candidate Explorer and batch scoring
 **Candidate Explorer** scores NASA's unconfirmed KOI candidates in bulk (a background job) and ranks
-them by mean probability, agreement between models, uncertainty and data quality. These rankings are
-**leads for follow-up**, nothing more: candidates were never used for training, and later NASA
-dispositions may disagree with any model.
+them by mean or maximum probability, agreement between models, or uncertainty, showing each one's
+data-quality grade. By default it **hides candidates whose star was in a model's training or
+validation split**: in the default label mode, Autovetter "PC" signals that are still KOI candidates
+are training examples, and ranking a model's own training examples would be circular. These
+rankings are **leads for follow-up**, nothing more; later NASA dispositions may disagree with any
+model.
 
 ## Prediction history
 Every prediction is stored with its model, input, ephemeris, quality and scores (including its input

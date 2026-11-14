@@ -1396,6 +1396,17 @@ export interface components {
             limit: number;
             /** Offset */
             offset: number;
+            /**
+             * Include Seen
+             * @default false
+             */
+            include_seen: boolean;
+            /**
+             * N Hidden Seen
+             * @description Signals hidden because their star was in a model's train/val split
+             * @default 0
+             */
+            n_hidden_seen: number;
             /** Items */
             items: components["schemas"]["CandidateOut"][];
             /** Models */
@@ -6718,6 +6729,8 @@ export interface operations {
                 sort?: "mean_probability" | "max_probability" | "agreement" | "uncertainty";
                 limit?: number;
                 offset?: number;
+                /** @description Include signals whose star was in a scoring model's training/validation split (hidden by default: ranking a model's own training examples is circular) */
+                include_seen?: boolean;
             };
             header?: never;
             path?: never;

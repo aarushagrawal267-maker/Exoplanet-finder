@@ -30,6 +30,8 @@ from exofinder.jobs.runner import (
     get_runner,
     heartbeat_register,
     heartbeat_unregister,
+    mark_interrupted_jobs,
+    process_owner,
 )
 from exofinder.services.jsonutil import to_jsonable
 from exofinder.services.ops_errors import conflict, not_found
@@ -123,7 +125,18 @@ def run_inline(spec: JobSpec, echo: Echo | None = print, handle_sigint: bool = T
     job_id = uuid.uuid4().hex
     params = to_jsonable(spec.params)
     with session_scope() as s:
-        s.add(Job(id=job_id, kind=spec.kind, title=spec.title, status="queued", params=params, progress=0.0))
+        s.add(  # heartbeat from the start: the server must never see a fresh row as orphaned
+            Job(
+                id=job_id,
+                kind=spec.kind,
+                title=spec.title,
+                status="queued",
+                params=params,
+                progress=0.0,
+                heartbeat_at=utcnow(),
+                owner=process_owner("cli"),
+            )
+        )
     if spec.on_created is not None:
         spec.on_created(job_id)
     ctx = InlineJobContext(job_id=job_id, kind=spec.kind, params=params, bus=EventBus(), echo=echo)
@@ -188,13 +201,27 @@ def _set_job(job_id: str, **fields: Any) -> None:
 def list_jobs(
     session: Session, status: str | None = None, kind: str | None = None, limit: int = 50
 ) -> list[Job]:
-    """Most recent jobs first; ``status``/``kind`` accept comma-separated lists."""
+    """Most recent jobs first; ``status``/``kind`` accept comma-separated lists.
+
+    Jobs whose owning process died (stale heartbeat) are marked interrupted first.
+    """
+    expire_dead_jobs(session)
     q = select(Job).order_by(Job.created_at.desc()).limit(max(1, min(int(limit), 500)))
     if status:
         q = q.where(Job.status.in_([s.strip() for s in status.split(",") if s.strip()]))
     if kind:
         q = q.where(Job.kind.in_([k.strip() for k in kind.split(",") if k.strip()]))
     return list(session.scalars(q))
+
+
+def expire_dead_jobs(session: Session) -> int:
+    """Mark queued/running jobs whose owning process died (stale heartbeat, not run by this process)
+    as failed, e.g. a command-line build whose terminal was closed, so they do not block cancelling,
+    deleting or clearing until the next server restart. Returns the number of jobs marked."""
+    n = mark_interrupted_jobs()
+    if n:
+        session.expire_all()
+    return n
 
 
 def get_job(session: Session, job_id: str) -> Job:
@@ -225,13 +252,15 @@ def cancel_job(session: Session, job_id: str) -> Job:
 def reconcile_orphans(session: Session) -> int:
     """Fix datasets/experiments whose job ended without updating them (e.g. the server stopped).
 
-    At start-up the runner marks unfinished jobs as failed (``mark_interrupted_jobs``); the dataset
-    still says ``building`` and the experiment ``queued``/``running``. Any such row whose job is no
-    longer queued/running is marked ``failed`` (or ``cancelled``) with the job's error. Rows whose job
-    is still active (here or in a CLI process) are left alone. Returns the number of rows fixed.
+    Jobs whose owning process died are marked failed (``mark_interrupted_jobs``, at start-up and
+    here); the dataset still says ``building`` and the experiment ``queued``/``running``. Any such
+    row whose job is no longer queued/running is marked ``failed`` (or ``cancelled``) with the job's
+    error. Rows whose job is still active (here or in a CLI process) are left alone. Returns the
+    number of rows fixed.
     """
     from exofinder.db.models import Dataset, Experiment
 
+    expire_dead_jobs(session)
     fixed = 0
     rows: list[Any] = list(session.scalars(select(Dataset).where(Dataset.status == "building")))
     rows += list(session.scalars(select(Experiment).where(Experiment.status.in_(ACTIVE_STATUSES))))

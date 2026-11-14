@@ -194,19 +194,24 @@ def test_batch_and_candidates(client, fixture_model):
     assert res["is_fixture_model"] is True and res["n_signals"] >= 5
     assert res["n_scored"] + res["n_failed"] == res["n_signals"] and res["n_scored"] >= 2
     # e.g. Kepler-90 h has no transit in the single Kepler-90 quarter: counted, not scored
-    assert set(res["failures_by_reason"]) <= {
-        "nan_in_views",
-        "insufficient_data",
-        "no_ephemeris",
-        "processing_error",
-    }
+    assert all(
+        k in {"nan_in_views", "insufficient_data", "no_ephemeris", "processing_error"}
+        or k.startswith("quality:")
+        for k in res["failures_by_reason"]
+    )
     hist = client.get("/api/predictions", params={"batch_job_id": job["id"], "limit": 500}).json()
     assert hist["total"] == res["n_scored"]
 
-    c = client.get("/api/predictions/candidates", params={"category": "all"})
+    # by default, signals whose star was in a model's train/val split are hidden (circular ranking)
+    default = client.get("/api/predictions/candidates", params={"category": "all"}).json()
+    assert default["include_seen"] is False
+    assert default["total"] + default["n_hidden_seen"] == res["n_scored"]
+    assert not any(x["seen_in_training"] for x in default["items"])
+    c = client.get("/api/predictions/candidates", params={"category": "all", "include_seen": True})
     assert c.status_code == 200, c.text
     page = c.json()
     assert page["total"] == res["n_scored"] and "research leads" in page["disclaimer"]
+    assert page["n_hidden_seen"] == 0
     items = page["items"]
     probs = [it["mean_probability"] for it in items]
     assert probs == sorted(probs, reverse=True) and items[0]["rank"] == 1
@@ -223,3 +228,22 @@ def test_batch_and_candidates(client, fixture_model):
     again = wait_job(r.json()["id"])
     assert again["status"] == "succeeded" and again["result"]["n_signals"] == res["n_failed"]
     assert again["result"]["n_scored"] == 0
+
+
+def test_signal_failing_the_training_quality_gate_is_not_scored(client, fixture_model):
+    """A signal with a blocking quality issue (here: period longer than half of the ~180 d baseline of
+    the two Kepler-2 test quarters, so at most one transit) would never enter a dataset, so no score
+    is given for it either (400 unscorable_signal), instead of an unvalidated extrapolation."""
+    r = client.post(
+        "/api/predictions",
+        json={
+            "source": {"type": "catalog", "kepid": KEPLER2},
+            "ephemeris_source": "manual",
+            "ephemeris": {"period_days": 150.0, "epoch": 132.381, "duration_hours": 3.86},
+        },
+    )
+    assert r.status_code == 400, r.text
+    body = r.json()
+    assert body["code"] == "unscorable_signal"
+    assert "quality gate" in body["detail"] and "period_too_long" in body["detail"]
+    assert client.get("/api/predictions", params={"kepid": KEPLER2}).json()["total"] == 0

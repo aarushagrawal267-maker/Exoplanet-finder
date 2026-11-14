@@ -130,7 +130,9 @@ Numbers that are scientific values carry provenance where relevant:
   flux 1e-6); the binned folded curve spans ±min(3·T14, P/2) in 120 bins; at most 5 000 transit times.
 * Status codes: `GET /api/lightcurves/{kepid}` → 404 `not_downloaded`; POST analysis endpoints → 409
   `not_downloaded`; predictions → 409 `no_model`, 409 `lightcurve_unavailable`, 400
-  `unscorable_signal`; storage clear → 409 `job_running`; dataset delete → 409 `dataset_in_use`.
+  `unscorable_signal`, 400 `mixed_pipeline_configs` (inputs are processed with the preprocessing
+  configuration of each model's dataset, so models trained with different configurations cannot share a
+  request); storage clear → 409 `job_running`; dataset delete → 409 `dataset_in_use`.
 * `POST /api/targets/{kepid}/download` → 200 + target when cached, else 202 `JobOut` (an already-running
   download job is returned rather than duplicated).
 * Predictions: `seen_in_split` is `train|val|test|null` by star; threshold, threshold mode and uncertainty

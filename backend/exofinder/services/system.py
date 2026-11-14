@@ -74,6 +74,10 @@ def _compute_device_info() -> dict[str, Any]:
 def warm_device_info() -> None:
     """Start computing device info in a daemon thread (idempotent)."""
     global _device_thread
+    # Import torch (via the device module) in the calling thread: concurrent first imports of a large
+    # package from two threads can fail with "partially initialized module" errors.
+    import exofinder.ml.device  # noqa: F401
+
     with _device_lock:
         if _device_info is not None or (_device_thread is not None and _device_thread.is_alive()):
             return

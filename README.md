@@ -85,6 +85,10 @@ automatically if present.
 * Or download the ZIP from GitHub (**Code → Download ZIP**) and extract it, for example to
   `C:\Users\<you>\Exoplanet-finder`.
 
+Keep the folder **outside OneDrive** (on Windows 11, Desktop and Documents are usually synced by
+OneDrive, which would upload many GB of downloaded data and can lock files while the app writes them),
+and prefer a short path such as `C:\Users\<you>\Exoplanet-finder` or `C:\Exoplanet-finder`.
+
 ### Step 4: Run the setup script
 Open PowerShell **in the project folder** (in File Explorer, open the folder, then type
 `powershell` in the address bar and press Enter) and run:
@@ -173,7 +177,7 @@ The **Overview** page always shows the next step for your installation. A typica
 | **Signal Explorer** | Browse and filter all catalogue signals; light-curve viewer with every processing stage |
 | **Transit Analysis** | BLS periodogram, folded transit, trapezoid fit, odd/even and secondary-eclipse tests, injection–recovery |
 | **Planet Detection** | Score a catalogue signal or an uploaded FITS/CSV light curve with one or more models |
-| **Candidate Explorer** | Rank KOI candidates by model score, agreement between models, uncertainty and data quality |
+| **Candidate Explorer** | Rank KOI candidates the models have not trained on, by model score, agreement between models and uncertainty, with each one's data-quality grade |
 | **Prediction History** | Every prediction made, with model, inputs and data quality |
 | **Dataset Explorer** | Download tiers, build datasets, inspect class balance, splits, exclusions and example views |
 | **Model Training** | Model cards, configuration, live training curves, training suite |
@@ -188,11 +192,15 @@ The **Overview** page always shows the next step for your installation. A typica
 ## Command line
 
 Everything in the interface is also available from the command line. Open PowerShell in the project
-folder and activate the environment first:
+folder and activate the environment first (Windows blocks scripts such as `Activate.ps1` by default;
+the first line allows them for this PowerShell window only):
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
+
+Without activating, call the program by its path instead, e.g. `.\.venv\Scripts\exofinder status`.
 
 | Command | What it does |
 |---|---|
@@ -227,8 +235,10 @@ calibration (validation) ─► one-time test evaluation ─► predictions with
 ```
 
 * **Labels** (default): the DR24 Autovetter training set, PC → planet-like; AFP and NTP →
-  false-positive-like. An alternative mode uses KOI dispositions (CONFIRMED vs FALSE POSITIVE).
-  KOI candidates are never used for training.
+  false-positive-like. An alternative mode uses KOI dispositions (CONFIRMED vs FALSE POSITIVE), in
+  which KOI candidates are never used for training. In the default mode, Autovetter "PC" signals that
+  NASA still lists as KOI CANDIDATE are planet-like training examples, as in AstroNet; the Candidate
+  Explorer therefore hides candidates whose star a model trained or validated on.
 * **No leakage:** splits by star; catalogue scores such as `koi_score` are never model inputs;
   thresholds and calibration use only the validation set.
 * Full details: [Methodology](docs/methodology.md), [Data sources](docs/data-sources.md),
@@ -251,9 +261,12 @@ end-to-end browser tests (Playwright). Individually:
 ```powershell
 cd backend;  ..\.venv\Scripts\python -m pytest            # backend unit + API tests (offline)
 cd backend;  ..\.venv\Scripts\python -m pytest -m network  # live NASA checks (needs internet)
-cd frontend; npm test                                      # frontend unit tests
-cd frontend; npx playwright install chromium; npm run test:e2e   # browser tests
+cd frontend; npm.cmd test                                  # frontend unit tests
+cd frontend; npx.cmd playwright install chromium; npm.cmd run test:e2e   # browser tests
 ```
+
+(`npm.cmd`/`npx.cmd` rather than `npm`/`npx`: in PowerShell the latter run `npm.ps1`, which the default
+execution policy blocks.)
 
 Tests use temporary folders and never touch your data. Synthetic light curves used in tests are
 labelled as test data and never shown as real results.
@@ -264,10 +277,14 @@ labelled as test data and never shown as real results.
 
 | Problem | Fix |
 |---|---|
-| `running scripts is disabled on this system` | Use `powershell -ExecutionPolicy Bypass -File .\start.ps1` as shown above |
+| `running scripts is disabled on this system` | Use `powershell -ExecutionPolicy Bypass -File .\start.ps1` as shown above; for `npm`/`npx` typed by hand use `npm.cmd`/`npx.cmd` |
 | `py` or `python` not found | Reinstall Python with **Add python.exe to PATH** ticked, then open a new PowerShell window |
 | Setup says Python version unsupported | Install Python 3.11, 3.12 or 3.13 (64-bit) |
-| `Port 8000 is already in use` | Run `.\stop.ps1`; if that does not help, another program uses the port: restart Windows or change `EXOF_PORT` in `.env` |
+| `Port 8000 is already in use` | Run `.\stop.ps1`; if that does not help, another program uses the port: start on another port with `.\start.ps1 -BackendPort 8010` (and stop with `.\stop.ps1 -BackendPort 8010`) |
+| Setup: `PyTorch is installed but cannot be loaded` (`[WinError 126]`, `DLL load failed`) | Install the Microsoft Visual C++ Redistributable (X64) from <https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist>, then re-run setup |
+| Setup: pip fails with `No such file or directory` / long-path hint | The project path is too long for Windows' 260-character limit: move it to e.g. `C:\Exoplanet-finder`, delete `.venv` and re-run setup (or enable long paths in Windows) |
+| `npm ci` fails with `EPERM`/`EBUSY` | Stop the app (`.\stop.ps1`), close editors using the folder, delete `frontend\node_modules`, re-run setup |
+| Files locked, sync conflicts or a slow app in a OneDrive folder | Move the project out of OneDrive (see Step 3) and re-run setup there |
 | The page shows "API offline" | Check `logs\backend.log`; run `.\.venv\Scripts\exofinder doctor` |
 | NASA downloads fail | Check your internet connection or proxy; the NASA services are sometimes down for maintenance. Downloads resume where they stopped |
 | Training is slow | Use the Pilot or Standard tier; close other heavy programs; a CUDA GPU is used automatically when available |

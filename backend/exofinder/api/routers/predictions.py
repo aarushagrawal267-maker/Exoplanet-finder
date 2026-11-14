@@ -96,6 +96,11 @@ def candidates(
     ),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
+    include_seen: bool = Query(
+        False,
+        description="Include signals whose star was in a scoring model's training/validation split "
+        "(hidden by default: ranking a model's own training examples is circular)",
+    ),
 ) -> dict:
     """Latest catalogue-ephemeris score per signal per model, with agreement across models,
     uncertainty and quality grade. These are leads for follow-up, not discoveries."""
@@ -107,6 +112,7 @@ def candidates(
         sort=sort,
         limit=limit,
         offset=offset,
+        include_seen=include_seen,
     )
 
 

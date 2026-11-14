@@ -50,6 +50,27 @@ def active_jobs(session: Session, kind: str) -> list[Job]:
     return list(session.scalars(select(Job).where(Job.kind == kind, Job.status.in_(("queued", "running")))))
 
 
+def refresh_blocker(session: Session) -> Job | None:
+    """An active dataset build (from any process) that a catalogue refresh would interfere with."""
+    from exofinder.services.jobs import expire_dead_jobs
+
+    expire_dead_jobs(session)
+    builds = active_jobs(session, "build_dataset")
+    return builds[0] if builds else None
+
+
+def refuse_refresh_during_build(session: Session) -> None:
+    """A refresh replaces/retires catalogue rows and ephemerides; a dataset build reading them at the
+    same time could fail at the end or mix two catalogue versions. Raise 409 while a build runs."""
+    job = refresh_blocker(session)
+    if job is not None:
+        raise conflict(
+            "A dataset is being built; refreshing the catalogue now could change the signals it is using",
+            "dataset_building",
+            f"Wait for '{job.title}' to finish (or cancel it), then refresh the catalogue.",
+        )
+
+
 def start_refresh(session: Session, sources: list[str] | None = None) -> str:
     """Submit a ``catalog_refresh`` job; 409 ``job_running`` if one is already active."""
     from exofinder.data.archive import ALL_SOURCES
@@ -69,6 +90,7 @@ def start_refresh(session: Session, sources: list[str] | None = None) -> str:
             "job_running",
             f"Follow job {running[0].id} in the job tray.",
         )
+    refuse_refresh_during_build(session)
 
     def work(ctx: JobContext) -> dict[str, Any]:
         from exofinder.data.archive import ArchiveError, ArchiveUnavailableError

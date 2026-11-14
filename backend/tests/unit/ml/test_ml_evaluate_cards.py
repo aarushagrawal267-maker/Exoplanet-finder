@@ -89,3 +89,22 @@ def test_device_helpers() -> None:
         resolve_device("tpu")
     info = environment_info()
     assert {"python", "torch", "sklearn", "numpy", "cpu_count", "cuda_available"} <= info.keys()
+
+
+def test_environment_info_does_not_import_sklearn() -> None:
+    """The server reports the environment from a start-up thread; importing scikit-learn there raced
+    with request/job threads importing it ("cannot import name 'clone' from partially initialized
+    module 'sklearn.base'"). The version must come from package metadata instead."""
+    import subprocess
+    import sys
+
+    code = (
+        "import sys\n"
+        "from exofinder.ml.device import environment_info\n"
+        "info = environment_info()\n"
+        "assert 'sklearn' not in sys.modules, 'environment_info imported sklearn'\n"
+        "import sklearn\n"
+        "assert info['sklearn'] == sklearn.__version__, info['sklearn']\n"
+    )
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr

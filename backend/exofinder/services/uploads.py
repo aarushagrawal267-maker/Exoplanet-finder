@@ -38,6 +38,7 @@ from exofinder.astro.io_csv import detect_columns, read_csv_lightcurve
 from exofinder.astro.io_fits import read_fits_lightcurve
 from exofinder.astro.types import LightCurve
 from exofinder.config import BKJD_OFFSET, get_settings
+from exofinder.data._util import replace_with_retry
 from exofinder.db.models import utcnow
 from exofinder.services.jsonutil import to_jsonable
 from exofinder.services.sci_common import KEPLER_LONG_CADENCE_DAYS, finite
@@ -54,6 +55,11 @@ META_FILE = "meta.json"
 PARSED_FILE = "parsed.npz"
 _ID_RE = re.compile(r"^[0-9a-f]{32}$")
 _CHUNK = 1 << 20
+#: Windows device names: a file called e.g. ``con.csv`` or ``aux.txt`` would open the device instead
+#: of a file on Windows 10, so stored names never start with one of these.
+_WINDOWS_DEVICE_NAMES = frozenset(
+    ["CON", "PRN", "AUX", "NUL"] + [f"{dev}{i}" for dev in ("COM", "LPT") for i in range(10)]
+)
 
 OOD_NOTICE = (
     "The models were trained only on Kepler long-cadence (29.4 min) PDCSAP light curves processed by "
@@ -83,7 +89,7 @@ def _write_meta(upload_id: str, meta: dict[str, Any]) -> None:
     path = upload_dir(upload_id) / META_FILE
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(to_jsonable(meta), indent=2, sort_keys=True), "utf-8")
-    os.replace(tmp, path)
+    replace_with_retry(tmp, path)  # Windows: a concurrent reader can hold meta.json open briefly
 
 
 def _kind_for(filename: str) -> str | None:
@@ -98,7 +104,10 @@ def _kind_for(filename: str) -> str | None:
 def _safe_name(filename: str) -> str:
     base = Path(filename.replace("\\", "/")).name or "upload"
     safe = "".join(c if (c.isalnum() or c in "._-") else "_" for c in base).lstrip(".")
-    return (safe or "upload")[:120]
+    safe = (safe or "upload")[:120]
+    if safe.split(".", 1)[0].upper() in _WINDOWS_DEVICE_NAMES:
+        safe = f"_{safe}"[:120]
+    return safe
 
 
 # ------------------------------------------------------------------------------------------------
@@ -391,7 +400,7 @@ def _save_parsed(upload_id: str, lc: LightCurve) -> Path:
     os.close(fd)
     try:
         np.savez_compressed(tmp, **arrays)
-        os.replace(tmp, path)
+        replace_with_retry(tmp, path)
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)

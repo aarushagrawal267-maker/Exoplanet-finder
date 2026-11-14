@@ -24,8 +24,13 @@ its results.
 * **Class definition.** In the default mode, class 0 mixes astrophysical false positives (AFP) and
   non-transiting phenomena (NTP). The model learns "not planet-candidate-like", not a specific
   false-positive mechanism.
-* **Candidates are unlabelled.** KOI `CANDIDATE`s are never used for training; their scores are
-  leads, and agreement with later dispositions is not guaranteed.
+* **Candidates and training.** In the `koi_disposition` label mode, KOI `CANDIDATE`s are never used for
+  training. In the default `astronet_dr24` mode, labels come from the DR24 Autovetter training set,
+  whose planet-candidate class ("PC") includes signals that NASA still lists as KOI `CANDIDATE`
+  today; as in AstroNet, they are planet-like training examples. A candidate's score is only an
+  independent lead if its star was **not** in the model's training or validation split. The
+  Candidate Explorer hides such stars by default, and every prediction states the split. Agreement
+  with later dispositions is not guaranteed.
 
 ## Data and compute
 * **Dataset size.** The Pilot and Standard tiers are much smaller than the full DR24 training set

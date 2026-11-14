@@ -20,8 +20,11 @@ The app keeps three categories strictly separate:
 * **False positives**: KOI disposition `FALSE POSITIVE` (with its reason flags: not transit-like,
   stellar eclipse, centroid offset, ephemeris match), or DR24 Autovetter `AFP` / `NTP` for
   signals that never became KOIs.
-* **Candidates**: KOI disposition `CANDIDATE`. These are *uncertain*: never used for training,
-  only scored as research leads in the Candidate Explorer.
+* **Candidates**: KOI disposition `CANDIDATE` (plus Autovetter PC signals that never became KOIs).
+  These are *uncertain*. In the `koi_disposition` label mode they are never used for training. In the
+  default `astronet_dr24` mode, the Autovetter label decides, so a CANDIDATE labelled PC is a
+  planet-like training example (as in AstroNet). The Candidate Explorer scores candidates as research
+  leads and, by default, hides those whose star was in a model's training or validation split.
 
 > **Note on "certified false positives".** The Kepler False Positive Working Group's certified-FP
 > table is not available through the Archive's programmatic (TAP) interface. This app therefore

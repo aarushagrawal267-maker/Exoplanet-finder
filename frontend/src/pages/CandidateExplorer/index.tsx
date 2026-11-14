@@ -289,6 +289,7 @@ export default function CandidateExplorerPage() {
     sort,
     limit,
     offset: Math.max(0, u.int("offset") ?? 0),
+    include_seen: u.str("seen") === "1",
   };
   const cand = useCandidates(query);
   const columns = useColumns();
@@ -349,6 +350,12 @@ export default function CandidateExplorerPage() {
                 <span className="text-fg">Seen in training</span> marks stars a model trained or tuned on — their scores are optimistic.
               </li>
             </ul>
+            <Switch
+              checked={query.include_seen === true}
+              onChange={(v) => u.set({ seen: v ? "1" : null, offset: null })}
+              label="Include candidates seen in training"
+              description="Off (recommended): hides signals whose star was in a model's training or validation split. In the default DR24 label mode, Autovetter PC signals that are still KOI candidates are training examples, so ranking them would be circular."
+            />
           </div>
         </Card>
       </div>
@@ -373,6 +380,11 @@ export default function CandidateExplorerPage() {
                 {page ? (
                   <span>
                     <span className="num text-fg">{formatInt(page.total)}</span> scored signals · ranked by {SORTS.find((s) => s.value === sort)?.label.toLowerCase()}
+                    {!page.include_seen && page.n_hidden_seen > 0 ? (
+                      <>
+                        {" "}· <span className="num text-fg">{formatInt(page.n_hidden_seen)}</span> hidden (seen in training)
+                      </>
+                    ) : null}
                   </span>
                 ) : null}
                 <ProvenanceChip kind="model" size="xs" />

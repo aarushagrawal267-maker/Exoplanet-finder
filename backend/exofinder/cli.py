@@ -10,6 +10,7 @@ can be cancelled with Ctrl+C. Exit codes: 0 success, 1 failure, 2 usage error, 1
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import platform
@@ -27,6 +28,23 @@ EXIT_OK, EXIT_FAIL, EXIT_USAGE, EXIT_CANCELLED = 0, 1, 2, 130
 
 def _p(msg: str = "") -> None:
     print(msg, flush=True)
+
+
+def _tolerant_console() -> None:
+    """Replace, instead of crashing on, characters the output encoding cannot represent.
+
+    On Windows, output that is redirected or piped (``exofinder status > out.txt``, ``| Tee-Object``)
+    is encoded with the ANSI code page (cp1252 on most Western systems), and stdout uses the
+    ``strict`` error handler: one dataset name, path or message with e.g. "→" or "≈" would raise
+    ``UnicodeEncodeError`` mid-command. UTF-8 streams (Linux, macOS, the Windows console itself) are
+    left unchanged.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        encoding = (getattr(stream, "encoding", None) or "").lower().replace("-", "").replace("_", "")
+        if encoding in ("utf8", "utf8sig") or not hasattr(stream, "reconfigure"):
+            continue
+        with contextlib.suppress(AttributeError, ValueError, OSError):  # exotic stream wrappers
+            stream.reconfigure(errors="replace")
 
 
 def _err(msg: str, hint: str | None = None) -> None:
@@ -144,12 +162,13 @@ def _doctor_checks(network: bool) -> _Checks:
             c.add("ok", f"package {name}", getattr(mod, "__version__", "installed"))
         except Exception as exc:  # noqa: BLE001 - report any import problem
             if name in required:
-                c.add(
-                    "fail",
-                    f"package {name}",
-                    f"cannot be imported: {exc}",
-                    "Re-run setup.ps1 (pip install -r requirements.txt).",
-                )
+                hint = "Re-run setup.ps1 (pip install -r requirements.txt)."
+                if isinstance(exc, OSError) and sys.platform == "win32":  # e.g. [WinError 126] ... c10.dll
+                    hint = (
+                        "A DLL failed to load: install the Microsoft Visual C++ Redistributable (X64) from "
+                        "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist, then re-run setup.ps1."
+                    )
+                c.add("fail", f"package {name}", f"cannot be imported: {exc}", hint)
             else:
                 c.add(
                     "warn", f"package {name}", f"not available: {exc}", "Only needed as a download fallback."
@@ -373,9 +392,20 @@ def cmd_status(args: argparse.Namespace) -> int:
 # data
 # --------------------------------------------------------------------------------------------------
 def cmd_refresh_catalog(args: argparse.Namespace) -> int:
+    from exofinder.db.session import session_scope
+    from exofinder.services.catalog import refresh_blocker
     from exofinder.services.jobs import JobSpec, run_inline
 
     _bootstrap()
+    with session_scope() as s:
+        blocker = refresh_blocker(s)
+        if blocker is not None:
+            _err(
+                f"A dataset is being built ('{blocker.title}'); refreshing the catalogue now could change "
+                "the signals it is using.",
+                "Wait for the build to finish (or cancel it), then run refresh-catalog again.",
+            )
+            return 1
 
     def work(ctx: Any) -> dict:
         from exofinder.data.catalog import refresh_catalog
@@ -825,6 +855,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    _tolerant_console()
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

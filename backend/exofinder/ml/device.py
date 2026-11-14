@@ -6,6 +6,7 @@ automatically when present and requested via ``"auto"``.
 
 from __future__ import annotations
 
+import importlib.metadata
 import logging
 import os
 import platform
@@ -61,12 +62,24 @@ def default_num_threads() -> int:
     return max(1, os.cpu_count() or 1)
 
 
+def _package_version(module: str, distribution: str) -> str | None:
+    """Version of an installed package without importing it (when it is not imported yet).
+
+    The server reports the environment from a background thread at start-up; importing a large
+    package such as scikit-learn there races with request/job threads importing it at the same
+    time, which CPython can turn into "cannot import name ... from partially initialized module".
+    """
+    mod = sys.modules.get(module)
+    if mod is not None and getattr(mod, "__version__", None):
+        return str(mod.__version__)
+    try:
+        return importlib.metadata.version(distribution)
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+
 def environment_info() -> dict[str, Any]:
     """Versions and hardware facts recorded with every experiment (JSON-serialisable)."""
-    import numpy
-    import scipy
-    import sklearn
-
     info: dict[str, Any] = {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
@@ -75,9 +88,9 @@ def environment_info() -> dict[str, Any]:
         "cpu_count": os.cpu_count(),
         "torch": torch.__version__,
         "torch_num_threads": torch.get_num_threads(),
-        "numpy": numpy.__version__,
-        "scipy": scipy.__version__,
-        "sklearn": sklearn.__version__,
+        "numpy": _package_version("numpy", "numpy"),
+        "scipy": _package_version("scipy", "scipy"),
+        "sklearn": _package_version("sklearn", "scikit-learn"),
         "cuda_available": bool(torch.cuda.is_available()),
         "cuda_version": torch.version.cuda,
         "cuda_device": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,

@@ -445,6 +445,8 @@ export const candidatePage: CandidatePage = {
   total: 1,
   limit: 50,
   offset: 0,
+  include_seen: false,
+  n_hidden_seen: 2,
   items: [
     {
       rank: 1,

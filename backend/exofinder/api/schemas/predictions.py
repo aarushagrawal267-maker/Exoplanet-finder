@@ -190,6 +190,10 @@ class CandidatePage(BaseModel):
     total: int
     limit: int
     offset: int
+    include_seen: bool = False
+    n_hidden_seen: int = Field(
+        0, description="Signals hidden because their star was in a model's train/val split"
+    )
     items: list[CandidateOut]
     models: list[CandidateModel]
     disclaimer: str
