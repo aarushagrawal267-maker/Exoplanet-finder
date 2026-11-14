@@ -34,9 +34,14 @@ export interface UseJobOptions {
   onDone?: (job: JobOut) => void;
   /** Seed the cache with the JobOut returned by the POST that started the job. */
   initial?: JobOut | null;
+  /**
+   * Extra SSE events of this job's stream, e.g. `epoch` (training metrics) or `log` (log lines).
+   * The built-in `snapshot` / `progress` / `done` handling always runs and cannot be replaced.
+   */
+  events?: Record<string, (data: unknown) => void>;
 }
 
-export function useJob(jobId: string | null, { onDone, initial }: UseJobOptions = {}) {
+export function useJob(jobId: string | null, { onDone, initial, events: extraEvents }: UseJobOptions = {}) {
   const qc = useQueryClient();
   const key = qk.jobs.one(jobId ?? "");
   const sseLive = useRef(false);
@@ -60,6 +65,7 @@ export function useJob(jobId: string | null, { onDone, initial }: UseJobOptions 
     closeOn: "done",
     maxRetries: 3,
     events: {
+      ...extraEvents,
       snapshot: (d) => {
         if (d && typeof d === "object" && "id" in d) qc.setQueryData<JobOut>(key, d as JobOut);
       },

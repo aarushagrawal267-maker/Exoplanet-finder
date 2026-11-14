@@ -111,8 +111,8 @@ export function StarSignalPicker({
                   </span>
                   <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
                     <CategoryBadge category={s.category} />
-                    {s.koi_disposition ? <KoiBadge disposition={s.koi_disposition} /> : null}
-                    {s.av_training_set ? <AvLabelBadge label={s.av_training_set} /> : null}
+                    {s.koi_disposition ? <KoiBadge disposition={s.koi_disposition} prefix /> : null}
+                    {s.av_training_set ? <AvLabelBadge label={s.av_training_set} prefix /> : null}
                     <ConflictBadge conflict={s.label_conflict} compact />
                   </span>
                 </span>

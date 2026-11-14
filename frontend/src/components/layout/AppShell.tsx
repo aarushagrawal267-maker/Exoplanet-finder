@@ -5,6 +5,7 @@
  */
 import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useJobFeed } from "@/api/endpoints/jobStream";
 import type { JobOut } from "@/api/types";
 import { TransitLoader } from "@/components/brand/TransitLoader";
 import { Drawer } from "@/components/ui/Drawer";
@@ -18,7 +19,7 @@ import { TopBar } from "./TopBar";
 import { useSystemStatus } from "./useSystemStatus";
 
 export interface AppShellProps {
-  /** Jobs for the tray (wired to the SSE job feed in a later phase). */
+  /** Jobs for the tray; omit to use the live job feed (`useJobFeed`: /api/jobs/stream + polling). */
   jobs?: JobOut[];
   onCancelJob?: (id: string) => void;
   /** Target search for the command palette (wired to /api/targets/search later). */
@@ -34,7 +35,7 @@ export function PageFallback() {
   );
 }
 
-export function AppShell({ jobs = [], onCancelJob, onSearch, children }: AppShellProps) {
+export function AppShell({ jobs, onCancelJob, onSearch, children }: AppShellProps) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [collapsed, setCollapsed] = useLocalStorage<boolean>("exo.sidebar.collapsed", false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -42,6 +43,7 @@ export function AppShell({ jobs = [], onCancelJob, onSearch, children }: AppShel
   const location = useLocation();
   const navigate = useNavigate();
   const status = useSystemStatus();
+  const jobFeed = useJobFeed({ enabled: jobs === undefined });
 
   // Close the mobile drawer on navigation / when growing past the breakpoint.
   useEffect(() => setDrawerOpen(false), [location.pathname, isMobile]);
@@ -111,8 +113,9 @@ export function AppShell({ jobs = [], onCancelJob, onSearch, children }: AppShel
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenMenu={() => setDrawerOpen(true)}
           showMenuButton={isMobile}
-          jobs={jobs}
-          onCancelJob={onCancelJob}
+          jobs={jobs ?? jobFeed.jobs}
+          onCancelJob={onCancelJob ?? jobFeed.cancel}
+          jobConnection={jobs ? undefined : jobFeed.connection}
         />
         <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
           <div className="mx-auto w-full max-w-content px-4 py-6 md:px-8 md:py-8">
