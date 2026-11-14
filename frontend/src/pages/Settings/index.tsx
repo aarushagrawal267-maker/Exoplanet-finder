@@ -145,8 +145,7 @@ function PreferencesForm() {
             <Field
               key={k}
               label={LABELS[k] ?? k}
-              help={`${d.description}${range}`}
-              aside={<span className="num">default: {fmtDefault(k)}</span>}
+              help={`${d.description}${range} Default: ${fmtDefault(k)}.`}
               error={errors[k] ?? (serverKey === k ? serverError?.detail : undefined)}
             >
               {control(k)}

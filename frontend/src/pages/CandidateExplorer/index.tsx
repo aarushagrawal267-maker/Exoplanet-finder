@@ -340,6 +340,15 @@ export default function CandidateExplorerPage() {
                 <NumberInput value={u.num("minp")} onChange={(v) => u.set({ minp: v, offset: null })} min={0} max={1} step={0.05} precision={2} allowEmpty hideSteppers placeholder="0.00" />
               </Field>
             </div>
+            <ul className="flex flex-col gap-1.5 border-t border-hairline pt-4 text-xs text-fg-secondary">
+              <li>Each signal uses every model&apos;s latest score on the catalogue ephemeris; the mean is across models.</li>
+              <li>
+                <span className="text-fg">Agreement</span> counts models whose class is planet-like at their own threshold.
+              </li>
+              <li>
+                <span className="text-fg">Seen in training</span> marks stars a model trained or tuned on — their scores are optimistic.
+              </li>
+            </ul>
           </div>
         </Card>
       </div>

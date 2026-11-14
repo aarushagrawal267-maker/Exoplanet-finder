@@ -6,7 +6,7 @@
  * compare *shapes* between categories of very different sizes; "share" mode normalises each
  * category to 100 % so a 2,000-signal category is as readable as a 14,000-signal one. Category
  * identity uses the validated SERIES_PALETTE in fixed order with a distinct dash per series and a
- * legend, so it never relies on colour alone. Sparse outlier tails (the outer 0.1 %) are cropped and
+ * legend, so it never relies on colour alone. Sparse outlier tails (the outer 0.4 %) are cropped and
  * reported under the chart, not silently dropped.
  */
 import { useMemo } from "react";
@@ -34,7 +34,7 @@ export function pow10Label(x: number): string {
   return formatNumber(v, { digits: v < 1 ? (v < 0.01 ? 3 : v < 0.1 ? 2 : 1) : 0 });
 }
 
-/** Indices [lo, hi] of the bins holding the central 99.8 % of all signals. */
+/** Indices [lo, hi] of the bins holding the central part of all signals (`tail` cut from each side). */
 export function centralRange(totals: number[], tail = 0.001): [number, number] {
   const sum = totals.reduce((a, b) => a + b, 0);
   if (sum === 0) return [0, Math.max(0, totals.length - 1)];
@@ -52,7 +52,7 @@ export function CategoryHistogram({ histogram, categories, categoryLabel, mode =
     const e = histogram.edges;
     const nBins = Math.max(0, e.length - 1);
     const totals = Array.from({ length: nBins }, (_, i) => categories.reduce((s, c) => s + (histogram.counts[c]?.[i] ?? 0), 0));
-    const [lo, hi] = centralRange(totals);
+    const [lo, hi] = centralRange(totals, 0.004);
     const perCat = Object.fromEntries(categories.map((c) => [c, (histogram.counts[c] ?? []).reduce((a, b) => a + b, 0)]));
     const out: Array<Record<string, number>> = [];
     for (let i = lo; i <= hi; i += 1) {
@@ -66,8 +66,12 @@ export function CategoryHistogram({ histogram, categories, categoryLabel, mode =
     }
     const x0 = e[lo] ?? 0;
     const x1 = e[hi + 1] ?? 1;
+    // Powers of ten, thinned to at most ~5 ticks so labels never collide on narrow cards.
     const t: number[] = [];
-    for (let k = Math.ceil(x0); k <= Math.floor(x1); k += 1) t.push(k);
+    const first = Math.ceil(x0);
+    const last = Math.floor(x1);
+    const step = Math.max(1, Math.ceil((last - first + 1) / 5));
+    for (let k = first; k <= last; k += step) t.push(k);
     const outsideCount = totals.slice(0, lo).reduce((a, b) => a + b, 0) + totals.slice(hi + 1).reduce((a, b) => a + b, 0);
     return { rows: out, ticks: t, outside: outsideCount, range: [x0, x1] as [number, number] };
   }, [histogram, categories, mode]);
@@ -80,7 +84,7 @@ export function CategoryHistogram({ histogram, categories, categoryLabel, mode =
     <figure className={cn("m-0 flex min-w-0 flex-col gap-2", className)} aria-label={`Histogram of ${histogram.label} by catalogue category (${mode === "share" ? "share of each category" : "counts"})`}>
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 20, left: 0 }}>
+          <LineChart data={rows} margin={{ top: 8, right: 22, bottom: 20, left: 0 }}>
             <CartesianGrid {...rcGrid} />
             <XAxis
               dataKey="x"

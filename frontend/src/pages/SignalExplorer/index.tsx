@@ -372,7 +372,8 @@ export default function SignalExplorerPage() {
   const tab = u.str("tab") === "stats" ? "stats" : "table";
   const selectedId = u.int("signal");
   const selectedKepid = u.int("kepid");
-  const selectedRow = signals.data?.items.find((r) => r.id === selectedId);
+  const selectedTarget = useTarget(selectedKepid);
+  const selectedRow = signals.data?.items.find((r) => r.id === selectedId) ?? selectedTarget.data?.signals.find((r) => r.id === selectedId);
 
   const sorting: SortingState = [{ id: query.sort ?? "signal_key", desc: query.order === "desc" }];
   const onSortingChange = (updater: SortingState | ((old: SortingState) => SortingState)) => {

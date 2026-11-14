@@ -25,6 +25,7 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { ChartSkeleton } from "@/components/ui/Skeleton";
 import { Switch } from "@/components/ui/Switch";
 import { cn } from "@/lib/cn";
+import { useElementWidth } from "@/lib/hooks";
 import { formatBkjd, formatDays, formatHours, formatInt, formatPpm } from "@/lib/format";
 import { TransitLoader } from "@/components/brand/TransitLoader";
 import { asGrade, pairs } from "./adapters";
@@ -87,6 +88,7 @@ export function SegmentStrip({
   onSelect: (id: number | null) => void;
   isQuarter: boolean;
 }) {
+  const [stripRef, stripWidth] = useElementWidth<HTMLDivElement>();
   if (!segments.length) return null;
   const t0 = Math.min(...segments.map((s) => s.t_start));
   const t1 = Math.max(...segments.map((s) => s.t_end));
@@ -105,7 +107,7 @@ export function SegmentStrip({
       >
         All
       </button>
-      <div className="relative h-7 min-w-0 flex-1 rounded-md bg-space" role="group" aria-label={isQuarter ? "Kepler quarters" : "Data segments"}>
+      <div ref={stripRef} className="relative h-7 min-w-0 flex-1 rounded-md bg-space" role="group" aria-label={isQuarter ? "Kepler quarters" : "Data segments"}>
         {segments.map((s) => {
           const left = ((s.t_start - t0) / span) * 100;
           const width = Math.max(0.6, ((s.t_end - s.t_start) / span) * 100);
@@ -124,7 +126,8 @@ export function SegmentStrip({
                 on ? "border-cosmic bg-cosmic/25 text-fg" : "border-hairline-strong bg-surface-raised text-fg-secondary hover:border-fg-muted hover:text-fg",
               )}
             >
-              {width > 3.2 ? <span aria-hidden="true">{name(s)}</span> : null}
+              {/* Label only when it fits (≈ 7 px per mono character + padding). */}
+              {(stripWidth * width) / 100 >= name(s).length * 7 + 8 ? <span aria-hidden="true">{name(s)}</span> : null}
             </button>
           );
         })}

@@ -244,13 +244,7 @@ export function DataTable<T>({
                   ))}
                 </tr>
               ))
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={colCount} className="p-4">
-                  <EmptyState size="sm" atmosphere={false} title={emptyTitle} description={emptyDescription} actions={emptyActions} className="border-none" />
-                </td>
-              </tr>
-            ) : (
+            ) : rows.length === 0 ? null : (
               <>
                 {padTop > 0 ? (
                   <tr aria-hidden="true">
@@ -314,6 +308,13 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
+      {/* Outside the scroll box, so on narrow screens the message is not pushed off to the right
+          by a wide header row. */}
+      {!loading && rows.length === 0 ? (
+        <div className="border-t border-hairline p-4">
+          <EmptyState size="sm" atmosphere={false} title={emptyTitle} description={emptyDescription} actions={emptyActions} className="border-none" />
+        </div>
+      ) : null}
     </div>
   );
 }

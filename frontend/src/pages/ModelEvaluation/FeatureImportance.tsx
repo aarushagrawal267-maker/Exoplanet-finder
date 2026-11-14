@@ -46,7 +46,7 @@ export function FeatureImportance({ evaluationId }: { evaluationId: number }) {
           const lo = Math.max(0, mean - std);
           const hi = mean + std;
           return (
-            <li key={r.feature} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_88px] items-center gap-3 text-sm">
+            <li key={r.feature} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_128px] items-center gap-3 text-sm">
               <span className="min-w-0 truncate text-fg" title={`${r.label} (${r.n_columns} column${r.n_columns === 1 ? "" : "s"})`}>
                 {r.label}
                 {r.n_columns > 1 ? <span className="num text-2xs text-fg-secondary"> · {r.n_columns} cols</span> : null}
