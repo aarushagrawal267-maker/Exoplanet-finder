@@ -30,6 +30,7 @@ from exofinder.astro.pipeline import PipelineConfig, preprocess_for_display, pro
 from exofinder.astro.types import Ephemeris, LightCurve
 from exofinder.config import PIPELINE_VERSION
 from exofinder.db.models import Signal
+from exofinder.services.jsonutil import to_jsonable
 from exofinder.services.sci_common import (
     FLUX_DIGITS,
     TIME_DIGITS,
@@ -72,8 +73,10 @@ def _segments(raw: LightCurve, flat: LightCurve) -> list[dict[str, Any]]:
     out = []
     seg_raw = raw.segment
     seg_flat = flat.segment
-    ids = sorted(int(s) for s in np.unique(seg_raw)) if seg_raw is not None else (
-        sorted(int(s) for s in np.unique(seg_flat)) if seg_flat is not None else []
+    ids = (
+        sorted(int(s) for s in np.unique(seg_raw))
+        if seg_raw is not None
+        else (sorted(int(s) for s in np.unique(seg_flat)) if seg_flat is not None else [])
     )
     for sid in ids:
         if sid < 0:
@@ -108,7 +111,9 @@ def build_payload(
 ) -> dict[str, Any]:
     """Processed, display-ready (numpy) payload for ``src``; see module docstring."""
     if detrend not in DETREND_METHODS:
-        raise bad_request(f"Unknown detrending method '{detrend}'", "invalid_parameters", "Use spline or savgol.")
+        raise bad_request(
+            f"Unknown detrending method '{detrend}'", "invalid_parameters", "Use spline or savgol."
+        )
     max_points = int(max(100, min(int(max_points), MAX_MAX_POINTS)))
     use_full = other_ephemerides is not None and ephemeris is not None
     key = (
@@ -208,6 +213,9 @@ def _compute(
 def to_response(payload: dict[str, Any]) -> dict[str, Any]:
     """Numpy payload -> JSON-ready dict with display rounding."""
     out = dict(payload)
+    for key in ("cleaning", "quality", "config", "source", "ephemeris", "segments"):
+        out[key] = to_jsonable(payload.get(key))
+    out["processing_ms"] = float(payload["processing_ms"])
     stages = {}
     for name, st in payload["stages"].items():
         stages[name] = (
@@ -271,15 +279,14 @@ def catalog_lightcurve(
     depth = None
     if signal_id is not None:
         if eph is not None:
-            raise bad_request(
-                "Give either signal_id or a manual ephemeris, not both.", "invalid_ephemeris"
-            )
+            raise bad_request("Give either signal_id or a manual ephemeris, not both.", "invalid_ephemeris")
         signal = session.get(Signal, int(signal_id))
         if signal is None:
             raise not_found(f"Signal {signal_id}", "signal_not_found")
         if signal.kepid != int(kepid):
             raise bad_request(
-                f"Signal {signal.signal_key} belongs to KIC {signal.kepid}, not KIC {kepid}.", "signal_mismatch"
+                f"Signal {signal.signal_key} belongs to KIC {signal.kepid}, not KIC {kepid}.",
+                "signal_mismatch",
             )
         try:
             eph = ephemeris_for_signal(signal)

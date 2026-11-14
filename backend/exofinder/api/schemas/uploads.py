@@ -44,7 +44,9 @@ class UploadOut(BaseModel):
     )
     suggested_time_system: str | None = None
     preview_rows: list[dict[str, Any]] = []
-    meta: dict[str, Any] = Field(default_factory=dict, description="FITS header facts (mission, time system...)")
+    meta: dict[str, Any] = Field(
+        default_factory=dict, description="FITS header facts (mission, time system...)"
+    )
     parsed: ParsedInfo | None = None
     created_at: str | None = None
 

@@ -8,12 +8,15 @@ handler renders as ``{"detail", "code", "hint"}`` with the right status code.
 from __future__ import annotations
 
 from collections.abc import Callable, Coroutine
-from typing import Any
+from typing import Annotated, Any
 
+from fastapi import Depends
 from fastapi.routing import APIRoute
+from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import Response
 
+from exofinder.api.deps import get_db
 from exofinder.api.errors import ApiError
 from exofinder.services.sci_errors import ServiceError
 
@@ -31,3 +34,7 @@ class SciRoute(APIRoute):
                 raise ApiError(exc.status_code, exc.detail, exc.code, exc.hint) from exc
 
         return wrapped
+
+
+#: Database session dependency (``Annotated`` form, usable without a default value).
+DbSession = Annotated[Session, Depends(get_db)]
