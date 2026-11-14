@@ -66,7 +66,7 @@ from exofinder.ml.dataset_arrays import DatasetArrays, save_dataset_arrays
 from exofinder.ml.features import downsample_blocks
 from exofinder.ml.splits import SPLIT_NAMES, assert_no_leakage, split_summary, star_level_split
 from exofinder.services import ops_dataset_worker
-from exofinder.services.jobs import JobSpec, ProgressRange
+from exofinder.services.jobs import JobSpec, ProgressRange, reconcile_orphans
 from exofinder.services.jsonutil import to_jsonable
 from exofinder.services.ops_common import (
     finite_or_none,
@@ -93,10 +93,11 @@ TIER_DESCRIPTIONS = {
 #: Download-size estimate: ~0.47 MB per Kepler long-cadence quarter file, up to 18 quarters (Q0-Q17).
 BYTES_PER_QUARTER = 470_000
 QUARTERS_PER_STAR = 18
-#: Rough throughput estimates for the "how long will this take?" hint (not measurements of this machine):
-#: ~0.4 stars/s per download worker, ~1.5 s CPU per signal for an 18-quarter light curve.
+#: Rough throughput figures for the "how long will this take?" hint, measured on the 4-core dev
+#: container (2026-11-14): MAST downloads ~2.4 stars/s with 6 workers (~0.4 stars/s per worker);
+#: pipeline ~1.3-1.8 s per signal for an 18-quarter light curve on one core.
 DOWNLOAD_STARS_PER_SECOND_PER_WORKER = 0.4
-PROCESS_SECONDS_PER_SIGNAL = 1.5
+PROCESS_SECONDS_PER_SIGNAL = 1.6
 
 #: Exclusion reasons produced by the build (label reasons come from exofinder.data.labels).
 BUILD_EXCLUSION_REASONS = {
@@ -378,7 +379,12 @@ def _build(
     t0 = time.perf_counter()
     with session_scope() as s:
         signals = select_signals_for_tier(
-            s, config["tier"], label_mode, seed=seed, target_size=config.get("max_signals")
+            s,
+            config["tier"],
+            label_mode,
+            seed=seed,
+            reserved_kepids=sorted(reserved),
+            target_size=config.get("max_signals"),
         )
         cands = []
         for sig in signals:
@@ -979,12 +985,14 @@ def dataset_summary(ds: Dataset, n_models: int = 0) -> dict[str, Any]:
 
 
 def list_datasets(session: Session) -> list[dict[str, Any]]:
+    reconcile_orphans(session)
     counts = model_counts(session)
     rows = session.scalars(select(Dataset).order_by(Dataset.created_at.desc(), Dataset.id.desc()))
     return [dataset_summary(ds, counts.get(ds.id, 0)) for ds in rows]
 
 
 def dataset_detail(session: Session, dataset_id: int) -> dict[str, Any]:
+    reconcile_orphans(session)
     ds = get_dataset(session, dataset_id)
     out = dataset_summary(ds, model_counts(session).get(ds.id, 0))
     out["stats"] = ds.stats if ds.status == "ready" else None

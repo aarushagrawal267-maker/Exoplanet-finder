@@ -20,8 +20,11 @@ three splits close to that of the whole dataset.
 Forced test stars
 -----------------
 Famous showcase systems (e.g. Kepler-90) are forced into the test split so that demonstrations in
-the UI are made on genuinely unseen stars. Forced stars count towards the test quota of their
-stratum.
+the UI are made on genuinely unseen stars. Forced stars are added **on top of** a normal split:
+the fractions are applied to the free (non-forced) stars only, so the test split still contains a
+representative random sample of ordinary stars. (If forced stars counted towards the test quota,
+a small dataset's test positives could come almost entirely from a few famous multi-planet systems.)
+The test split is therefore slightly larger than ``fractions[2]``.
 
 Determinism
 -----------
@@ -122,14 +125,14 @@ def star_level_split(
         members = [int(s) for s in stars if star_label[int(s)] == stratum]
         if not members:
             continue
-        total = sum(size_of[s] for s in members)
-        forced_examples = sum(size_of[s] for s in members if s in forced)
         free = np.array([s for s in members if s not in forced], dtype=np.int64)
         if free.size == 0:
             continue
+        # Quotas are computed over the free stars only: forced test stars come on top.
+        total = sum(size_of[int(s)] for s in free)
         rng = np.random.default_rng(np.random.SeedSequence([int(seed), stratum]))
         order = free[rng.permutation(free.size)]
-        test_quota = max(0.0, f_test * total - forced_examples)
+        test_quota = f_test * total
         val_quota = f_val * total
         cum = 0.0
         chosen: dict[str, list[int]] = {"train": [], "val": [], "test": []}
@@ -145,8 +148,8 @@ def star_level_split(
             cum += size_of[s]
         # Guarantee non-empty val/test per stratum for small datasets (taken from train).
         if order.size >= 3:
-            for split, frac, already in (("val", f_val, 0), ("test", f_test, forced_examples)):
-                if frac > 0 and not chosen[split] and already == 0 and len(chosen["train"]) > 1:
+            for split, frac in (("val", f_val), ("test", f_test)):
+                if frac > 0 and not chosen[split] and len(chosen["train"]) > 1:
                     chosen[split].append(chosen["train"].pop(0))
         for split, ss in chosen.items():
             for s in ss:

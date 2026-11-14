@@ -68,12 +68,16 @@ downloaded data and compares it with simpler baselines.
 3. **Preprocessing.** Every signal passes through one versioned pipeline: quality-flag filtering,
    per-quarter normalisation, robust spline detrending **with in-transit cadences masked**,
    upward-only outlier clipping, phase folding, and global/local view generation.
-4. **Quality gates.** Signals with fewer than two observed transits, sparse views, misalignment or
-   NaNs are excluded, and every exclusion is counted by reason.
+4. **Quality gates.** Signals that cannot be represented reliably are excluded: fewer than two
+   observed transits, a period longer than half the observing baseline, a sparse local view, or
+   NaNs in the views. Every exclusion is counted by reason. Softer problems (misalignment, depth
+   mismatch, no clear dip) only lower the quality grade, because many genuine false positives look
+   exactly like that, and removing them would hide the cases a classifier must learn to reject.
 5. **Leakage control.** Train/validation/test splits are made **by star** (all signals of a star go
    to the same split), stratified by class and fixed at dataset creation. Catalogue-derived scores
    (e.g. `koi_score`) are never used as features. Famous systems (e.g. Kepler-90) are reserved for
-   the test set so demonstrations are genuinely unseen.
+   the test set so demonstrations are genuinely unseen. They are added *on top of* an ordinary
+   random 10 % test split of the remaining stars, so the test set stays representative.
 6. **Models.** Logistic regression and random forest (on light-curve-derived features and
    downsampled views), a single-view CNN (global view only) and a two-view CNN (AstroNet-style),
    all trained on identical splits.

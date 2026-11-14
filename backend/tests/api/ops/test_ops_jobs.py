@@ -199,3 +199,56 @@ def test_cancel_training_and_suite(ops_client):
     assert [e["model_type"] for e in exps] == ["logreg", "random_forest"]
     assert exps[0]["name"] == "TEST suite - Logistic regression" and all(e["model_version_id"] for e in exps)
     assert sum(m["is_active"] for m in c.get("/api/models").json()) == 1
+
+
+def test_orphaned_rows_are_reconciled(ops_client):
+    """A dataset/experiment whose job died with the server is shown as failed, not 'building' forever."""
+    c = ops_client
+    from exofinder.db.models import Dataset, Experiment, Job
+    from exofinder.db.session import session_scope
+
+    with session_scope() as s:
+        s.add(
+            Job(
+                id="deadjob",
+                kind="build_dataset",
+                title="TEST",
+                status="failed",
+                error="Interrupted: TEST",
+                params={},
+            )
+        )
+        ds = Dataset(
+            name="TEST orphan",
+            label_mode="astronet_dr24",
+            tier="pilot",
+            status="building",
+            pipeline_version="1.0",
+            job_id="deadjob",
+        )
+        s.add(ds)
+        s.flush()
+        s.add(
+            Experiment(
+                name="TEST orphan exp",
+                model_type="logreg",
+                dataset_id=ds.id,
+                status="running",
+                job_id="deadjob",
+            )
+        )
+        s.add(
+            Experiment(
+                name="TEST waiting exp", model_type="logreg", dataset_id=ds.id, status="queued", job_id=None
+            )
+        )
+    listed = {d["name"]: d for d in c.get("/api/datasets").json()}
+    assert (
+        listed["TEST orphan"]["status"] == "failed" and listed["TEST orphan"]["error"] == "Interrupted: TEST"
+    )
+    exps = {e["name"]: e for e in c.get("/api/experiments").json()}
+    assert (
+        exps["TEST orphan exp"]["status"] == "failed"
+        and exps["TEST orphan exp"]["error"] == "Interrupted: TEST"
+    )
+    assert exps["TEST waiting exp"]["status"] == "queued"  # no job linked yet: left alone

@@ -211,3 +211,32 @@ def cancel_job(session: Session, job_id: str) -> Job:
         )
     session.refresh(job)
     return job
+
+
+def reconcile_orphans(session: Session) -> int:
+    """Fix datasets/experiments whose job ended without updating them (e.g. the server stopped).
+
+    At start-up the runner marks unfinished jobs as failed (``mark_interrupted_jobs``); the dataset
+    still says ``building`` and the experiment ``queued``/``running``. Any such row whose job is no
+    longer queued/running is marked ``failed`` (or ``cancelled``) with the job's error. Rows whose job
+    is still active (here or in a CLI process) are left alone. Returns the number of rows fixed.
+    """
+    from exofinder.db.models import Dataset, Experiment
+
+    fixed = 0
+    rows: list[Any] = list(session.scalars(select(Dataset).where(Dataset.status == "building")))
+    rows += list(session.scalars(select(Experiment).where(Experiment.status.in_(ACTIVE_STATUSES))))
+    for row in rows:
+        job = session.get(Job, row.job_id) if row.job_id else None
+        if job is None or job.status in ACTIVE_STATUSES:
+            continue
+        status = "cancelled" if job.status == "cancelled" else "failed"
+        error = job.error or f"The {job.kind} job ended ({job.status}) before this finished"
+        if isinstance(row, Dataset):
+            row.status, row.stats = status, {"error": error}
+        else:
+            row.status, row.error, row.finished_at = status, error, job.finished_at or utcnow()
+        fixed += 1
+    if fixed:
+        session.commit()
+    return fixed

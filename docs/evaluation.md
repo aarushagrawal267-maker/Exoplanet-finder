@@ -14,7 +14,9 @@ How Exoplanet Finder measures model quality, and how to read the numbers.
    model was evaluated on test. If you keep changing a model after looking at test results, the test
    set slowly turns into a validation set.
 4. Reserved showcase systems (Kepler-90, Kepler-80, Kepler-11, Kepler-186, Kepler-452) are always
-   placed in the test split, so demonstrations on them are genuinely unseen.
+   placed in the test split, so demonstrations on them are genuinely unseen. They come *in addition
+   to* the ordinary 10 % random test sample of the other stars, so the test split is slightly larger
+   than 10 % and is not dominated by these multi-planet systems.
 
 ## Metrics
 All metrics treat **planet-like (class 1)** as the positive class.

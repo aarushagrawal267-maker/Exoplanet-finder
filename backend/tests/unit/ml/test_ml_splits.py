@@ -99,3 +99,26 @@ def test_invalid_inputs() -> None:
     with pytest.raises(ValueError):
         star_level_split([1, 2], [0, 2])
     assert star_level_split([], []).size == 0
+
+
+def test_forced_test_stars_do_not_consume_the_test_quota():
+    """Regression: forced (showcase) stars must be added on top of a normal split, otherwise the test
+    positives of a small dataset come almost entirely from the forced multi-planet systems."""
+    rng = np.random.default_rng(0)
+    # 150 ordinary stars with one signal each (half planet-like) + 4 forced stars with 6 planets each.
+    kepids = list(range(1000, 1150))
+    labels = [int(x) for x in rng.integers(0, 2, size=150)]
+    forced = [1, 2, 3, 4]
+    for k in forced:
+        kepids += [k] * 6
+        labels += [1] * 6
+    splits = star_level_split(kepids, labels, seed=42, forced_test=forced)
+    kep = np.asarray(kepids)
+    lab = np.asarray(labels)
+    free = ~np.isin(kep, forced)
+    assert (splits[~free] == "test").all()
+    free_test = (splits == "test") & free
+    # the free stars alone are split ~80/10/10
+    assert 0.07 <= free_test.sum() / free.sum() <= 0.13
+    # ordinary planet-like stars still reach the test split
+    assert (free_test & (lab == 1)).sum() >= 5

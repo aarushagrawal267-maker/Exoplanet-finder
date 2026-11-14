@@ -350,10 +350,13 @@ def run_training(
         )
         members = int(rec.get("n_members") or cfg.ensemble_size or 1)
         member_txt = f" member {member + 1}/{members}" if members > 1 else ""
+        if model_type in ("logreg", "random_forest"):
+            step = "fitted"
+        else:
+            step = f"epoch {rec.get('epoch')}/{rec.get('max_epochs') or cfg.max_epochs}"
         prange(
             float(rec.get("progress") or 0.0),
-            f"{tag}{member_txt}: epoch {rec.get('epoch')}/{rec.get('max_epochs') or cfg.max_epochs}, "
-            f"val PR-AUC {_fmt(rec.get('val_pr_auc'))}",
+            f"{tag}{member_txt}: {step}, val PR-AUC {_fmt(rec.get('val_pr_auc'))}",
         )
 
     ctx.log(
