@@ -117,7 +117,9 @@ function ExperimentCurves({ id, live, running }: { id: number; live: LiveState |
       ) : points.length ? (
         <>
           <TrainingCurves history={points} bestEpoch={best} maxEpochs={maxEpochs ? maxEpochs * members : undefined} />
-          <EpochChart series={[{ id: String(id), label: e.name, modelType: e.model_type, points }]} metric="val_roc_auc" height={180} />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <EpochChart series={[{ id: String(id), label: e.name, modelType: e.model_type, points }]} metric="val_roc_auc" height={180} />
+          </div>
           {members > 1 ? <p className="text-xs text-fg-secondary">Ensemble of {members} members: their epochs are numbered one after the other.</p> : null}
         </>
       ) : (

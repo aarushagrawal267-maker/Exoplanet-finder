@@ -318,7 +318,9 @@ export function ExperimentDetail({ id, onClose, onDeleted }: ExperimentDetailPro
           ) : (
             <div className="flex flex-col gap-5">
               <TrainingCurves history={exp.epochs} bestEpoch={exp.best_epoch} maxEpochs={maxEpochs} />
-              <EpochChart series={[{ id: String(exp.id), label: exp.name, modelType: exp.model_type, points: exp.epochs }]} metric="val_roc_auc" height={180} />
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <EpochChart series={[{ id: String(exp.id), label: exp.name, modelType: exp.model_type, points: exp.epochs }]} metric="val_roc_auc" height={180} />
+              </div>
             </div>
           )
         ) : (
