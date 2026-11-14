@@ -26,3 +26,8 @@ filterwarnings = ["ignore::UserWarning:lightkurve.*"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+# Long lines are left to the formatter; SIM300 misfires on set-inclusion asserts.
+ignore = ["E501", "SIM300"]

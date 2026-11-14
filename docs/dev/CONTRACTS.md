@@ -38,6 +38,41 @@ only; `astro` imports nothing from `data`, `ml`, `services` or `api`. No package
 | `inject.py` | `inject_transit(lc, period, epoch, duration_hours, depth_ppm) -> LightCurve` trapezoid injection; sets `meta["synthetic"]=True`. Used by tests and the injection–recovery tool only. |
 | `errors.py` | `LightCurveFormatError(ValueError)`, `InsufficientDataError(ValueError)`. |
 
+Implementation notes for `exofinder.astro` (backwards-compatible additions; see module docstrings):
+* Conventions: time float64 days (BKJD for Kepler); epoch = transit centre; duration = total T14;
+  phase in days in `[-P/2, P/2)` (only `secondary_eclipse()["phase"]` is an orbital-phase fraction,
+  0.5 = half an orbit; `offset_days` gives it in days). Undefined diagnostic values are `None`.
+* FITS readers drop only rows with non-finite TIME (`meta["n_dropped_nan_time"]`); NaN fluxes and
+  flagged cadences are kept for `clean()`. TESS light curves use the TESS quality bitmasks.
+* Transit mask: `|phase| < width_factor·T14/2` (default 1.5 → a window 1.5×T14 wide).
+* Local view: ±2·T14 (`num_durations` is the total width), 201 overlapping bins 0.16·T14 wide
+  (AstroNet bin width); global view: 2001 contiguous bins of width P/2001.
+* Depth convention (diagnostics, quality, features): local baseline (median of `T14 ≤ |phase| < 3·T14`)
+  minus the mean flux of the transit core `|phase| < T14/4`.
+* Extra keyword arguments: `run_bls(..., bin_minutes=30, max_periods=40000, objective, n_threads)`
+  (`periods`/`power` are float64 numpy arrays; extra keys such as `depth_err_ppm`, `sde`,
+  `n_transits_expected`, `n_periods_searched`, `top_peaks`); `bls.bls_ephemeris(result)` →
+  `Ephemeris(source="measured", label="BLS")`; `fit_trapezoid(..., exposure_days=None)` (failed fit →
+  `converged=False`, values `None`); `assess_quality(..., diagnostics=None)` and
+  `physical_features(..., diagnostics=None)` reuse `diagnostics.compute_diagnostics(flat, eph, ...)`;
+  `process_lightcurve(..., other_ephemerides=())` also masks other known planets from the trend fit;
+  `preprocess_for_display(raw, ephemeris=None, config=None)` returns
+  `{flat, trend, stages, reports, pipeline_version, config}`; `inject_transit(..., ingress_fraction=0.1,
+  exposure_days=None)`; `PipelineConfig.from_dict()`.
+* `ProcessedSignal.stages` always holds `reports` and `diagnostics` (JSON-safe dicts); the display
+  arrays (`raw`, `normalized`, `trend`, `flat` as `{time, flux, n_original}` and `folded` as
+  `{phase, flux, n_original}`) are added only when `keep_stages=True`.
+* Quality grades: A = no issue; B = only `low_transit_coverage`/`global_view_sparse`; C = any of
+  `misaligned`, `depth_mismatch`, `no_transit_signal`; D = any blocking issue.
+* `features.FEATURE_NAMES` is a tuple of the 15 names above. Because `ml` may only import `astro.types`,
+  ML code should take feature names from the dataset manifest.
+* Input errors (map to user messages): FITS readers also accept gzip (`*.fits.gz`) and raise
+  `LightCurveFormatError` for truncated/corrupt files; the CSV reader accepts UTF-16 (BOM) and 8-bit
+  encodings and refuses BKJD/BTJD values > 20,000 d (MJD-like); `process_lightcurve` and
+  `preprocess_for_display` raise `InsufficientDataError` for constant flux; `PipelineConfig(...)` /
+  `from_dict()` raise `ValueError` for invalid values; `run_bls` raises `ValueError` for
+  `oversample <= 0`, `max_periods < 1` or a non-finite `max_period`.
+
 ## 2. `exofinder.data` — NASA data acquisition and catalogue ingestion
 
 | Module | Public API |
@@ -49,6 +84,22 @@ only; `astro` imports nothing from `data`, `ml`, `services` or `api`. No package
 | `lightcurve_store.py` | Compact stitched cache `data/lightcurves/<kic9>.npz` (time float64, flux float32 normalised per quarter, flux_err float32, quarter int8, quality int32 of kept cadences, meta json). `save_lightcurve(kepid, lc)`, `load_lightcurve(kepid) -> LightCurve | None`, `has_lightcurve(kepid)`, `build_from_fits(kepid, fits_paths) -> LightCurve` (reads each quarter, keeps raw PDCSAP + quality so cleaning can be redone; stores **un-cleaned** flux with quality flags so the pipeline remains the single source of truth for filtering). |
 | `acquire.py` | `ensure_lightcurve(session, kepid, cancel=None) -> LightCurve` (download if missing → build cache → optionally delete raw FITS per settings → update `Target.lc_*`). `download_many(kepids, workers, progress, cancel)` thread-pooled. |
 | `tiers.py` | `select_signals_for_tier(session, tier, label_mode, seed, reserved_kepids) -> list[Signal]`: pilot ≈300 signals / standard ≈3000 / full = all labelled, class-balanced where possible, choosing **whole stars**; always includes `RESERVED_SHOWCASE_KEPIDS` (Kepler-90 = 11442793, Kepler-80 = 4852528, Kepler-11 = 6541920, Kepler-186 = 8120608, Kepler-452 = 8311864; verify ids against the catalogue) — those are forced into test split. |
+
+Implementation notes for `exofinder.data` (backwards-compatible additions; see module docstrings):
+* Showcase KIC ids and `KEPLER_LC_QUARTER_STAMPS` were verified live on 2026-11-14 (Q4 has two
+  stamps: `2010078095331`, and `2010009091648` for CCD-module-3 stars such as Kepler-90).
+* TCE↔KOI linking: if the `koi_tce_plnt_num` TCE fails verification, any other unlinked DR24 TCE on
+  the star that passes the same period/epoch test is accepted (`provenance.match.method="ephemeris"`).
+  Epoch tolerance uses the longer of the two durations.
+* Categories: Autovetter PC with no KOI → `candidate`. Rows that vanish from a later refresh are
+  deleted, or — if referenced by datasets/predictions — kept with `category="retired"`,
+  `match_status="stale"` and never labelled. `label_conflict` also counts the confirmed-planet table
+  as CONFIRMED. Non-transiting confirmed planets (`tran_flag=0`) never create `PL-` rows.
+* `ensure_lightcurve` raises `LightCurveUnavailableError` (`.status` = `no_data` | `error`) or
+  `AcquisitionCancelled`; it commits the caller's session at status transitions. `download_many`
+  accepts an optional `session=` and returns `{total, available, no_data, error, cancelled, cached, results}`.
+* `fetch_snapshot` / `refresh_catalog` take optional keyword `client=` (an `ArchiveClient`) and
+  `session=`; `catalog.catalog_summary(session)` returns category/match-status/label counts.
 
 ## 3. `exofinder.ml` — machine learning
 
@@ -69,6 +120,41 @@ Arrays: `global` (N, 2001) float32, `local` (N, 201) float32, `features` (N, F) 
 | `metrics.py` | `classification_metrics(y, p, threshold) -> dict` (accuracy, precision, recall, sensitivity, specificity, f1, roc_auc, pr_auc, brier, ece, n, n_pos, n_neg, tp, fp, tn, fn, threshold); `roc_curve_points`, `pr_curve_points` (downsampled ≤ 200 points); `best_f1_threshold(y, p)`; `bootstrap_ci(y, p, threshold, n_boot=1000, seed=0) -> {metric: [lo, hi]}`. Handles single-class edge cases (NaN → None). |
 | `calibration.py` | `fit_temperature(logits, y) -> float` (LBFGS on NLL, clamp [0.05, 20]); `apply_temperature(logits, T)`; `reliability_curve(y, p, n_bins=10) -> list[{bin_lo, bin_hi, mean_pred, frac_pos, count}]`; `expected_calibration_error`. |
 | `evaluate.py` | `evaluate(predictor, arrays, split="test", threshold=None) -> EvaluationResult{metrics, ci, curves{roc, pr, calibration}, confusion, timing{ms_per_sample_batch1, ms_per_sample_batch64, device}, per_example (signal_id, label, prob)}`. |
+
+Implementation notes for `exofinder.ml` (backwards-compatible additions; see module docstrings):
+* Model types: `logreg`, `random_forest`, `cnn_single`, `cnn_two_view` (`exofinder.ml.MODEL_TYPES`).
+  `model_cards.get_model_card(type)` / `list_model_cards()` give `{type, name, description, inputs,
+  strengths, limitations, architecture, uncertainty, training, default_config, n_params, reference}`.
+* `DatasetArrays` fields are `global_view`, `local_view`, `features`, `labels`, `signal_ids`, `kepids`,
+  `splits`, `feature_names`, `meta` (npz keys stay `global`/`local`/...). `meta` should carry
+  `pipeline_version` and `dataset_id`; `train()` refuses a dataset whose `pipeline_version` differs
+  from the running one. `splits.split_summary()` gives per-split counts.
+* `TrainConfig` adds `min_delta`, `fc_layers`, and baseline grids (`logreg_c_grid`, `rf_n_estimators`,
+  `rf_max_depth_grid`, `rf_min_samples_leaf_grid`, `rf_max_features_grid`, `cv_folds`);
+  `to_dict()/from_dict()`. `num_threads=None` = all cores (restored after training).
+  `TrainResult` adds `val_metrics_at_0_5`, `member_best_epochs`, `member_epochs_run`, `meta`;
+  `n_params` is the total over ensemble members. `on_epoch` records match `EpochMetric` columns plus
+  `member`, `best_epoch`, `improved`, `progress`. Early stopping: PR-AUC ties broken by val loss.
+  Baseline CV uses `StratifiedGroupKFold` (groups = kepid). Errors: `TrainingCancelled`,
+  `TrainingDiverged`. `estimate_epoch_seconds(config, arrays)` times real training steps.
+* Bundle layout: `meta.json`, `history.json`, `member_XX/{best,last}.pt` or `model.joblib`; weight
+  sha256s are verified on load (`BundleError`). Ensemble logit = mean member logit.
+* Calibration (all model types): calibrated `prob = sigmoid((z - logit_offset) / T)` where
+  `logit_offset = log(n_neg / n_pos)` of the training split undoes the class weighting
+  (`pos_weight` / `class_weight="balanced"`), and `T` is fitted on val on the corrected logits.
+  `meta.json` and `TrainResult` carry `logit_offset` (absent in older bundles = 0);
+  `calibration.apply_temperature(logits, T, offset=0.0)`, `prior_logit_offset(n_pos, n_neg)`.
+  `fit_temperature` returns 1.0 when the val logits separate the classes by sign (T not identified).
+* `train()` refuses physical-feature names that look catalogue-derived (`score`, `disposition`,
+  `fpflag`, `av_training`, `av_pred`, `label`, `category`; `features.assert_no_catalogue_features`).
+  `DatasetArrays` rejects unknown split names and duplicate `signal_ids`.
+* `Predictor.predict(global, local, features, *, with_uncertainty=True, pipeline_version=None,
+  batch_size=256)`; `PredictionOutput` adds `threshold`, `uncertainty_method`, `inference_ms`,
+  `.predicted_label`. An empty batch returns empty arrays. MC-dropout uses 20 fixed masks from a
+  private seeded generator shared by all examples (batch-independent, thread-safe; a `Predictor`
+  may be shared between threads).
+* `evaluate()` also takes `n_boot, seed, with_uncertainty, bootstrap_by_star=True, timing`; CIs
+  resample whole stars; result adds `metrics_at_0_5`, `ci_method`, `to_dict()` (strict JSON).
 
 ## 4. Services, jobs and API
 
