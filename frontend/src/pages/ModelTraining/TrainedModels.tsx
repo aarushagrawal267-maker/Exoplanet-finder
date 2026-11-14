@@ -65,6 +65,7 @@ function DeleteModelDialog({ model, onClose, onDeleted }: { model: ModelVersionO
 export function TrainedModels() {
   const models = useModels(true);
   const activate = useActivateModel();
+  const { mutate: activateModel, isPending: activating, variables: activatingId } = activate;
   const [deleting, setDeleting] = useState<ModelVersionOut | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -147,8 +148,8 @@ export function TrainedModels() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => activate.mutate(m.id, { onSuccess: () => setNotice(`“${m.name}” is now the active model.`) })}
-                  loading={activate.isPending && activate.variables === m.id}
+                  onClick={() => activateModel(m.id, { onSuccess: () => setNotice(`“${m.name}” is now the active model.`) })}
+                  loading={activating && activatingId === m.id}
                   aria-label={`Make ${m.name} the active model`}
                 >
                   Activate
@@ -163,7 +164,7 @@ export function TrainedModels() {
         },
       },
     ],
-    [activate],
+    [activateModel, activating, activatingId],
   );
 
   const list = models.data ?? [];

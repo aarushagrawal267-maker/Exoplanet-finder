@@ -132,7 +132,7 @@ function DocReader({ slug, pages }: { slug: string; pages: DocPageSummary[] }) {
           {doc.data ? (
             <nav aria-label="Previous and next page" className="mt-12 grid grid-cols-1 gap-3 border-t border-hairline pt-6 sm:grid-cols-2">
               {prev ? (
-                <Link to={`/docs/${prev.slug}`} className="card-surface flex flex-col p-4 hover:border-hairline-strong">
+                <Link to={`/docs/${prev.slug}`} aria-label={`Previous: ${prev.title}`} className="card-surface flex flex-col p-4 hover:border-hairline-strong">
                   <span className="eyebrow text-fg-secondary">Previous</span>
                   <span className="mt-1 text-sm text-fg">← {prev.title}</span>
                 </Link>
@@ -140,7 +140,7 @@ function DocReader({ slug, pages }: { slug: string; pages: DocPageSummary[] }) {
                 <span />
               )}
               {next ? (
-                <Link to={`/docs/${next.slug}`} className="card-surface flex flex-col p-4 text-right hover:border-hairline-strong">
+                <Link to={`/docs/${next.slug}`} aria-label={`Next: ${next.title}`} className="card-surface flex flex-col p-4 text-right hover:border-hairline-strong">
                   <span className="eyebrow text-fg-secondary">Next</span>
                   <span className="mt-1 text-sm text-fg">{next.title} →</span>
                 </Link>

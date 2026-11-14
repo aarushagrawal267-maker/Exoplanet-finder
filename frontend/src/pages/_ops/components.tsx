@@ -98,7 +98,7 @@ export function MetricTile({ metric, value, ci, emphasis, className }: MetricTil
         {info?.lowerIsBetter ? <span className="text-2xs text-fg-secondary">lower is better</span> : null}
       </div>
       <span className={cn("num font-medium leading-none tracking-tight text-fg", emphasis ? "text-xl" : "text-lg")}>{fmtMetric(value)}</span>
-      <span className="num text-xs text-fg-secondary">{ci ? <>95% CI {fmtCi(ci)}</> : "no interval"}</span>
+      {ci !== undefined ? <span className="num text-xs text-fg-secondary">{ci ? <>95% CI {fmtCi(ci)}</> : "no interval"}</span> : null}
     </div>
   );
 }

@@ -12,7 +12,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] }
   },
   "include": ["vite.config.ts", "tailwind.config.ts", "playwright.config.ts", "postcss.config.js", "e2e/**/*.ts", "src/styles/tokens.ts"]
 }
