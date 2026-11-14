@@ -199,7 +199,9 @@ def cancel_job(session: Session, job_id: str) -> Job:
     """Request cooperative cancellation of a queued/running job (409 if it already finished)."""
     job = get_job(session, job_id)
     if job.status not in ACTIVE_STATUSES:
-        raise conflict(f"Job is already {job.status}", "job_not_active", "Only queued or running jobs can be cancelled.")
+        raise conflict(
+            f"Job is already {job.status}", "job_not_active", "Only queued or running jobs can be cancelled."
+        )
     if not get_runner().cancel(job_id):
         # The row says active but this process does not run it (e.g. run by the CLI in another process).
         raise conflict(
