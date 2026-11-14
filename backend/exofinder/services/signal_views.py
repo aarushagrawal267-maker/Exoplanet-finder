@@ -9,8 +9,10 @@ cache is invalidated when the star's light-curve cache changes (its SHA-256 is p
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
+import logging
 import math
 import os
 import tempfile
@@ -26,8 +28,11 @@ from exofinder.astro.features import FEATURE_NAMES
 from exofinder.astro.pipeline import PipelineConfig, process_lightcurve
 from exofinder.astro.types import Ephemeris, LightCurve
 from exofinder.config import PIPELINE_VERSION, get_settings
+from exofinder.data._util import replace_with_retry
 from exofinder.data.lightcurve_store import cache_digest, load_lightcurve
 from exofinder.db.models import Signal
+
+log = logging.getLogger("exofinder.services.signal_views")
 
 CACHE_FORMAT = 1
 
@@ -164,10 +169,16 @@ def _save_cached(path: Path, sv: SignalViews) -> None:
             features=sv.features,
             meta=np.array(json.dumps(meta, default=_json_default)),
         )
-        os.replace(tmp, path)
+        # On Windows the replace fails (sharing violation) while another thread or a dataset-build
+        # worker is reading the current entry with np.load. The cache is only an optimisation: retry
+        # briefly, then keep the freshly computed views and leave the existing entry in place.
+        replace_with_retry(tmp, path)
+    except PermissionError as exc:
+        log.warning("view cache %s is in use; not updated (%s)", path, exc)
     finally:
         if os.path.exists(tmp):
-            os.unlink(tmp)
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)
 
 
 def _json_default(o: Any) -> Any:

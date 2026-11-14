@@ -3102,6 +3102,18 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "include_seen",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include signals whose star was in a scoring model's training/validation split (hidden by default: ranking a model's own training examples is circular)",
+              "default": false,
+              "title": "Include Seen"
+            },
+            "description": "Include signals whose star was in a scoring model's training/validation split (hidden by default: ranking a model's own training examples is circular)"
           }
         ],
         "responses": {
@@ -5104,6 +5116,17 @@
           "offset": {
             "type": "integer",
             "title": "Offset"
+          },
+          "include_seen": {
+            "type": "boolean",
+            "title": "Include Seen",
+            "default": false
+          },
+          "n_hidden_seen": {
+            "type": "integer",
+            "title": "N Hidden Seen",
+            "description": "Signals hidden because their star was in a model's train/val split",
+            "default": 0
           },
           "items": {
             "items": {

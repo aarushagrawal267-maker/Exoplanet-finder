@@ -224,3 +224,23 @@ def test_download_idempotent_and_job(client, sci_catalog, monkeypatch: pytest.Mo
     done = wait_job(job["id"])
     assert done["status"] == "failed" and "[no_data]" in done["error"]
     assert client.post("/api/targets/42/download").status_code == 404
+
+
+def test_catalogue_refresh_is_refused_while_a_dataset_is_being_built(client, db):
+    """A refresh replaces/retires catalogue rows; it must not run while a (CLI or API) build reads them."""
+    from exofinder.db.models import Job, utcnow
+
+    db.add(
+        Job(
+            id="build1",
+            kind="build_dataset",
+            title="Build dataset 'X'",
+            status="running",
+            params={},
+            heartbeat_at=utcnow(),
+            owner="cli:test:1",
+        )
+    )
+    db.commit()
+    r = client.post("/api/catalog/refresh")
+    assert r.status_code == 409 and r.json()["code"] == "dataset_building"

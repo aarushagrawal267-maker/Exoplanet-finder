@@ -29,6 +29,7 @@ import json
 import logging
 import multiprocessing
 import os
+import sys
 import time
 from collections import Counter, defaultdict
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
@@ -123,12 +124,21 @@ def reason_label(code: str | None) -> str | None:
     return EXCLUSION_REASONS.get(code) or BUILD_EXCLUSION_REASONS.get(code) or code
 
 
+#: :class:`ProcessPoolExecutor` refuses more than 61 workers on Windows ("max_workers must be <= 61").
+WINDOWS_MAX_WORKERS = 61
+
+
+def cap_workers(n: int) -> int:
+    """``n`` limited to what the process pool accepts on this platform."""
+    return min(n, WINDOWS_MAX_WORKERS) if sys.platform == "win32" else n
+
+
 def default_build_workers() -> int:
     """Worker processes for signal processing: ``EXOF_BUILD_WORKERS`` or ``max(1, cpu_count - 1)``."""
     env = os.environ.get("EXOF_BUILD_WORKERS", "").strip()
     if env.isdigit() and int(env) >= 1:
-        return int(env)
-    return max(1, (os.cpu_count() or 2) - 1)
+        return cap_workers(int(env))
+    return cap_workers(max(1, (os.cpu_count() or 2) - 1))
 
 
 # --------------------------------------------------------------------------------------------------
@@ -467,7 +477,7 @@ def _build(
     t0 = time.perf_counter()
     pipeline_cfg = dict(config.get("pipeline") or {})
     to_process = [c for c in cands if c.process and has_lightcurve(c.kepid)]
-    n_workers = max(1, int(workers or default_build_workers()))
+    n_workers = cap_workers(max(1, int(workers or default_build_workers())))
     proc_progress = ProgressRange(ctx, process_lo, 0.93)
     results, processing = process_signals(
         ctx, [c.signal_id for c in to_process], pipeline_cfg, n_workers, proc_progress

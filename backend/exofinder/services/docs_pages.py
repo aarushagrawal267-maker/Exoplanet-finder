@@ -28,6 +28,11 @@ def _docs_dir() -> Path:
     return DOCS_DIR
 
 
+def _excluded(stem: str) -> bool:
+    # Case-insensitive: on Windows (and macOS) "dev_progress" opens DEV_PROGRESS.md.
+    return stem.upper() in {e.upper() for e in EXCLUDED}
+
+
 def _title(text: str, slug: str) -> str:
     for line in text.splitlines():
         m = re.match(r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$", line)
@@ -40,7 +45,7 @@ def _pages() -> list[Path]:
     d = _docs_dir()
     if not d.is_dir():
         return []
-    files = [p for p in d.glob("*.md") if p.is_file() and p.stem not in EXCLUDED and _SLUG_RE.match(p.stem)]
+    files = [p for p in d.glob("*.md") if p.is_file() and not _excluded(p.stem) and _SLUG_RE.match(p.stem)]
     rank = {s: i for i, s in enumerate(ORDER)}
     return sorted(files, key=lambda p: (rank.get(p.stem, len(ORDER)), p.stem.lower()))
 
@@ -62,7 +67,7 @@ def list_pages() -> list[dict[str, Any]]:
 
 
 def get_page(slug: str) -> dict[str, Any]:
-    if not isinstance(slug, str) or not _SLUG_RE.match(slug) or slug in EXCLUDED:
+    if not isinstance(slug, str) or not _SLUG_RE.match(slug) or _excluded(slug):
         raise not_found(f"Documentation page '{slug}'", "doc_not_found")
     d = _docs_dir().resolve()
     path = (d / f"{slug}.md").resolve()

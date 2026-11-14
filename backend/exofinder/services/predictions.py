@@ -18,7 +18,10 @@ Each model is loaded once into a thread-safe LRU of :class:`exofinder.ml.inferen
 objects (keyed by model id + checkpoint ``meta.json`` mtime). Calibrated probabilities come from
 the bundle itself (temperature *and* ``logit_offset`` live in its meta; nothing is recomputed
 here). The decision threshold is the model's validation-F1 threshold, or 0.5 when the setting
-``default_threshold_mode`` is ``fixed_0.5``.
+``default_threshold_mode`` is ``fixed_0.5``. Inputs are processed with the preprocessing
+configuration of the model's training dataset (e.g. its detrending method), so a model never scores
+views made differently from its training examples; models trained with different configurations
+cannot share one request.
 
 Every result records ``seen_in_split``: whether the star is in the model's dataset and in which
 split (splits are by star), so a score on a training star is never mistaken for an unbiased test.
@@ -43,10 +46,11 @@ from sqlalchemy.orm import Session
 from exofinder.astro.errors import InsufficientDataError
 from exofinder.astro.features import FEATURE_NAMES
 from exofinder.astro.pipeline import PipelineConfig, process_lightcurve
+from exofinder.astro.quality import BLOCKING_ISSUES
 from exofinder.astro.types import Ephemeris
 from exofinder.config import PIPELINE_VERSION, REPO_ROOT, get_settings
 from exofinder.data.lightcurve_store import has_lightcurve
-from exofinder.db.models import DatasetExample, ModelVersion, Prediction, Signal, Target
+from exofinder.db.models import Dataset, DatasetExample, ModelVersion, Prediction, Signal, Target
 from exofinder.jobs.runner import JobContext, get_runner
 from exofinder.services import app_settings
 from exofinder.services.catalog import signal_dict
@@ -58,7 +62,7 @@ from exofinder.services.sci_common import (
     make_ephemeris,
     to_list,
 )
-from exofinder.services.sci_errors import bad_request, conflict, not_found
+from exofinder.services.sci_errors import ServiceError, bad_request, conflict, not_found
 from exofinder.services.sci_sources import SourceData, load_catalog_source, load_source
 from exofinder.services.signal_views import (
     SignalEphemerisError,
@@ -173,6 +177,46 @@ def threshold_for(session: Session, predictor: Any) -> tuple[float, str]:
     if mode == "fixed_0.5":
         return 0.5, "fixed_0.5"
     return float(predictor.threshold), "validation_f1"
+
+
+def pipeline_config_for(session: Session, mv: ModelVersion) -> PipelineConfig:
+    """Preprocessing configuration of the model's training dataset.
+
+    Inputs must be processed exactly like the training examples (e.g. a model trained on a
+    ``savgol``-detrended dataset must not score ``spline``-detrended views). Models without a
+    dataset record (test fixtures) use the default configuration.
+    """
+    ds = session.get(Dataset, mv.dataset_id) if mv.dataset_id is not None else None
+    raw = dict(((ds.config or {}).get("pipeline") or {}) if ds is not None else {})
+    try:
+        return PipelineConfig.from_dict(raw)
+    except (TypeError, ValueError) as exc:
+        raise conflict(
+            f"Model '{mv.name}' (#{mv.id}) was trained with a preprocessing configuration this version "
+            f"cannot reproduce: {exc}",
+            "incompatible_model",
+            "Retrain the model on a dataset built with the current pipeline.",
+        ) from exc
+
+
+def _common_pipeline_config(session: Session, models: list[ModelVersion]) -> PipelineConfig:
+    """The single preprocessing configuration shared by ``models`` (400 if they differ)."""
+    configs: dict[str, tuple[PipelineConfig, list[str]]] = {}
+    for mv in models:
+        cfg = pipeline_config_for(session, mv)
+        key = json.dumps(cfg.to_dict(), sort_keys=True, default=str)
+        configs.setdefault(key, (cfg, []))[1].append(f"'{mv.name}' (#{mv.id})")
+    if len(configs) > 1:
+        groups = "; ".join(
+            f"{', '.join(names)}: detrend={cfg.detrend_method}" for cfg, names in configs.values()
+        )
+        raise bad_request(
+            "The selected models were trained on datasets with different preprocessing, so one set of "
+            f"views cannot be scored by all of them ({groups}).",
+            "mixed_pipeline_configs",
+            "Score these models in separate requests.",
+        )
+    return next(iter(configs.values()))[0]
 
 
 def seen_in_split(session: Session, mv: ModelVersion | None, kepid: int | None) -> str | None:
@@ -333,12 +377,19 @@ def _ensure_downloaded(session: Session, kepid: int, download: bool) -> None:
         ) from exc
 
 
-def _process(src: SourceData, eph: Ephemeris, others: list[Ephemeris], depth: float | None) -> tuple:
+def _process(
+    src: SourceData,
+    eph: Ephemeris,
+    others: list[Ephemeris],
+    depth: float | None,
+    config: PipelineConfig | None = None,
+) -> tuple:
+    cfg = PipelineConfig.from_dict({**(config or PipelineConfig()).to_dict(), "keep_stages": False})
     try:
         processed = process_lightcurve(
             src.lc,
             eph,
-            PipelineConfig(keep_stages=False),
+            cfg,
             catalogue_depth_ppm=depth,
             other_ephemerides=others,
         )
@@ -360,8 +411,11 @@ def _process(src: SourceData, eph: Ephemeris, others: list[Ephemeris], depth: fl
     )
 
 
-def prepare(session: Session, req: dict[str, Any]) -> Prepared:
-    """Views, features, quality and ephemeris for one prediction request (see module docstring)."""
+def prepare(session: Session, req: dict[str, Any], config: PipelineConfig | None = None) -> Prepared:
+    """Views, features, quality and ephemeris for one prediction request (see module docstring).
+
+    ``config`` is the preprocessing configuration of the scoring models' dataset (default if None).
+    """
     from exofinder.astro.bls import bls_ephemeris
     from exofinder.services.analysis import bls_result, other_known_ephemerides
 
@@ -392,7 +446,7 @@ def prepare(session: Session, req: dict[str, Any]) -> Prepared:
         _ensure_downloaded(session, kepid, bool(req.get("download_if_missing", True)))
         if eph_source == "catalog" and signal is not None:
             try:
-                sv = compute_signal_views(session, signal)
+                sv = compute_signal_views(session, signal, config=config)
             except SignalNotDownloadedError as exc:
                 raise conflict(str(exc), "not_downloaded") from exc
             except SignalEphemerisError as exc:
@@ -447,7 +501,7 @@ def prepare(session: Session, req: dict[str, Any]) -> Prepared:
     else:
         raise bad_request(f"Unknown ephemeris_source '{eph_source}'", "invalid_ephemeris")
     others = other_known_ephemerides(session, src.kepid, eph) if src.kind == "catalog" else []
-    g, loc, gp, lp, feats, names, quality = _process(src, eph, others, None)
+    g, loc, gp, lp, feats, names, quality = _process(src, eph, others, None, config)
     return Prepared(
         global_view=g,
         local_view=loc,
@@ -518,7 +572,7 @@ def predict(session: Session, req: dict[str, Any]) -> dict[str, Any]:
     """``POST /api/predictions``: score one signal with one or more models and store the results."""
     models = resolve_models(session, req.get("model_version_ids"))
     predictors = [(mv, get_predictor(mv)) for mv in models]
-    prep = prepare(session, req)
+    prep = prepare(session, req, _common_pipeline_config(session, models))
     if not _finite_inputs(prep.global_view, prep.local_view, prep.features):
         msgs = "; ".join(prep.quality.get("messages") or prep.quality.get("issues") or [])
         raise bad_request(
@@ -528,9 +582,22 @@ def predict(session: Session, req: dict[str, Any]) -> dict[str, Any]:
             "unscorable_signal",
             "Check the ephemeris and that the light curve covers at least two transits.",
         )
+    if prep.quality.get("ok") is False:
+        # Same gate as dataset builds: signals with a blocking quality issue (too few transits, period
+        # longer than half the baseline, sparse local view, NaNs) were never part of training or
+        # evaluation, so a model score for them would be an unvalidated extrapolation.
+        issues = ", ".join(prep.quality.get("issues") or []) or "quality gate failed"
+        msgs = "; ".join(prep.quality.get("messages") or [])
+        raise bad_request(
+            f"This signal cannot be scored reliably: it fails the data-quality gate used for training ({issues})"
+            + (f": {msgs}" if msgs else "")
+            + ". The models never saw such inputs, so no score is given.",
+            "unscorable_signal",
+            "Check the ephemeris (period, epoch, duration) and that the light curve covers at least two transits.",
+        )
     warnings = list(prep.warnings)
     grade = prep.quality.get("grade")
-    if grade in ("C", "D"):
+    if grade == "C":
         msgs = "; ".join(prep.quality.get("messages") or prep.quality.get("issues") or [])
         warnings.append(f"Data-quality grade {grade}: {msgs}. Treat the score with caution.")
     labels = catalog_labels(prep.signal)
@@ -669,11 +736,19 @@ def get_prediction(session: Session, prediction_id: int) -> dict[str, Any]:
             views_source = "stored inputs of this prediction"
     elif sig is not None and (p.ephemeris or {}).get("source") == "catalogue":
         try:
-            sv = compute_signal_views(session, sig)
+            sv = compute_signal_views(
+                session, sig, config=pipeline_config_for(session, mv) if mv is not None else None
+            )
             views = views_out(sv.global_view, sv.local_view, sv.global_phase, sv.local_phase)
             features = {n: finite(v) for n, v in zip(sv.feature_names, sv.features.tolist(), strict=True)}
             views_source = "view cache (catalogue ephemeris)"
-        except (SignalNotDownloadedError, SignalEphemerisError, InsufficientDataError, ValueError):
+        except (
+            SignalNotDownloadedError,
+            SignalEphemerisError,
+            InsufficientDataError,
+            ValueError,
+            ServiceError,
+        ):
             views = None
     warnings = []
     split = out["seen_in_split"]
@@ -768,6 +843,7 @@ def _run_batch(
     if mv is None:
         raise RuntimeError(f"Model version {mv_id} no longer exists")
     predictor = get_predictor(mv)
+    pipeline_cfg = pipeline_config_for(s, mv)
     thr, mode = threshold_for(s, predictor)
     ids = _batch_signal_ids(s, cats, only_downloaded, limit)
     if skip_existing:
@@ -806,20 +882,27 @@ def _run_batch(
                 failures["signal_missing"] += 1
                 continue
             try:
-                sv = compute_signal_views(s, sig)
-                if _finite_inputs(sv.global_view, sv.local_view, sv.features):
-                    good.append((sig, sv))
-                else:
+                sv = compute_signal_views(s, sig, config=pipeline_cfg)
+                if not _finite_inputs(sv.global_view, sv.local_view, sv.features):
                     failures["nan_in_views"] += 1
+                elif sv.quality.get("ok") is False:  # same gate as training (see predict())
+                    for issue in sv.quality.get("issues") or ["quality_gate"]:
+                        if issue in BLOCKING_ISSUES:
+                            failures[f"quality:{issue}"] += 1
+                            break
+                    else:
+                        failures["quality:quality_gate"] += 1
+                else:
+                    good.append((sig, sv))
             except SignalNotDownloadedError:
                 failures["not_downloaded"] += 1
             except SignalEphemerisError:
                 failures["no_ephemeris"] += 1
             except InsufficientDataError:
                 failures["insufficient_data"] += 1
-            except ValueError as exc:
+            except Exception as exc:  # noqa: BLE001 - one bad signal must not abort the whole batch
                 failures["processing_error"] += 1
-                ctx.log(f"{sig.signal_key}: {exc}")
+                ctx.log(f"{sig.signal_key}: {type(exc).__name__}: {exc}")
         if good:
             G = np.stack([sv.global_view for _, sv in good])
             L = np.stack([sv.local_view for _, sv in good])
@@ -899,8 +982,15 @@ def candidates(
     sort: str = "mean_probability",
     limit: int = 100,
     offset: int = 0,
+    include_seen: bool = False,
 ) -> dict[str, Any]:
-    """Latest catalogue-ephemeris score per signal per model, aggregated per signal and ranked."""
+    """Latest catalogue-ephemeris score per signal per model, aggregated per signal and ranked.
+
+    By default signals whose star was in the training or validation split of any scoring model are
+    left out (``include_seen=False``): in the DR24 label mode, Autovetter "PC" signals that are still
+    KOI CANDIDATEs are training positives, and ranking a model's own training examples would be
+    circular. Their number is reported as ``n_hidden_seen``.
+    """
     if sort not in ("mean_probability", "max_probability", "agreement", "uncertainty"):
         raise bad_request(f"Cannot sort by '{sort}'", "invalid_sort")
     latest = (
@@ -1019,6 +1109,11 @@ def candidates(
         ),
         "uncertainty": lambda d: (d["uncertainty"] if d["uncertainty"] is not None else 1e9, d["signal_key"]),
     }[sort]
+    n_hidden_seen = 0
+    if not include_seen:
+        n_all = len(items)
+        items = [it for it in items if not it["seen_in_training"]]
+        n_hidden_seen = n_all - len(items)
     items.sort(key=keyf)
     total = len(items)
     limit = max(1, min(int(limit), 500))
@@ -1029,6 +1124,8 @@ def candidates(
         "total": total,
         "limit": limit,
         "offset": offset,
+        "include_seen": include_seen,
+        "n_hidden_seen": n_hidden_seen,
         "items": page,
         "models": [
             {"id": m.id, "name": m.name, "model_type": m.model_type, "is_fixture": bool(m.is_fixture)}

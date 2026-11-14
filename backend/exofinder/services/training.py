@@ -18,7 +18,6 @@ automatically, so they can never be presented as real results.
 from __future__ import annotations
 
 import logging
-import os
 import subprocess
 from functools import partial
 from typing import Any
@@ -28,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from exofinder import __version__
 from exofinder.config import PIPELINE_VERSION, REPO_ROOT, get_settings
+from exofinder.data._util import replace_with_retry
 from exofinder.db.models import Dataset, EpochMetric, Experiment, ModelVersion, utcnow
 from exofinder.db.session import session_scope
 from exofinder.jobs.runner import JobCancelled, JobContext
@@ -428,7 +428,9 @@ def _register_model(
             s.flush()
             final_dir = get_settings().models_dir / str(mv.id)
             remove_tree(final_dir)  # ids can be re-used after a deletion
-            os.replace(tmp_dir, final_dir)
+            # Windows refuses to rename a directory while a file inside it is open (antivirus or the
+            # search indexer reading the freshly written weights); that clears within milliseconds.
+            replace_with_retry(tmp_dir, final_dir)
             mv.checkpoint_path = str(final_dir)
             exp = s.get(Experiment, experiment_id)
             if exp is not None:

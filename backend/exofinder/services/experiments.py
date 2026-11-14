@@ -10,7 +10,7 @@ from typing import Any
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from exofinder.db.models import Dataset, EpochMetric, Evaluation, Experiment, ModelVersion
+from exofinder.db.models import Dataset, EpochMetric, Evaluation, Experiment, Job, ModelVersion
 from exofinder.jobs.runner import get_runner
 from exofinder.services.jobs import reconcile_orphans
 from exofinder.services.jsonutil import to_jsonable
@@ -201,7 +201,13 @@ def delete_experiment_rows(session: Session, experiment_id: int) -> dict[str, in
 def delete_experiment(session: Session, experiment_id: int) -> dict[str, Any]:
     """Delete an experiment and all its artefacts (409 while its training job is running)."""
     exp = get_experiment(session, experiment_id)
-    if exp.status in ("queued", "running") and exp.job_id and get_runner().is_active(exp.job_id):
+    job = session.get(Job, exp.job_id) if exp.job_id else None
+    job_active = job is not None and job.status in ("queued", "running")  # here or in a CLI process
+    if (
+        exp.status in ("queued", "running")
+        and exp.job_id
+        and (get_runner().is_active(exp.job_id) or job_active)
+    ):
         raise conflict(
             "The experiment is still training", "experiment_running", "Cancel its job first, then delete it."
         )

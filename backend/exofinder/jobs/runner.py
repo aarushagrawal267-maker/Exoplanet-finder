@@ -263,7 +263,19 @@ class JobRunner:
         job_id = uuid.uuid4().hex
         params = params or {}
         with session_scope() as s:
-            s.add(Job(id=job_id, kind=kind, title=title, status="queued", params=params, progress=0.0))
+            # heartbeat from the start: another process must never see a fresh row as orphaned
+            s.add(
+                Job(
+                    id=job_id,
+                    kind=kind,
+                    title=title,
+                    status="queued",
+                    params=params,
+                    progress=0.0,
+                    heartbeat_at=utcnow(),
+                    owner=process_owner("api"),
+                )
+            )
         ctx = JobContext(job_id=job_id, kind=kind, params=params, bus=self.bus)
         with self._lock:
             self._contexts[job_id] = ctx
@@ -373,20 +385,27 @@ def _jsonable(obj: Any) -> Any:
 
 
 def mark_interrupted_jobs(stale_after: float = STALE_AFTER_SECONDS) -> int:
-    """At startup: mark queued/running jobs whose owning process has died as failed.
+    """Mark queued/running jobs whose owning process has died as failed.
 
+    Called at server start-up and again whenever jobs, datasets or experiments are listed (so a
+    command-line job whose terminal was closed does not stay "running" until the next restart).
     A job is orphaned when its heartbeat is missing or older than ``stale_after`` seconds. Jobs owned
     by another live process (e.g. a dataset build started from the command line) keep refreshing
-    their heartbeat and are left alone.
+    their heartbeat and are left alone, and jobs owned by this process are never touched.
     """
     n = 0
     cutoff = utcnow() - timedelta(seconds=stale_after)
+    with _hb_lock:
+        own = set(_hb_jobs)
     with session_scope() as s:
         for job in s.query(Job).filter(Job.status.in_(["queued", "running"])).all():
-            if job.heartbeat_at is not None and job.heartbeat_at >= cutoff:
+            if job.id in own or (job.heartbeat_at is not None and job.heartbeat_at >= cutoff):
                 continue
             job.status = "failed"
-            job.error = "Interrupted: the server stopped before this job finished. Start it again."
+            job.error = (
+                "Interrupted: the process running this job (server or command line) stopped before it "
+                "finished. Start it again."
+            )
             job.finished_at = utcnow()
             job.message = "Interrupted"
             n += 1

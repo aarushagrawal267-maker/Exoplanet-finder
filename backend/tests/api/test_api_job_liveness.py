@@ -61,3 +61,39 @@ def test_init_db_adds_missing_columns_to_old_database(tmp_path):
     with engine.begin() as conn:  # existing data untouched
         assert conn.execute(sa.text("SELECT title FROM jobs WHERE id='a'")).scalar() == "t"
     assert _add_missing_columns(engine) == []  # idempotent
+
+
+def test_dead_owner_is_detected_while_the_server_runs(client, db):
+    """A command-line build whose process died (terminal closed) must not stay 'running'/'building'
+    until the next server restart: listing jobs/datasets marks it interrupted. Jobs owned by this
+    process are never touched, however old their heartbeat."""
+    from exofinder.db.models import Dataset, Job
+    from exofinder.jobs.runner import heartbeat_register, heartbeat_unregister
+
+    _add_job(db, "dead-cli", heartbeat_age_s=600)
+    _add_job(db, "live-cli", heartbeat_age_s=5)
+    _add_job(db, "mine", heartbeat_age_s=None)
+    db.add(
+        Dataset(
+            name="TEST dead CLI build",
+            label_mode="astronet_dr24",
+            tier="pilot",
+            status="building",
+            pipeline_version="1.0",
+            job_id="dead-cli",
+        )
+    )
+    db.commit()
+    heartbeat_register("mine", "api")
+    try:
+        db.expire_all()
+        db.get(Job, "mine").heartbeat_at = None  # simulate a missed beat of a job this process runs
+        db.commit()
+        jobs = {j["id"]: j for j in client.get("/api/jobs").json()}
+        assert jobs["dead-cli"]["status"] == "failed" and "Interrupted" in jobs["dead-cli"]["error"]
+        assert jobs["live-cli"]["status"] == "running"
+        assert jobs["mine"]["status"] == "running"
+        ds = {d["name"]: d for d in client.get("/api/datasets").json()}["TEST dead CLI build"]
+        assert ds["status"] == "failed" and "Interrupted" in ds["error"]
+    finally:
+        heartbeat_unregister("mine")

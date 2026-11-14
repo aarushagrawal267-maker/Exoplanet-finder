@@ -75,8 +75,8 @@ temperature were tuned on that set. Only the **test-set evaluation** is unbiased
 | Random forest | spread of the individual tree probabilities |
 | Logistic regression | none (shown as "not available") |
 
-A prediction is shown as **Uncertain** when its uncertainty band crosses the decision threshold or
-its data-quality grade is D.
+A prediction is shown as **Uncertain** when its uncertainty band crosses the decision threshold.
+Signals that fail the training data-quality gate are not scored at all (see [Predictions](prediction.md)).
 
 ## Model bundles
 Each trained model is stored in `artifacts/models/<id>/`: `meta.json` (type, configuration,

@@ -19,6 +19,9 @@ describe("Candidate Explorer", () => {
     const q = api.find("GET", "/predictions/candidates")[0]!.url.searchParams;
     expect(q.get("category")).toBe("candidate");
     expect(q.get("sort")).toBe("mean_probability");
+    // training-seen candidates are hidden by default, and the page says how many
+    expect(q.get("include_seen")).toBe("false");
+    expect(await screen.findByText(/hidden \(seen in training\)/)).toBeInTheDocument();
   });
 
   it("changes the ranking on the server", async () => {
