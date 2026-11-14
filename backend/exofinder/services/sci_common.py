@@ -216,7 +216,13 @@ def pv(
     **extra: Any,
 ) -> dict[str, Any]:
     """A provenance-tagged scientific value (``ProvenancedValue`` shape, plus optional extra keys)."""
-    out = {"value": finite(value), "err": finite(err), "unit": unit, "provenance": provenance, "source": source}
+    out = {
+        "value": finite(value),
+        "err": finite(err),
+        "unit": unit,
+        "provenance": provenance,
+        "source": source,
+    }
     out.update(extra)
     return out
 

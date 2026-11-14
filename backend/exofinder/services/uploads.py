@@ -203,7 +203,9 @@ def _describe_fits(path: Path) -> dict[str, Any]:
         "n_rows": n,
         "columns": None,
         "suggested_mapping": None,
-        "suggested_time_system": file_meta.get("time_system") if file_meta.get("time_system") != "unknown" else None,
+        "suggested_time_system": file_meta.get("time_system")
+        if file_meta.get("time_system") != "unknown"
+        else None,
         "preview_rows": rows,
         "file_meta": file_meta,
     }
@@ -252,9 +254,7 @@ def ood_warnings(meta: dict[str, Any], lc: LightCurve) -> list[str]:
     lm = lc.meta
     mission = str(lm.get("mission") or "unknown")
     if meta.get("kind") == "csv":
-        warnings.append(
-            "Uploaded table: its origin and processing are unknown to this app. " + OOD_NOTICE
-        )
+        warnings.append("Uploaded table: its origin and processing are unknown to this app. " + OOD_NOTICE)
     elif mission != "Kepler":
         warnings.append(f"This is {mission} data, not Kepler. " + OOD_NOTICE)
     cad = finite(lm.get("cadence_days"))
@@ -283,7 +283,9 @@ def ood_warnings(meta: dict[str, Any], lc: LightCurve) -> list[str]:
     return warnings
 
 
-def parse_upload(upload_id: str, mapping: dict[str, str | None] | None, time_system: str | None) -> dict[str, Any]:
+def parse_upload(
+    upload_id: str, mapping: dict[str, str | None] | None, time_system: str | None
+) -> dict[str, Any]:
     """Apply the confirmed column mapping / time system and store the parsed light curve."""
     meta = read_meta(upload_id)
     path = upload_dir(upload_id) / meta["stored_name"]
@@ -303,7 +305,9 @@ def parse_upload(upload_id: str, mapping: dict[str, str | None] | None, time_sys
             reader_ts = "days" if time_system == "other" else time_system
             lc = read_csv_lightcurve(path, mapping=mapping or None, time_system=reader_ts)
     except LightCurveFormatError as exc:
-        raise bad_request(str(exc), "invalid_lightcurve", "Check the column mapping and time system.") from exc
+        raise bad_request(
+            str(exc), "invalid_lightcurve", "Check the column mapping and time system."
+        ) from exc
 
     ok = np.isfinite(lc.time) & np.isfinite(lc.flux)
     n_points = int(ok.sum())
@@ -319,7 +323,8 @@ def parse_upload(upload_id: str, mapping: dict[str, str | None] | None, time_sys
     warnings = notes + ood_warnings(meta, lc)
     _save_parsed(upload_id, lc)
     parsed = {
-        "mapping": lc.meta.get("columns") or ({"flux": lc.meta.get("flux_column")} if meta["kind"] == "fits" else None),
+        "mapping": lc.meta.get("columns")
+        or ({"flux": lc.meta.get("flux_column")} if meta["kind"] == "fits" else None),
         "time_system": lc.meta.get("time_system"),
         "input_time_system": lc.meta.get("time_input_system", time_system or lc.meta.get("time_system")),
         "n_points": n_points,
@@ -338,7 +343,9 @@ def parse_upload(upload_id: str, mapping: dict[str, str | None] | None, time_sys
     return {"upload_id": upload_id, **parsed}
 
 
-def _parse_fits(path: Path, mapping: dict[str, str | None] | None, time_system: str | None, notes: list[str]) -> LightCurve:
+def _parse_fits(
+    path: Path, mapping: dict[str, str | None] | None, time_system: str | None, notes: list[str]
+) -> LightCurve:
     flux_column = (mapping or {}).get("flux") or None
     lc = read_fits_lightcurve(path, flux_column=flux_column)
     declared = lc.meta.get("time_system")
@@ -372,8 +379,12 @@ def _save_parsed(upload_id: str, lc: LightCurve) -> Path:
         "time": np.asarray(lc.time, dtype=np.float64),
         "flux": np.asarray(lc.flux, dtype=np.float64),
         "flux_err": np.asarray(lc.flux_err, dtype=np.float64) if lc.flux_err is not None else np.zeros(0),
-        "quality": np.asarray(lc.quality, dtype=np.int64) if lc.quality is not None else np.zeros(0, np.int64),
-        "segment": np.asarray(lc.segment, dtype=np.int64) if lc.segment is not None else np.zeros(0, np.int64),
+        "quality": np.asarray(lc.quality, dtype=np.int64)
+        if lc.quality is not None
+        else np.zeros(0, np.int64),
+        "segment": np.asarray(lc.segment, dtype=np.int64)
+        if lc.segment is not None
+        else np.zeros(0, np.int64),
         "meta": np.array(json.dumps(to_jsonable(dict(lc.meta)), sort_keys=True)),
     }
     fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp.npz")

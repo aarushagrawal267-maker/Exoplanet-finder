@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, Query, UploadFile
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, File, Query, UploadFile
 
-from exofinder.api.deps import get_db
-from exofinder.api.routers._sci_route import SciRoute
+from exofinder.api.routers._sci_route import DbSession, SciRoute
 from exofinder.api.schemas.common import ErrorOut
 from exofinder.api.schemas.lightcurves import LightCurveOut
 from exofinder.api.schemas.uploads import ParseIn, ParseOut, UploadOut
@@ -27,7 +25,9 @@ router = APIRouter(prefix="/api/uploads", tags=["uploads"], route_class=SciRoute
         413: {"model": ErrorOut, "description": "file_too_large (> 200 MB)"},
     },
 )
-def upload(file: UploadFile = File(..., description=".fits/.fit/.fits.gz or .csv/.txt, <= 200 MB")) -> dict:
+def upload(
+    file: Annotated[UploadFile, File(description=".fits/.fit/.fits.gz or .csv/.txt, <= 200 MB")],
+) -> dict:
     """Store the file and describe it: FITS header facts, or the CSV columns, a suggested column
     mapping and preview rows to confirm before parsing."""
     try:
@@ -63,13 +63,13 @@ def parse(upload_id: str, body: ParseIn) -> dict:
     responses={409: {"model": ErrorOut, "description": "code=upload_not_parsed"}},
 )
 def upload_lightcurve(
+    db: DbSession,
     upload_id: str,
     period: float | None = Query(None, gt=0),
     epoch: float | None = Query(None),
     duration_hours: float | None = Query(None, gt=0),
     detrend: Literal["spline", "savgol"] = Query("spline"),
     max_points: int = Query(20000, ge=100, le=50000),
-    db: Session = Depends(get_db),
 ) -> dict:
     """Same payload as ``GET /api/lightcurves/{kepid}``."""
     return lc_svc.upload_lightcurve(

@@ -4,11 +4,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Query
 
-from exofinder.api.deps import get_db
-from exofinder.api.routers._sci_route import SciRoute
+from exofinder.api.routers._sci_route import DbSession, SciRoute
 from exofinder.api.schemas.common import ErrorOut
 from exofinder.api.schemas.lightcurves import LightCurveOut
 from exofinder.services import lightcurves as svc
@@ -23,6 +21,7 @@ router = APIRouter(prefix="/api/lightcurves", tags=["light curves"], route_class
     responses={404: {"model": ErrorOut, "description": "code=not_downloaded: download the star first"}},
 )
 def get_lightcurve(
+    db: DbSession,
     kepid: int,
     signal_id: int | None = Query(None, description="Use this catalogue signal's ephemeris (BKJD)"),
     period: float | None = Query(None, gt=0, description="Manual ephemeris: period, days"),
@@ -30,7 +29,6 @@ def get_lightcurve(
     duration_hours: float | None = Query(None, gt=0, description="Manual ephemeris: T14, hours"),
     detrend: Literal["spline", "savgol"] = Query("spline"),
     max_points: int = Query(20000, ge=100, le=50000, description="Display points per stage"),
-    db: Session = Depends(get_db),
 ) -> dict:
     """Stages raw/normalized/trend/flat (downsampled for display), segments, cleaning report and,
     when an ephemeris is known (``signal_id`` or ``period``+``epoch``+``duration_hours``), the

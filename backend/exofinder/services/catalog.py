@@ -17,7 +17,7 @@ from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from exofinder.db.models import CatalogSnapshot, Job, Signal, Target
-from exofinder.jobs.runner import JobContext, JobCancelled, get_runner
+from exofinder.jobs.runner import JobCancelled, JobContext, get_runner
 from exofinder.services.sci_errors import bad_request, conflict
 
 SORT_COLUMNS = {
@@ -47,9 +47,7 @@ class NasaUnavailableError(RuntimeError):
 
 
 def active_jobs(session: Session, kind: str) -> list[Job]:
-    return list(
-        session.scalars(select(Job).where(Job.kind == kind, Job.status.in_(("queued", "running"))))
-    )
+    return list(session.scalars(select(Job).where(Job.kind == kind, Job.status.in_(("queued", "running")))))
 
 
 def start_refresh(session: Session, sources: list[str] | None = None) -> str:
@@ -141,7 +139,9 @@ def list_snapshots(session: Session, source: str | None = None) -> list[dict[str
 # ------------------------------------------------------------------------------------------------
 # signals
 # ------------------------------------------------------------------------------------------------
-def signal_dict(sig: Signal, target: Target | None = None, *, with_provenance: bool = False) -> dict[str, Any]:
+def signal_dict(
+    sig: Signal, target: Target | None = None, *, with_provenance: bool = False
+) -> dict[str, Any]:
     """JSON form of a catalogue signal (catalogue values exactly as published)."""
     out = {
         "id": sig.id,
@@ -219,7 +219,9 @@ def list_signals(
     / ``koi_disposition=none`` select signals without that label.
     """
     if sort not in SORT_COLUMNS:
-        raise bad_request(f"Cannot sort by '{sort}'", "invalid_sort", f"Sort by one of: {', '.join(SORT_COLUMNS)}.")
+        raise bad_request(
+            f"Cannot sort by '{sort}'", "invalid_sort", f"Sort by one of: {', '.join(SORT_COLUMNS)}."
+        )
     if order not in ("asc", "desc"):
         raise bad_request("order must be 'asc' or 'desc'", "invalid_sort")
     limit = max(1, min(int(limit), MAX_LIMIT))
@@ -325,7 +327,9 @@ def stats(session: Session) -> dict[str, Any]:
             }
         )
     snaps = session.execute(
-        select(CatalogSnapshot.source, func.max(CatalogSnapshot.retrieved_at)).group_by(CatalogSnapshot.source)
+        select(CatalogSnapshot.source, func.max(CatalogSnapshot.retrieved_at)).group_by(
+            CatalogSnapshot.source
+        )
     ).all()
     return {
         "total": total,
@@ -333,7 +337,8 @@ def stats(session: Session) -> dict[str, Any]:
         "av_labels": counts(Signal.av_training_set),
         "koi_dispositions": counts(Signal.koi_disposition),
         "label_conflicts": int(
-            session.scalar(select(func.count()).select_from(Signal).where(Signal.label_conflict.is_(True))) or 0
+            session.scalar(select(func.count()).select_from(Signal).where(Signal.label_conflict.is_(True)))
+            or 0
         ),
         "with_lightcurve": int(
             session.scalar(
@@ -348,4 +353,3 @@ def stats(session: Session) -> dict[str, Any]:
         "snapshots_retrieved_at": {s: t for s, t in snaps},
         "note": "Values are catalogue values (DR24 TCE / KOI / confirmed tables) exactly as published.",
     }
-
