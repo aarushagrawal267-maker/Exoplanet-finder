@@ -327,6 +327,7 @@ setup.ps1, start.ps1, stop.ps1   Windows scripts
 * [Limitations](docs/limitations.md)
 * [Research report template](docs/research-report-template.md)
 * [Architecture](docs/architecture.md) and [Testing](docs/testing.md) for developers
+* [Test results and acceptance checklist](docs/test-results.md)
 
 ---
 
