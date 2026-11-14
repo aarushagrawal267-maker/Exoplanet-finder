@@ -70,8 +70,8 @@ export function CompareEvaluations({ ids, onRemove, onClear }: { ids: number[]; 
           ) : null}
           <ul className="flex flex-wrap gap-2" aria-label="Evaluations in this comparison">
             {evs.map((e) => (
-              <li key={e.id} className="flex items-center gap-2 rounded-md border border-hairline px-2.5 py-1.5 text-sm">
-                <span className="text-fg">{evaluationLabel(e)}</span>
+              <li key={e.id} className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-hairline px-2.5 py-1.5 text-sm">
+                <span className="min-w-0 text-fg">{evaluationLabel(e)}</span>
                 <SplitTag split={e.split} testNumber={e.test_evaluation_number} />
                 <span className="text-xs text-fg-secondary">
                   {modelTypeLabel(e.model_type)} · {e.dataset_name} · n {formatInt(e.n)}
@@ -93,7 +93,7 @@ export function CompareEvaluations({ ids, onRemove, onClear }: { ids: number[]; 
               }),
             }))}
           />
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[480px] border-separate border-spacing-0 text-sm" aria-label="Aligned metrics with 95% confidence intervals">
               <thead>
                 <tr className="eyebrow text-fg-secondary">
@@ -101,8 +101,10 @@ export function CompareEvaluations({ ids, onRemove, onClear }: { ids: number[]; 
                     Metric
                   </th>
                   {evs.map((e) => (
-                    <th key={e.id} scope="col" className="border-b border-hairline px-3 py-2 text-right font-medium normal-case tracking-normal">
-                      {evaluationLabel(e)}
+                    <th key={e.id} scope="col" className="border-b border-hairline px-3 py-2 text-right align-bottom font-medium" title={evaluationLabel(e)}>
+                      <span className="num block text-fg">#{e.id}</span>
+                      <span className="block whitespace-nowrap normal-case tracking-normal">{modelTypeLabel(e.model_type)}</span>
+                      <span className="sr-only">{evaluationLabel(e)}</span>
                     </th>
                   ))}
                 </tr>

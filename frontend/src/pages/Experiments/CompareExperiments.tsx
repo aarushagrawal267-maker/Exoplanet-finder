@@ -60,8 +60,8 @@ export function CompareExperiments({ ids, onRemove, onClear }: { ids: number[]; 
             </Banner>
           ) : null}
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] border-separate border-spacing-0 text-sm" aria-label="Experiment summary">
+          <div className="relative overflow-x-auto">
+            <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm" aria-label="Experiment summary">
               <thead>
                 <tr className="eyebrow text-fg-secondary">
                   <th scope="col" className="border-b border-hairline py-2 pr-3 text-left font-medium">
@@ -83,7 +83,7 @@ export function CompareExperiments({ ids, onRemove, onClear }: { ids: number[]; 
               <tbody>
                 {exps.map((e) => (
                   <tr key={e.id}>
-                    <th scope="row" className="border-b border-hairline py-2 pr-3 text-left font-normal">
+                    <th scope="row" className="min-w-[240px] border-b border-hairline py-2 pr-3 text-left font-normal">
                       <span className="flex items-center gap-2">
                         <button type="button" onClick={() => onRemove(e.id)} aria-label={`Remove experiment ${e.id} from the comparison`} className="rounded-sm p-0.5 text-fg-secondary hover:text-fg">
                           <X className="size-3.5" aria-hidden="true" />
@@ -122,7 +122,7 @@ export function CompareExperiments({ ids, onRemove, onClear }: { ids: number[]; 
           <div>
             <h3 className="mb-2 text-md font-semibold text-fg">Configuration differences</h3>
             {data.config_diff.length ? (
-              <div className="overflow-x-auto">
+              <div className="relative overflow-x-auto">
                 <table className="w-full min-w-[480px] border-separate border-spacing-0 text-sm" aria-label="Configuration differences">
                   <thead>
                     <tr className="eyebrow text-fg-secondary">

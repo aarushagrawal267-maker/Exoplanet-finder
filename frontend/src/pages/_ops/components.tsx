@@ -91,14 +91,12 @@ export function MetricTile({ metric, value, ci, emphasis, className }: MetricTil
   const info = METRICS[metric];
   return (
     <div className={cn("flex min-w-0 flex-col gap-1 rounded-lg border border-hairline bg-space/50 p-3", emphasis && "border-cosmic/40 bg-cosmic/[0.05]", className)}>
-      <div className="flex items-center justify-between gap-2">
-        <span className="eyebrow truncate text-fg-secondary" title={info?.help}>
-          {info?.label ?? metric}
-        </span>
-        {info?.lowerIsBetter ? <span className="text-2xs text-fg-secondary">lower is better</span> : null}
-      </div>
+      <span className="eyebrow truncate text-fg-secondary" title={info?.help}>
+        {info?.label ?? metric}
+      </span>
       <span className={cn("num font-medium leading-none tracking-tight text-fg", emphasis ? "text-xl" : "text-lg")}>{fmtMetric(value)}</span>
-      {ci !== undefined ? <span className="num text-xs text-fg-secondary">{ci ? <>95% CI {fmtCi(ci)}</> : "no interval"}</span> : null}
+      {ci !== undefined ? <span className="num whitespace-nowrap text-2xs text-fg-secondary">{ci ? <>95% CI {fmtCi(ci)}</> : "no interval"}</span> : null}
+      {info?.lowerIsBetter ? <span className="text-2xs text-fg-secondary">lower is better</span> : null}
     </div>
   );
 }
