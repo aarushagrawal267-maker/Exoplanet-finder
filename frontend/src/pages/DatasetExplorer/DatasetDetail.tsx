@@ -42,7 +42,7 @@ function SplitTable({ stats }: { stats: DatasetStats }) {
   const rows = order.map((s) => ({ key: s, label: SPLIT_LABEL[s] ?? s, ...(stats.per_split[s] as NonNullable<DatasetStats["per_split"][string]>) }));
   const total = { key: "total", label: "Total", n: stats.n_included, n_pos: stats.n_pos, n_neg: stats.n_neg, n_stars: stats.n_stars };
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[420px] border-separate border-spacing-0 text-sm" aria-label="Examples per split">
         <thead>
           <tr className="eyebrow text-fg-secondary">

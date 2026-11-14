@@ -3,43 +3,12 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fxJob } from "@/pages/_ops/testFixtures";
-import { mockApi } from "@/pages/_ops/testUtils";
+import { FakeEventSource, mockApi } from "@/pages/_ops/testUtils";
 import type { JobOut } from "../schemas";
 import { jobHref, mergeJob, orderJobs, parseApiTime, useJobFeed } from "./jobStream";
 
 function wrapper(qc: QueryClient) {
   return ({ children }: { children: ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
-}
-
-/** Minimal EventSource stand-in that tests drive by hand. */
-class FakeEventSource {
-  static CONNECTING = 0;
-  static OPEN = 1;
-  static CLOSED = 2;
-  static instances: FakeEventSource[] = [];
-  readyState = 0;
-  url: string;
-  onopen: (() => void) | null = null;
-  onmessage: ((ev: MessageEvent) => void) | null = null;
-  onerror: (() => void) | null = null;
-  private listeners = new Map<string, Array<(ev: MessageEvent) => void>>();
-  constructor(url: string) {
-    this.url = url;
-    FakeEventSource.instances.push(this);
-  }
-  addEventListener(name: string, fn: (ev: MessageEvent) => void) {
-    this.listeners.set(name, [...(this.listeners.get(name) ?? []), fn]);
-  }
-  open() {
-    this.readyState = 1;
-    this.onopen?.();
-  }
-  emit(name: string, data: unknown) {
-    for (const fn of this.listeners.get(name) ?? []) fn(new MessageEvent(name, { data: JSON.stringify(data) }));
-  }
-  close() {
-    this.readyState = 2;
-  }
 }
 
 describe("job feed helpers", () => {

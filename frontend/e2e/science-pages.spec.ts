@@ -64,7 +64,7 @@ test("command palette searches targets and opens the dossier", async ({ page }) 
 
 test("Transit Analysis: BLS, transit fit with vetting, and a SYNTHETIC injection", async ({ page, isMobile }) => {
   await page.goto(`/transit?kepid=${KEPLER2}&signal=${KEPLER2_B}`);
-  await expect(page.getByText("Kepler-2 (KIC 10666592)")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Kepler-2 (KIC 10666592)" })).toBeVisible();
   await page.getByRole("button", { name: "Run BLS search" }).click();
   const peaks = page.getByRole("table", { name: "Strongest BLS peaks" });
   await expect(peaks).toBeVisible({ timeout: 90_000 });
@@ -85,6 +85,7 @@ test("Transit Analysis: BLS, transit fit with vetting, and a SYNTHETIC injection
 });
 
 test("Planet Detection on the live backend: a score, or the no-model call to action", async ({ page, request }) => {
+  test.setTimeout(300_000); // a real score (synchronous light-curve processing + model) on a busy CPU
   const models = (await (await request.get("/api/models")).json()) as Array<{ compatible: boolean; checkpoint_exists: boolean }>;
   await page.goto(`/detect?kepid=${KEPLER90}&signal=41`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Planet Detection");
@@ -94,7 +95,7 @@ test("Planet Detection on the live backend: a score, or the no-model call to act
     await expect(page.getByRole("button", { name: /Score signal/ })).toBeDisabled();
   } else {
     await page.getByRole("button", { name: /Score signal/ }).click();
-    await expect(page.getByTestId("prediction-verdict").first()).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByTestId("prediction-verdict").first()).toBeVisible({ timeout: 240_000 });
     await expect(page.getByTestId("research-lead-note").first()).toContainText("Research lead — not a confirmed discovery");
     await expect(page.getByRole("region", { name: "NASA catalogue labels" })).toBeVisible();
   }

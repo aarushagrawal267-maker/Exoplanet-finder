@@ -83,10 +83,19 @@ export function GradeDistribution({ grades, className }: { grades: Record<string
 }
 
 // ------------------------------------------------------------------------------------------------
-function tickLabel(log10: number, unit: string): string {
+/** Label for 10^log10: "0.001", "0.5", "3.2", "100", "10,000" (+ unit). */
+export function tickLabel(log10: number, unit: string): string {
   const v = 10 ** log10;
-  const s = v >= 100 ? formatInt(v) : v >= 1 ? formatNumber(v, { digits: v < 10 ? 1 : 0 }) : formatNumber(v, { digits: v < 0.1 ? 2 : 1 });
+  const digits = v >= 10 ? 0 : v >= 1 ? 1 : Math.min(6, Math.max(1, -Math.floor(Math.log10(v)) + (Number.isInteger(log10) ? 0 : 1)));
+  const s = v >= 10 ? formatInt(v) : formatNumber(v, { digits });
   return unit ? `${s} ${unit}` : s;
+}
+
+/** Powers of ten inside [min, max]; every second one when there are more than five. */
+export function decadeTicks(min: number, max: number): number[] {
+  const ticks: number[] = [];
+  for (let t = Math.ceil(min) || 0; t <= Math.floor(max); t += 1) ticks.push(t); // `|| 0`: no −0
+  return ticks.length > 5 ? ticks.filter((_, i) => i % 2 === 0) : ticks;
 }
 
 export interface LogHistogramProps {
@@ -112,8 +121,7 @@ export function LogHistogram({ hist, title, unit, height = 200, className }: Log
   }));
   const min = edges[0] ?? 0;
   const max = edges[edges.length - 1] ?? 1;
-  const ticks: number[] = [];
-  for (let t = Math.ceil(min); t <= Math.floor(max); t += 1) ticks.push(t);
+  const ticks = decadeTicks(min, max);
   const nPos = pos.reduce((a, b) => a + b, 0);
   const nNeg = neg.reduce((a, b) => a + b, 0);
   return (

@@ -65,7 +65,7 @@ function ThresholdTable({ ev }: { ev: EvaluationDetailOut }) {
   const m = ev.metrics as Record<string, unknown>;
   const fmt = (v: number | null, kind: string) => (kind === "count" ? formatInt(v) : fmtMetric(v));
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[360px] border-separate border-spacing-0 text-sm" aria-label="Metrics at the validation-chosen threshold and at 0.5">
         <thead>
           <tr className="eyebrow text-fg-secondary">

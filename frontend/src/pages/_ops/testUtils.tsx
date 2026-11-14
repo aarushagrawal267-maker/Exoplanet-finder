@@ -71,3 +71,34 @@ export function renderRoute(element: ReactElement, { url = "/", path = "/" }: { 
   );
   return { ...utils, qc, router };
 }
+
+/** Minimal EventSource stand-in for SSE tests (install with `vi.stubGlobal("EventSource", FakeEventSource)`). */
+export class FakeEventSource {
+  static CONNECTING = 0;
+  static OPEN = 1;
+  static CLOSED = 2;
+  static instances: FakeEventSource[] = [];
+  readyState = 0;
+  url: string;
+  onopen: (() => void) | null = null;
+  onmessage: ((ev: MessageEvent) => void) | null = null;
+  onerror: (() => void) | null = null;
+  private listeners = new Map<string, Array<(ev: MessageEvent) => void>>();
+  constructor(url: string) {
+    this.url = url;
+    FakeEventSource.instances.push(this);
+  }
+  addEventListener(name: string, fn: (ev: MessageEvent) => void) {
+    this.listeners.set(name, [...(this.listeners.get(name) ?? []), fn]);
+  }
+  open() {
+    this.readyState = 1;
+    this.onopen?.();
+  }
+  emit(name: string, data: unknown) {
+    for (const fn of this.listeners.get(name) ?? []) fn(new MessageEvent(name, { data: JSON.stringify(data) }));
+  }
+  close() {
+    this.readyState = 2;
+  }
+}

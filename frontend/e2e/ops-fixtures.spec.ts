@@ -24,7 +24,8 @@ type Handler = (route: Route, url: URL) => unknown | Promise<unknown>;
 
 /** Route `/api/**` through `handlers` (first match on "METHOD /path" wins). */
 async function fixtureApi(page: Page, handlers: Array<[RegExp, Handler | unknown]>) {
-  await page.route("**/api/**", async (route) => {
+  // Only the API (not Vite's /src/api/*.ts modules).
+  await page.route((u) => u.pathname.startsWith("/api/"), async (route) => {
     const url = new URL(route.request().url());
     const key = `${route.request().method()} ${url.pathname.replace(/^\/api/, "")}${url.search}`;
     // The SSE feed is not simulated: the tray falls back to polling.
@@ -122,7 +123,7 @@ test("finished evaluation: CIs, curves, calibration, errors and importance (test
     ...EMPTY,
   ]);
   await page.goto("/evaluation?eval=41");
-  await expect(page.getByText("Validation metrics are optimistic")).toBeVisible();
+  await expect(page.getByText("Validation metrics are optimistic", { exact: true })).toBeVisible();
   await expect(page.getByText("95% CI 0.800–0.980")).toBeVisible();
   await expect(page.getByRole("figure", { name: /ROC curves/ })).toBeVisible();
   await expect(page.getByRole("figure", { name: /Confusion matrix/ })).toBeVisible();
@@ -133,13 +134,18 @@ test("finished evaluation: CIs, curves, calibration, errors and importance (test
 });
 
 test("job tray: a failing job raises a notification with its error (test fixtures)", async ({ page }) => {
-  let polls = 0;
+  // The job runs until the tray has shown it as active; then it fails. (State is flipped by the
+  // test rather than by a request counter, so a dev-server page reload cannot skip the transition.)
+  let failed = false;
+  const running = fxJob({ id: "job-x", kind: "train", title: "Train fixture CNN" });
   await fixtureApi(page, [
-    [/^GET \/jobs\?status=queued%2Crunning/, () => (polls++ < 1 ? [fxJob({ id: "job-x", kind: "train", title: "Train fixture CNN" })] : [])],
-    [/^GET \/jobs\/job-x/, () => fxJob({ id: "job-x", kind: "train", title: "Train fixture CNN", status: "failed", error: "TrainingDiverged: non-finite loss; try a lower learning rate" })],
+    [/^GET \/jobs\?status=queued%2Crunning/, () => (failed ? [] : [running])],
+    [/^GET \/jobs\/job-x/, () => (failed ? fxJob({ ...running, status: "failed", error: "TrainingDiverged: non-finite loss; try a lower learning rate" }) : running)],
     ...EMPTY,
   ]);
   await page.goto("/experiments");
+  await expect(page.getByRole("button", { name: "Background jobs: 1 active" })).toBeVisible();
+  failed = true;
   const toast = page.getByRole("list", { name: "Job notifications" });
   await expect(toast.getByText("TrainingDiverged: non-finite loss; try a lower learning rate")).toBeVisible({ timeout: 15_000 });
   await expect(toast.getByRole("link", { name: /Open/ })).toHaveAttribute("href", "/training?job=job-x");

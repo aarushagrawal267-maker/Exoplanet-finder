@@ -211,7 +211,8 @@ export function JobTray({ jobs, onCancel, onOpenJob, connection, notify = true, 
       <Popover
         label="Background jobs"
         width={400}
-        className={className}
+        // Phones: span the viewport under the top bar instead of hanging off the trigger's edge.
+        className={cn("max-sm:fixed max-sm:inset-x-3 max-sm:top-[60px] max-sm:!w-auto", className)}
         trigger={(props) => (
           <button
             type="button"

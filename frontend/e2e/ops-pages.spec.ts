@@ -46,7 +46,8 @@ test("dataset detail: splits, examples with a view preview, gallery and provenan
   await expect(page.getByText("Exclusions by reason")).toBeVisible();
   const examples = page.getByRole("table", { name: "Dataset examples" });
   await expect(examples.locator("tbody tr").first()).toBeVisible();
-  await examples.locator("tbody tr").first().click();
+  // Click the signal cell: the row centre may be the star's dossier link on narrow screens.
+  await examples.locator("tbody tr").first().locator("td").first().click();
   await expect(page.getByRole("figure", { name: /Global view .* and local view/ })).toBeVisible({ timeout: 20_000 });
   await page.getByRole("tab", { name: /Gallery/ }).click();
   await expect(page.getByRole("region", { name: "Planet-like examples" }).getByRole("img").first()).toBeVisible();
