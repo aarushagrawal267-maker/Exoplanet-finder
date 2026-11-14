@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from exofinder.api.schemas.common import UtcDatetime
 
 
 class ModelVersionOut(BaseModel):
@@ -32,7 +33,7 @@ class ModelVersionOut(BaseModel):
     )
     n_evaluations: int = 0
     n_test_evaluations: int = 0
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class ModelEvaluationRef(BaseModel):
@@ -43,7 +44,7 @@ class ModelEvaluationRef(BaseModel):
     pr_auc: float | None = None
     roc_auc: float | None = None
     f1: float | None = None
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class TrainingSummary(BaseModel):

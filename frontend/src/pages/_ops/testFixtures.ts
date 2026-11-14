@@ -50,6 +50,12 @@ export const fxDataset: DatasetOut = {
 
 export const fxDatasetDetail: DatasetDetailOut = {
   ...fxDataset,
+  provenance: {
+    catalogue_snapshots: [
+      { id: 1, source: "dr24_tce", table: "q1_q17_dr24_tce", retrieved_at: "2026-01-01T00:00:00", rows: 100, sha256: "f".repeat(64) },
+    ],
+    lightcurves: { n_stars: 62, digests_sha256: "e".repeat(64), file: "lightcurves.json" },
+  },
   stats: {
     per_split: {
       train: { n: 80, n_pos: 40, n_neg: 40, n_stars: 50 },

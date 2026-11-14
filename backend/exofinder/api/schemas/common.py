@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any, Literal
+from datetime import UTC, datetime
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import AfterValidator, BaseModel, ConfigDict
+
+
+def _as_utc(value: datetime) -> datetime:
+    """Timestamps are stored as naive UTC; make them explicit so JSON carries the zone (``...Z``)."""
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+
+
+#: A datetime serialised with an explicit UTC offset (browsers would otherwise read it as local time).
+UtcDatetime = Annotated[datetime, AfterValidator(_as_utc)]
 
 Provenance = Literal["catalogue", "measured", "estimate", "manual"]
 
@@ -38,9 +47,9 @@ class JobOut(BaseModel):
     params: dict[str, Any] = {}
     result: dict[str, Any] | None = None
     error: str | None = None
-    created_at: datetime
-    started_at: datetime | None = None
-    finished_at: datetime | None = None
+    created_at: UtcDatetime
+    started_at: UtcDatetime | None = None
+    finished_at: UtcDatetime | None = None
     eta_s: float | None = None
     log_tail: str | None = None
 

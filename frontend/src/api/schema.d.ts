@@ -1788,6 +1788,13 @@ export interface components {
              */
             compatible: boolean;
             stats?: components["schemas"]["DatasetStats"] | null;
+            /**
+             * Provenance
+             * @description From manifest.json: catalogue snapshots (id, table, retrieved_at, sha256), light-curve digest, pipeline version/config, label mode, split seed/fractions, reserved stars, content hash
+             */
+            provenance?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** DatasetExampleOut */
         DatasetExampleOut: {
@@ -5180,6 +5187,7 @@ export interface operations {
                 min_period?: number | null;
                 max_period?: number | null;
                 min_snr?: number | null;
+                max_snr?: number | null;
                 kepid?: number | null;
                 /** @description signal_key, kepid, period_days, duration_hours, depth_ppm, model_snr, planet_radius_re, category, kepoi_name, kepler_name, av_training_set, koi_disposition, koi_score */
                 sort?: string;
@@ -6757,6 +6765,15 @@ export interface operations {
                     "application/json": components["schemas"]["PredictionDetailOut"];
                 };
             };
+            /** @description code=prediction_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -7444,6 +7461,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UploadOut"];
+                };
+            };
+            /** @description code=upload_not_found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
             /** @description Validation Error */

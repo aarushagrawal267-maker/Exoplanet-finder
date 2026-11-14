@@ -123,3 +123,13 @@ describe("dates", () => {
     expect(formatRelativeTime("2026-01-01T00:00:00Z", now)).toBe("2026-01-01 00:00 UTC");
   });
 });
+
+describe("toDate (API timestamps)", () => {
+  it("treats zone-less ISO date-times as UTC and keeps explicit zones", async () => {
+    const { toDate, formatDateTime } = await import("./format");
+    expect(toDate("2026-11-14T21:47:30").toISOString()).toBe("2026-11-14T21:47:30.000Z");
+    expect(toDate("2026-11-14T21:47:30Z").toISOString()).toBe("2026-11-14T21:47:30.000Z");
+    expect(toDate("2026-11-14T23:47:30+02:00").toISOString()).toBe("2026-11-14T21:47:30.000Z");
+    expect(formatDateTime("2026-11-14T21:47:30")).toBe("2026-11-14 21:47 UTC");
+  });
+});

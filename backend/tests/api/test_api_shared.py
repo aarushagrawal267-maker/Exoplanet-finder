@@ -36,3 +36,24 @@ def test_to_jsonable_handles_numpy_and_nan():
 
     out = to_jsonable({"a": np.array([1.0, np.nan, np.inf]), "b": np.float32(2.5), "c": [math.nan]})
     assert out == {"a": [1.0, None, None], "b": 2.5, "c": [None]}
+
+
+def test_timestamps_are_serialised_as_utc():
+    from datetime import datetime
+
+    from exofinder.api.schemas.common import JobOut
+    from exofinder.services.jsonutil import to_jsonable
+
+    assert to_jsonable(datetime(2026, 11, 14, 21, 47, 30)) == "2026-11-14T21:47:30Z"
+    job = JobOut.model_validate(
+        {
+            "id": "x",
+            "kind": "train",
+            "title": "t",
+            "status": "running",
+            "progress": 0.0,
+            "params": {},
+            "created_at": datetime(2026, 11, 14, 21, 47, 30),
+        }
+    )
+    assert '"created_at":"2026-11-14T21:47:30Z"' in job.model_dump_json()

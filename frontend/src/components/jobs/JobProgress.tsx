@@ -13,7 +13,7 @@ import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/cn";
-import { formatDuration, formatInt, formatNumber, formatRelativeTime } from "@/lib/format";
+import { formatDuration, formatInt, formatNumber, formatRelativeTime, toDate } from "@/lib/format";
 
 export const JOB_STATUS: Record<JobStatus, { label: string; tone: BadgeTone }> = {
   queued: { label: "Queued", tone: "neutral" },
@@ -53,7 +53,7 @@ export function JobProgress({ jobId, initial, onDone, onDismiss, successAction, 
   const { job, query, connection, active } = useJob(jobId, { onDone, initial });
   const cancel = useCancelJob();
   const st = job ? JOB_STATUS[job.status] : null;
-  const elapsed = job?.started_at ? (Date.now() - new Date(job.started_at).getTime()) / 1000 : null;
+  const elapsed = job?.started_at ? (Date.now() - toDate(job.started_at).getTime()) / 1000 : null;
   const summary = job?.status === "succeeded" ? resultSummary(job.result) : [];
 
   return (

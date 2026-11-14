@@ -6,12 +6,12 @@ Planet-like scores are research leads, not discoveries: every scoring response c
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
 from exofinder.api.schemas.catalog import SignalOut
+from exofinder.api.schemas.common import UtcDatetime
 from exofinder.api.schemas.lightcurves import EphemerisIn, QualityOut, SourceOut, ViewsOut
 
 
@@ -57,7 +57,7 @@ class CatalogLabels(BaseModel):
 
 class PredictionOut(BaseModel):
     id: int
-    created_at: datetime
+    created_at: UtcDatetime
     model_version_id: int
     model_name: str
     model_type: str | None = None
@@ -141,7 +141,7 @@ class CandidateScore(BaseModel):
     uncertainty: float | None = None
     predicted_label: int
     seen_in_split: str | None = None
-    created_at: datetime
+    created_at: UtcDatetime
 
 
 class Agreement(BaseModel):

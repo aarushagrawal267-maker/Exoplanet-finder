@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+from exofinder.api.schemas.common import UtcDatetime
 
 
 class SettingDescription(BaseModel):
@@ -60,7 +61,7 @@ class DocPageSummary(BaseModel):
     slug: str
     title: str
     size_bytes: int
-    updated_at: datetime
+    updated_at: UtcDatetime
 
 
 class DocPage(BaseModel):

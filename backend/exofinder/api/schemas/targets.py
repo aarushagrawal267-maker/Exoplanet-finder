@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
 from exofinder.api.schemas.analysis import StellarOut
 from exofinder.api.schemas.catalog import SignalOut
+from exofinder.api.schemas.common import UtcDatetime
 from exofinder.api.schemas.predictions import PredictionOut
 
 
@@ -37,7 +36,7 @@ class TargetOut(BaseModel):
     lc_quarters: list[int] = []
     lc_n_cadences: int | None = None
     lc_error: str | None = None
-    lc_updated_at: datetime | None = None
+    lc_updated_at: UtcDatetime | None = None
     lc_cached: bool = False
     lc_cache_bytes: int | None = None
 

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from exofinder.api.schemas.common import UtcDatetime
 
 DatasetStatus = Literal["building", "ready", "failed", "cancelled"]
 Tier = Literal["pilot", "standard", "full", "custom"]
@@ -149,7 +150,7 @@ class DatasetOut(BaseModel):
     n_val: int = 0
     n_test: int = 0
     n_excluded: int | None = None
-    created_at: datetime
+    created_at: UtcDatetime
     job_id: str | None = None
     n_models: int = 0
     error: str | None = None
@@ -159,6 +160,11 @@ class DatasetOut(BaseModel):
 
 class DatasetDetailOut(DatasetOut):
     stats: DatasetStats | None = None
+    provenance: dict[str, Any] | None = Field(
+        None,
+        description="From manifest.json: catalogue snapshots (id, table, retrieved_at, sha256), light-curve "
+        "digest, pipeline version/config, label mode, split seed/fractions, reserved stars, content hash",
+    )
 
 
 class DatasetExampleOut(BaseModel):

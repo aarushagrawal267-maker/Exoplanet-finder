@@ -51,7 +51,8 @@ describe("Dataset Explorer", () => {
     await waitFor(() => expect(api.calls.some((c) => c.path === "/datasets/7/examples" && c.search.includes("reason=label_conflict") && c.search.includes("included=false"))).toBe(true));
     await userEvent.click(screen.getByRole("tab", { name: /Provenance/ }));
     expect(screen.getByText("Content hash (SHA-256)")).toBeInTheDocument();
-    expect(screen.getByText(/does not return them yet/)).toBeInTheDocument();
+    expect(screen.getByText("NASA catalogue snapshots")).toBeInTheDocument();
+    expect(screen.getByText("q1_q17_dr24_tce")).toBeInTheDocument();
   });
 
   it("offers a forced delete with an explicit warning when models depend on the dataset", async () => {

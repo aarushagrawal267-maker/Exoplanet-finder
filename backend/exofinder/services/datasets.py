@@ -56,6 +56,7 @@ from exofinder.db.models import (
     DatasetExample,
     Evaluation,
     Experiment,
+    Job,
     ModelVersion,
     Signal,
     Target,
@@ -996,7 +997,34 @@ def dataset_detail(session: Session, dataset_id: int) -> dict[str, Any]:
     ds = get_dataset(session, dataset_id)
     out = dataset_summary(ds, model_counts(session).get(ds.id, 0))
     out["stats"] = ds.stats if ds.status == "ready" else None
+    out["provenance"] = _manifest_provenance(ds) if ds.status == "ready" else None
     return out
+
+
+_PROVENANCE_KEYS = (
+    "catalogue_snapshots",
+    "lightcurves",
+    "pipeline_version",
+    "pipeline_config",
+    "label_mode",
+    "split_seed",
+    "split_fractions",
+    "exclude_conflicts",
+    "reserved_kepids",
+    "content_hash",
+    "created_at",
+)
+
+
+def _manifest_provenance(ds: Dataset) -> dict[str, Any] | None:
+    """Provenance block of the dataset's ``manifest.json`` (catalogue snapshots + SHA-256, etc.)."""
+    path = Path(ds.path or get_settings().datasets_dir / str(ds.id)) / "manifest.json"
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    meta = manifest.get("meta", manifest) if isinstance(manifest, dict) else {}
+    return {k: meta[k] for k in _PROVENANCE_KEYS if k in meta}
 
 
 def dataset_examples(
@@ -1177,7 +1205,9 @@ def delete_dataset(session: Session, dataset_id: int, force: bool = False) -> di
     from exofinder.services.experiments import delete_experiment_rows
 
     ds = get_dataset(session, dataset_id)
-    if ds.status == "building" and ds.job_id and get_runner().is_active(ds.job_id):
+    build_job = session.get(Job, ds.job_id) if ds.job_id else None
+    building_elsewhere = build_job is not None and build_job.status in ("queued", "running")
+    if ds.status == "building" and ds.job_id and (get_runner().is_active(ds.job_id) or building_elsewhere):
         raise conflict(
             "The dataset is still being built", "dataset_building", "Cancel the build job first, then delete."
         )
