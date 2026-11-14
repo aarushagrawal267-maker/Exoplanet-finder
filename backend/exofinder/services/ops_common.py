@@ -157,5 +157,7 @@ def log_histogram(
     counts = {}
     for cls, vs in values_by_class.items():
         arr = np.asarray([v for v in vs if v is not None and v > 0 and math.isfinite(v)], dtype=np.float64)
-        counts[cls] = np.histogram(np.log10(arr), bins=edges)[0].astype(int).tolist() if arr.size else [0] * n_bins
+        counts[cls] = (
+            np.histogram(np.log10(arr), bins=edges)[0].astype(int).tolist() if arr.size else [0] * n_bins
+        )
     return {"log10_edges": edges.tolist(), "counts": counts, "unit": unit}
