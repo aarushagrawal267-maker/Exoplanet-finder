@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from exofinder.db.models import Dataset, EpochMetric, Evaluation, Experiment, ModelVersion
 from exofinder.jobs.runner import get_runner
+from exofinder.services.jobs import reconcile_orphans
 from exofinder.services.jsonutil import to_jsonable
 from exofinder.services.ops_errors import bad_request, conflict, not_found
 
@@ -89,6 +90,7 @@ def list_experiments(
     status: str | None = None,
     archived: bool | None = None,
 ) -> list[dict[str, Any]]:
+    reconcile_orphans(session)
     q = select(Experiment).order_by(Experiment.created_at.desc(), Experiment.id.desc())
     if model_type:
         q = q.where(Experiment.model_type == model_type)
@@ -123,6 +125,7 @@ def experiment_detail(session: Session, experiment_id: int) -> dict[str, Any]:
     from exofinder.services.evaluation import evaluation_summary
     from exofinder.services.models import model_summary
 
+    reconcile_orphans(session)
     exp = get_experiment(session, experiment_id)
     out = experiment_summary(session, exp)
     mv = _model_for(session, exp.id)

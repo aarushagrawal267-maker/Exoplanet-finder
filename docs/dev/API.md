@@ -118,3 +118,31 @@ Numbers that are scientific values carry provenance where relevant:
 | GET | `/api/settings/backup` | SQLite backup file download |
 | GET | `/api/docs/pages` | research documentation index (from repo `docs/*.md`) |
 | GET | `/api/docs/pages/{slug}` | `{slug, title, markdown}` |
+
+## Implementation notes (as built; the live OpenAPI at `/docs` is authoritative)
+* Job-starting endpoints return `JobOut` with HTTP 202. `POST /api/datasets` puts the new dataset id in
+  `params.dataset_id`. SSE streams (`/api/jobs/{id}/events`, `/api/jobs/stream`) start with a
+  `snapshot` event and send keep-alive comments.
+* Extra parameters: datasets `download_missing`; evaluation `n_boot`, `seed`; dataset examples
+  `reason` filter; models `include_fixtures`; `DELETE /api/models/{id}?force=true`;
+  predictions `download_if_missing` (default true). `GET /api/uploads/{id}` returns upload metadata.
+* Model views use the key `"global"` (Python alias). Light-curve payloads are rounded (time 1e-5 d,
+  flux 1e-6); the binned folded curve spans ±min(3·T14, P/2) in 120 bins; at most 5 000 transit times.
+* Status codes: `GET /api/lightcurves/{kepid}` → 404 `not_downloaded`; POST analysis endpoints → 409
+  `not_downloaded`; predictions → 409 `no_model`, 409 `lightcurve_unavailable`, 400
+  `unscorable_signal`; storage clear → 409 `job_running`; dataset delete → 409 `dataset_in_use`.
+* `POST /api/targets/{kepid}/download` → 200 + target when cached, else 202 `JobOut` (an already-running
+  download job is returned rather than duplicated).
+* Predictions: `seen_in_split` is `train|val|test|null` by star; threshold, threshold mode and uncertainty
+  method are top-level fields (stored in `Prediction.ephemeris["scoring"]`); input views are stored in
+  `data/predictions/<uuid>.npz`. Candidates carry `seen_in_training`, `has_fixture_model_scores` and a
+  research-leads disclaimer.
+* Stored metric shapes: `Evaluation.metrics.at_0_5`, `Evaluation.ci.method`; `ModelVersion.test_metrics`
+  includes `ci`, `evaluation_id` and `test_evaluation_number`. Models trained on synthetic data are
+  marked `is_fixture=true`; deleting a model deletes its predictions.
+* `/api/system/summary`: `next_steps` lists pending steps only; `checklist` lists all with done flags.
+  Catalogue signal filters accept comma-separated lists, `none` selects unlabelled; stats histograms are
+  log10 (`log10_period`, `log10_depth`, `log10_snr`). `/api/docs/pages` lists `docs/*.md` except
+  `docs/dev/` and `DEV_PROGRESS.md`.
+* Errors raised by services are `ServiceError`s converted to `ApiError` in `api/routers/_ops_route.py`
+  and `_sci_route.py` (services never import the API layer).

@@ -17,6 +17,7 @@ import shutil
 import sys
 import tempfile
 import time
+import warnings
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
@@ -137,7 +138,9 @@ def _doctor_checks(network: bool) -> _Checks:
     optional = ("lightkurve", "joblib")
     for name in required + optional:
         try:
-            mod = __import__(name)
+            with warnings.catch_warnings():  # e.g. lightkurve warns about optional sub-dependencies
+                warnings.simplefilter("ignore")
+                mod = __import__(name)
             c.add("ok", f"package {name}", getattr(mod, "__version__", "installed"))
         except Exception as exc:  # noqa: BLE001 - report any import problem
             if name in required:

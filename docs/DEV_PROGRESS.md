@@ -14,8 +14,8 @@ Branch: `claude/hopeful-edison-jbmnjq`.
 - [x] P0  Foundation: repo skeleton, config, DB schema, shared types, contracts (docs/dev/CONTRACTS.md)
 - [x] P1  Backend core: astro pipeline, data acquisition, ML engine (+ unit tests) — commit 89cd2c6
 - [x] P1b Frontend design system + app shell — commit 89cd2c6
-- [ ] P2  Services, job runner, FastAPI routers, CLI (+ API tests) -> docs/dev/API.md — IN PROGRESS (two agents: ops = datasets/jobs/training/models/evaluation/experiments/reports/CLI; sci = system/catalog/targets/lightcurves/uploads/analysis/predictions/settings/docs). Shared helpers committed: services/{jsonutil,app_settings,signal_views}.py, tests/api/conftest.py
-- [ ] P3  Frontend pages wired to API
+- [x] P2  Services, job runner, FastAPI routers, CLI (+ API tests) -> docs/dev/API.md — DONE (two agents: ops = datasets/jobs/training/models/evaluation/experiments/reports/CLI; sci = system/catalog/targets/lightcurves/uploads/analysis/predictions/settings/docs). Shared helpers committed: services/{jsonutil,app_settings,signal_views}.py, tests/api/conftest.py
+- [ ] P3  Frontend pages wired to API — IN PROGRESS: agent P3a (science pages + shell + typed API via openapi-typescript); P3b (Dataset Explorer, Model Training, Model Evaluation, Experiments, job tray) next
 - [ ] P4  Real data: catalogue refresh, pilot + standard downloads, dataset builds
 - [ ] P5  Real training of 4 models + final evaluation, reference report
 - [ ] P6  Windows scripts, README, docs, research report template
@@ -36,3 +36,9 @@ Branch: `claude/hopeful-edison-jbmnjq`.
 - README timing claims (pilot "a few minutes", suite "30-90 minutes") MUST be replaced by measured values in P5.
 - Ruff rule set pinned in backend/pyproject.toml (E,F,W,I,B,UP,SIM; ignore E501,SIM300).
 - Vite proxy now targets http://127.0.0.1:8000.
+- P2 fix: forced showcase test stars no longer consume the 10% test quota (ml/splits.py); the first pilot
+  build had all 17 test positives from 4 showcase systems. Dataset 1 + models 1-2 deleted; pilot and
+  standard rebuilt via CLI (log logs/build_datasets.log). Docs corrected (quality gates exclude blocking
+  issues only; grade C kept on purpose).
+- Parallel dataset processing: 3 worker processes, measured 2.74x speed-up (1.79 s -> 0.65 s per signal).
+- Full-tier download running (logs/download_full.log).
