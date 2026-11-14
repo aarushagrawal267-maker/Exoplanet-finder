@@ -53,7 +53,8 @@ export function statusRows(health: ReturnType<typeof useHealth>, summary: Return
     {
       key: "dataset",
       label: "Dataset",
-      value: latestDataset ? `${latestDataset.name}${latestDataset.status !== "ready" ? ` (${latestDataset.status})` : ""}` : s ? "none built" : "—",
+      value: latestDataset?.name ?? (s ? "none built" : "—"),
+      title: latestDataset ? `Latest dataset: ${latestDataset.status} · ${latestDataset.tier} · ${latestDataset.n_examples} examples` : undefined,
       tone: latestDataset ? (latestDataset.status === "ready" ? "ok" : latestDataset.status === "failed" ? "error" : "warn") : "idle",
     },
   ];

@@ -35,7 +35,7 @@ export function Pagination({ total, offset, limit, onChange, pageSizes, noun = "
           <Select
             size="sm"
             aria-label="Rows per page"
-            className="w-[92px]"
+            className="w-[116px]"
             mono
             value={String(limit)}
             onChange={(v) => onChange(0, Number(v))}

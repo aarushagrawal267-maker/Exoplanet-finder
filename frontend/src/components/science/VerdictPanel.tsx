@@ -249,6 +249,10 @@ export function VerdictPanel({
         <Banner tone="warn" className="mt-3" title="Seen during training">
           This signal was in the model&apos;s training set, so the score is optimistic.
         </Banner>
+      ) : seenInSplit === "val" ? (
+        <Banner tone="info" className="mt-3" title="Seen during validation">
+          This star was in the model&apos;s validation split, which chose the decision threshold and the calibration — the score is mildly optimistic.
+        </Banner>
       ) : null}
 
       <p className="mt-5 flex items-center gap-2 border-t border-hairline pt-4 text-sm text-fg" data-testid="research-lead-note">

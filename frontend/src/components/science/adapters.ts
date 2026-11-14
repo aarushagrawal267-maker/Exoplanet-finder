@@ -89,3 +89,32 @@ export function pairs(x: ReadonlyArray<number | null>, y: ReadonlyArray<number |
   }
   return { x: ox, y: oy };
 }
+
+/** API unit strings → typographic units for display. */
+const UNIT_TEXT: Record<string, string> = {
+  R_earth: "R⊕",
+  R_sun: "R☉",
+  M_sun: "M☉",
+  sigma: "σ",
+  "log10(cm s^-2)": "log₁₀(cm s⁻²)",
+  "Rp/R*": "Rₚ/R★",
+};
+
+export function displayUnit(unit: string | null | undefined): string {
+  if (!unit) return "";
+  return UNIT_TEXT[unit] ?? unit;
+}
+
+/** Labels for the derived (estimated) quantities of a transit analysis. */
+export const DERIVED_LABELS: Record<string, string> = {
+  planet_radius_re: "Planet radius",
+  radius_ratio: "Radius ratio Rₚ/R★",
+  a_over_rstar: "Scaled orbit a/R★",
+  semi_major_axis_au: "Semi-major axis",
+  equilibrium_temp_k: "Equilibrium temperature",
+  a_over_rstar_from_duration: "a/R★ from the transit duration",
+};
+
+export function derivedLabel(key: string): string {
+  return DERIVED_LABELS[key] ?? key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+}

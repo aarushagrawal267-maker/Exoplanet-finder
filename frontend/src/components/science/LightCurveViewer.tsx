@@ -188,9 +188,9 @@ export function LightCurveViewer({ showFolded = true, defaultView = "flat", pane
     return (
       <div className={cn("flex flex-col gap-3", className)}>
         <ChartSkeleton height={panelHeight + 72} label="Loading light curve" />
-        <p className="flex items-center gap-2 text-xs text-fg-secondary">
+        <div className="flex items-center gap-2 text-xs text-fg-secondary">
           <TransitLoader size={18} label="Processing" /> Cleaning, detrending and folding the light curve — a few seconds the first time, cached afterwards.
-        </p>
+        </div>
       </div>
     );
   }

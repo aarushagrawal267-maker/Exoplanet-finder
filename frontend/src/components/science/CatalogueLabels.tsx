@@ -33,23 +33,25 @@ export function CategoryBadge({ category, className }: { category: string; class
   );
 }
 
-export function AvLabelBadge({ label }: { label: string | null | undefined }) {
+export function AvLabelBadge({ label, prefix = false }: { label: string | null | undefined; prefix?: boolean }) {
   if (!label) return <span className="text-fg-secondary">—</span>;
   const info = AV_LABELS[label];
   const tone: BadgeTone = info?.cls === "planet" ? "planet" : info?.cls === "false_positive" ? "fp" : "neutral";
   return (
     <Badge tone={tone} mono title={info?.help ?? label} icon={info?.cls === "planet" ? <Orbit aria-hidden="true" /> : info?.cls === "false_positive" ? <CircleSlash2 aria-hidden="true" /> : undefined}>
+      {prefix ? "DR24 · " : ""}
       {label}
     </Badge>
   );
 }
 
-export function KoiBadge({ disposition }: { disposition: string | null | undefined }) {
+export function KoiBadge({ disposition, prefix = false }: { disposition: string | null | undefined; prefix?: boolean }) {
   if (!disposition) return <span className="text-fg-secondary">—</span>;
   const d = disposition.toUpperCase();
   const tone: BadgeTone = d === "CONFIRMED" ? "planet" : d === "FALSE POSITIVE" ? "fp" : "cosmic";
   return (
     <Badge tone={tone} title="KOI disposition (cumulative table)">
+      {prefix ? "KOI · " : ""}
       {d === "FALSE POSITIVE" ? "False positive" : d.charAt(0) + d.slice(1).toLowerCase()}
     </Badge>
   );

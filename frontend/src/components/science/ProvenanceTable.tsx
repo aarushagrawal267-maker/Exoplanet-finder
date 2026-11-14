@@ -22,6 +22,10 @@ export interface ProvenanceRow {
   quantity: string;
   unit: string;
   digits?: number;
+  /** Fraction digits for the ± uncertainty (default: `digits`). */
+  errDigits?: number;
+  /** Skip the agreement column (e.g. epochs, where a ratio is meaningless). */
+  noAgreement?: boolean;
   catalogue?: ProvenanceCell | null;
   measured?: ProvenanceCell | null;
   estimate?: ProvenanceCell | null;
@@ -62,12 +66,12 @@ function Missing() {
   );
 }
 
-function Value({ cell, digits }: { cell?: ProvenanceCell | null; digits: number }) {
+function Value({ cell, digits, errDigits = digits }: { cell?: ProvenanceCell | null; digits: number; errDigits?: number }) {
   if (!cell || !isFiniteNumber(cell.value)) return <Missing />;
   return (
     <span title={cell.source}>
       {formatNumber(cell.value, { digits })}
-      {isFiniteNumber(cell.err) ? <span className="text-fg-secondary"> ± {formatNumber(cell.err, { digits })}</span> : null}
+      {isFiniteNumber(cell.err) ? <span className="text-fg-secondary"> ± {formatNumber(cell.err, { digits: errDigits })}</span> : null}
     </span>
   );
 }
@@ -102,7 +106,7 @@ export function ProvenanceTable({ rows, caption = "Catalogue, measured and estim
           </thead>
           <tbody>
             {rows.map((r) => {
-              const a = agreement(r.measured, r.catalogue);
+              const a = r.noAgreement ? null : agreement(r.measured, r.catalogue);
               const d = r.digits ?? 2;
               return (
                 <tr key={r.quantity} className="group">
@@ -116,13 +120,13 @@ export function ProvenanceTable({ rows, caption = "Catalogue, measured and estim
                     ) : null}
                   </th>
                   <td className="num whitespace-nowrap border-b border-hairline px-3 text-right text-fg group-last:border-b-0">
-                    <Value cell={r.catalogue} digits={d} />
+                    <Value cell={r.catalogue} digits={d} errDigits={r.errDigits} />
                   </td>
                   <td className="num whitespace-nowrap border-b border-hairline px-3 text-right text-fg group-last:border-b-0">
-                    <Value cell={r.measured} digits={d} />
+                    <Value cell={r.measured} digits={d} errDigits={r.errDigits} />
                   </td>
                   <td className="num whitespace-nowrap border-b border-hairline px-3 text-right text-fg group-last:border-b-0">
-                    <Value cell={r.estimate} digits={d} />
+                    <Value cell={r.estimate} digits={d} errDigits={r.errDigits} />
                   </td>
                   <td className="num whitespace-nowrap border-b border-hairline px-4 text-right group-last:border-b-0">
                     {a ? (

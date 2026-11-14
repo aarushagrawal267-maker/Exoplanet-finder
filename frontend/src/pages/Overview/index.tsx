@@ -158,7 +158,7 @@ function LightCurveCard({ s }: { s: SystemSummaryOut }) {
         </Link>
       }
     >
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <dl className="flex flex-col gap-1.5 text-sm">
         {[
           ["Not downloaded", l.not_downloaded],
           ["Queued", l.queued],
