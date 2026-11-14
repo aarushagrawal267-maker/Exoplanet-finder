@@ -47,6 +47,9 @@ async def lifespan(app: FastAPI):
     n = mark_interrupted_jobs()
     if n:
         log.warning("Marked %d interrupted job(s) as failed", n)
+    from exofinder.services.app_settings import apply_overrides
+
+    apply_overrides()
     get_runner()
     yield
     get_runner().shutdown(wait=False)
