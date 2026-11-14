@@ -164,7 +164,14 @@ function DeleteDataset({ ds, onDeleted }: { ds: DatasetDetailOut; onDeleted: (ou
   };
   return (
     <>
-      <Button variant="danger" size="sm" icon={<Trash2 />} onClick={() => setOpen(true)}>
+      <Button
+        variant="danger"
+        size="sm"
+        icon={<Trash2 />}
+        onClick={() => setOpen(true)}
+        disabled={ds.status === "building"}
+        title={ds.status === "building" ? "Cancel the build (or let it finish) before deleting: a build started from the command line would otherwise lose its dataset." : undefined}
+      >
         Delete
       </Button>
       <ConfirmDialog
