@@ -1,4 +1,6 @@
 /** Observatory Night UI primitives. */
+export { ApiErrorBanner, errorParts, hasErrorCode } from "./ApiErrorBanner";
+export type { ApiErrorBannerProps } from "./ApiErrorBanner";
 export { Badge, Kbd } from "./Badge";
 export type { BadgeProps, BadgeTone } from "./Badge";
 export { Banner } from "./Banner";
@@ -28,6 +30,8 @@ export type { ModalProps } from "./Modal";
 export { NumberInput } from "./NumberInput";
 export type { NumberInputProps } from "./NumberInput";
 export { PageHeader } from "./PageHeader";
+export { Pagination } from "./Pagination";
+export type { PaginationProps } from "./Pagination";
 export type { PageHeaderProps } from "./PageHeader";
 export { Popover } from "./Popover";
 export type { PopoverProps, PopoverTriggerProps } from "./Popover";

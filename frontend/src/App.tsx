@@ -5,6 +5,7 @@
 import { lazy } from "react";
 import { createBrowserRouter, RouterProvider, type RouteObject } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
+import { searchTargetCommands } from "@/components/layout/targetSearch";
 
 const Overview = lazy(() => import("@/pages/Overview"));
 const SignalExplorer = lazy(() => import("@/pages/SignalExplorer"));
@@ -24,7 +25,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 
 export const routes: RouteObject[] = [
   {
-    element: <AppShell />,
+    element: <AppShell onSearch={searchTargetCommands} />,
     children: [
       { path: "/", element: <Overview /> },
       { path: "/signals", element: <SignalExplorer /> },
@@ -37,6 +38,7 @@ export const routes: RouteObject[] = [
       { path: "/evaluation", element: <ModelEvaluation /> },
       { path: "/experiments", element: <Experiments /> },
       { path: "/docs", element: <ResearchDocs /> },
+      { path: "/docs/:slug", element: <ResearchDocs /> },
       { path: "/settings", element: <Settings /> },
       { path: "/targets/:kepid", element: <TargetDossier /> },
       { path: "/design", element: <DesignSystem /> },
