@@ -17,10 +17,10 @@ Branch: `claude/hopeful-edison-jbmnjq`.
 - [x] P2  Services, job runner, FastAPI routers, CLI (+ API tests) -> docs/dev/API.md — DONE (two agents: ops = datasets/jobs/training/models/evaluation/experiments/reports/CLI; sci = system/catalog/targets/lightcurves/uploads/analysis/predictions/settings/docs). Shared helpers committed: services/{jsonutil,app_settings,signal_views}.py, tests/api/conftest.py
 - [x] P3  Frontend pages wired to API (all 13 pages + job tray; typed client generated from OpenAPI)
 - [x] P4  Real data: catalogue refresh, pilot + standard + full downloads (9,866 stars, 0 errors), pilot + standard datasets built; full dataset building
-- [x] P5  Real training of 4 models + final evaluation, reference report (docs/reference-results.md); Full-tier study pending
+- [x] P5  Real training of 4 models on Standard and Full tiers + one-time test evaluation, reference report (docs/reference-results.md)
 - [x] P6  Windows scripts, README, docs, research report template
-- [ ] P7  QA: IN PROGRESS — 88/88 Playwright vs real app on 8000/5173; independent backend-correctness and Windows-compat reviews running
-- [ ] P8  Delivery summary
+- [x] P7  QA: 423 backend + 4 network, 232 frontend unit, 88/88 Playwright vs real app on 8000/5173; independent correctness + Windows reviews done and fixed (docs/test-results.md)
+- [x] P8  Delivery summary (2026-11-15); resume scheduled task disabled
 
 ## Environment notes
 - Dev container: Linux, 4 CPU, 15 GB RAM, no GPU. venv at .venv (Python 3.11), `pip install -e backend`.
