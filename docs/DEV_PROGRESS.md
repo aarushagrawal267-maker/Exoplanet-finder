@@ -54,3 +54,8 @@ Branch: `claude/hopeful-edison-jbmnjq`.
   UI density / reduced-motion settings wired.
 - Full DR24 build (dataset 4) started 22:38 UTC by CLI; heartbeat kept fresh by scratchpad hb_keeper.py
   (restart it if it stops while the build runs). Then: train suite on dataset 4, evaluate on test once.
+- Full DR24 (dataset 3 after id reuse): first build was stopped at 88% by the 2-hour limit on
+  background commands; rebuilt from the view cache in 6.4 min: 15,539 examples (train 12,418 / val 1,553 /
+  test 1,568; 22% planet-like = natural DR24 prevalence), 207 exclusions. Training split into two runs
+  (LR+RF+single-view CNN, then two-view CNN) to stay under the limit; default configs, decided before
+  any Full test evaluation.
