@@ -1,6 +1,6 @@
 # Test results and acceptance checklist (release 1.0.0)
 
-Recorded on 2026-11-14/15 in the development environment. **Every number below was produced by
+Recorded on 2026-11-14/15 in the development environment (final runs after all fixes on 2026-11-15). **Every number below was produced by
 actually running the command shown.** Nothing here is estimated.
 
 ## Environment
@@ -18,7 +18,7 @@ Playwright Chromium.
 | Frontend lint | `npm run lint` | pass |
 | Frontend unit (Vitest + React Testing Library) | `npm test` | **232 passed** (32 files) |
 | Frontend production build | `npm run build` | pass |
-| End-to-end (Playwright, desktop 1440×900 + mobile 390×844) against the real app started with `scripts/start.sh` on :8000/:5173 with the real NASA data | `E2E_BASE_URL=http://localhost:5173 npx playwright test e2e/smoke.spec.ts e2e/science-pages.spec.ts e2e/detect-fixtures.spec.ts e2e/ops-pages.spec.ts e2e/ops-fixtures.spec.ts` | **88 passed** |
+| End-to-end (Playwright, desktop 1440×900 + mobile 390×844) against the real app started with `scripts/start.sh` on :8000/:5173 with the real NASA data | `E2E_BASE_URL=http://localhost:5173 npx playwright test e2e/smoke.spec.ts e2e/science-pages.spec.ts e2e/detect-fixtures.spec.ts e2e/ops-pages.spec.ts e2e/ops-fixtures.spec.ts` | **88 passed** (re-run after the final fixes: 88 passed) |
 
 Test data rules: the backend tests use real Kepler FITS files (`backend/tests/fixtures/`) plus
 synthetic catalogue rows and light curves that are labelled as test data and live only in temporary
@@ -32,9 +32,11 @@ folders. Models trained in tests are flagged `is_fixture`.
 | MAST downloads | 9 866 stars (every star with a labelled DR24 signal), **0 errors**, 6.1 GB cache |
 | Pipeline on Kepler-2 | grade A; depth 6 529 ppm vs catalogue 6 675; blind BLS period error 6.8 × 10⁻⁵ |
 | Standard dataset | 2 934 examples (train 2 335 / val 290 / test 309), 75 exclusions with reasons, star-level split with leakage check |
-| Training (4 models) | 14 min in total on 4 CPU cores |
-| Held-out test evaluation | see [reference results](reference-results.md) |
-| Prediction on an unseen showcase star | all eight Kepler-90 planets scored planet-like by the two-view CNN |
+| Full dataset | 15 539 examples (train 12 418 / val 1 553 / test 1 568; 22.4 % planet-like), 207 exclusions with reasons |
+| Training (4 models × 2 tiers) | Standard 14 min, Full 28 min in total on 4 CPU cores |
+| Held-out test evaluation (Full tier) | two-view CNN ROC-AUC 0.988, PR-AUC 0.965 [0.948, 0.977], F1 0.913; details in [reference results](reference-results.md) |
+| Prediction on an unseen showcase star | all eight Kepler-90 planets scored planet-like by the two-view CNNs of both tiers |
+| Inference speed (quiet CPU) | two-view CNN about 3 ms per signal (batch 1), 0.8 ms per signal (batch 64) |
 
 ## Reviews
 * Each core package (astro, data, ML, frontend design system) was reviewed by an independent
