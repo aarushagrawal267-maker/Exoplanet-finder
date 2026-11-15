@@ -15,7 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from exofinder import __version__
-from exofinder.api.errors import install_error_handlers
+from exofinder.api.errors import ApiError, install_error_handlers
 from exofinder.config import PIPELINE_VERSION, get_settings
 from exofinder.db import init_db
 
@@ -83,7 +83,31 @@ def create_app() -> FastAPI:
         return {"status": "ok", "version": __version__, "pipeline_version": PIPELINE_VERSION}
 
     app.state.routers = _include_routers(app)
+    _mount_frontend(app)
     return app
+
+
+def _mount_frontend(app: FastAPI) -> None:
+    """Serve a built frontend (``EXOF_FRONTEND_DIST``) from the same server, e.g. for a hosted
+    deployment. Unknown non-API paths fall back to index.html (client-side routing)."""
+    import os
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+
+    dist = os.environ.get("EXOF_FRONTEND_DIST", "").strip()
+    if not dist or not (Path(dist) / "index.html").is_file():
+        return
+    root = Path(dist).resolve()
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def _spa(full_path: str) -> FileResponse:
+        if full_path.startswith("api/"):
+            raise ApiError(404, f"Unknown API path /{full_path}", "not_found")
+        candidate = (root / full_path).resolve()
+        if full_path and candidate.is_file() and root in candidate.parents:
+            return FileResponse(candidate)
+        return FileResponse(root / "index.html")
 
 
 app = create_app()
