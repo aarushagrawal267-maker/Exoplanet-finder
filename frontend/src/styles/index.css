@@ -1,0 +1,221 @@
+/*
+ * Observatory Night — global styles.
+ * Tokens live in src/styles/tokens.ts (exposed here as --c-* custom properties by the Tailwind
+ * plugin in tailwind.config.ts).
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--c-void);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-void font-sans text-base text-fg antialiased;
+    min-height: 100vh;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Numbers are always mono + tabular inside these elements. */
+  code,
+  kbd,
+  samp,
+  pre {
+    @apply num;
+  }
+
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-cosmic);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgb(110 155 255 / 0.32);
+    color: var(--c-text-primary);
+  }
+
+  /* Quiet, thin scrollbars that match the hairline aesthetic. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-hairline-strong) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--c-hairline-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+@layer components {
+  /* Card: 1px hairline border, 12px radius, faint top-edge highlight — no heavy glows. */
+  .card-surface {
+    @apply rounded-card border border-hairline bg-surface;
+    background-image: linear-gradient(180deg, rgb(230 234 245 / 0.035) 0%, rgb(230 234 245 / 0) 72px);
+    box-shadow: inset 0 1px 0 0 rgb(230 234 245 / 0.045);
+  }
+
+  /*
+   * Atmosphere — a faint static starfield plus a subtle astrographic "plate grid".
+   * Only used on hero and empty states; working pages stay flat. No animation.
+   */
+  .atmosphere {
+    position: relative;
+    isolation: isolate;
+  }
+  .atmosphere::before,
+  .atmosphere::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    border-radius: inherit;
+  }
+  .atmosphere::before {
+    background-image:
+      radial-gradient(1px 1px at 23px 41px, rgb(230 234 245 / 0.55), transparent 60%),
+      radial-gradient(1px 1px at 97px 13px, rgb(230 234 245 / 0.35), transparent 60%),
+      radial-gradient(1.5px 1.5px at 151px 87px, rgb(196 210 255 / 0.5), transparent 60%),
+      radial-gradient(1px 1px at 61px 139px, rgb(230 234 245 / 0.3), transparent 60%),
+      radial-gradient(1px 1px at 181px 171px, rgb(230 234 245 / 0.4), transparent 60%),
+      radial-gradient(1px 1px at 131px 199px, rgb(160 139 255 / 0.45), transparent 60%),
+      radial-gradient(1px 1px at 11px 191px, rgb(230 234 245 / 0.25), transparent 60%),
+      radial-gradient(1.5px 1.5px at 271px 53px, rgb(230 234 245 / 0.45), transparent 60%),
+      radial-gradient(1px 1px at 241px 229px, rgb(110 155 255 / 0.5), transparent 60%),
+      radial-gradient(1px 1px at 293px 151px, rgb(230 234 245 / 0.3), transparent 60%);
+    background-size:
+      211px 223px,
+      211px 223px,
+      211px 223px,
+      211px 223px,
+      211px 223px,
+      211px 223px,
+      211px 223px,
+      307px 293px,
+      307px 293px,
+      307px 293px;
+    opacity: 0.8;
+    mask-image: radial-gradient(ellipse at 50% 40%, #000 30%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 30%, transparent 85%);
+  }
+  .atmosphere::after {
+    background-image:
+      linear-gradient(to right, rgb(110 155 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(110 155 255 / 0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+    mask-image: radial-gradient(ellipse at 50% 35%, #000 10%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at 50% 35%, #000 10%, transparent 70%);
+  }
+
+  .skeleton-shimmer {
+    background-color: var(--c-surface-raised);
+    background-image: linear-gradient(
+      90deg,
+      rgb(230 234 245 / 0) 0,
+      rgb(230 234 245 / 0.05) 50%,
+      rgb(230 234 245 / 0) 100%
+    );
+    background-size: 400px 100%;
+    background-repeat: no-repeat;
+    @apply animate-shimmer;
+  }
+}
+
+/* Range slider (components/ui/Slider.tsx). --pct is the filled fraction of the track. */
+.exo-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--c-cosmic) 0 var(--pct, 0%), var(--c-hairline-strong) var(--pct, 0%) 100%);
+}
+.exo-range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--c-hairline-strong);
+}
+.exo-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--c-cosmic);
+}
+.exo-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--c-text-primary);
+  border: 3px solid var(--c-cosmic);
+  box-shadow: 0 0 0 3px var(--c-void);
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.exo-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--c-text-primary);
+  border: 3px solid var(--c-cosmic);
+}
+.exo-range:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+.exo-range:focus-visible {
+  outline: none;
+}
+.exo-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--c-void), 0 0 0 5px var(--c-cosmic);
+}
+.exo-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--c-void), 0 0 0 5px var(--c-cosmic);
+}
+
+/* Respect the user's motion preference everywhere (including chart transitions): the operating
+   system setting, unless Settings -> Reduced motion forces it on (data-motion="reduce") or off
+   (data-motion="full"). */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) *::before,
+  :root:not([data-motion="full"]) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

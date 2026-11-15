@@ -1,4 +1,4 @@
-# Exoplanet Finder - Python runtime dependencies (Python 3.11 / 3.12).
+# Exoplanet Finder - Python runtime dependencies (Python 3.11 - 3.13; no compiler needed on Windows x64).
 # PyTorch is installed separately by setup.ps1 (CPU or CUDA build chosen automatically).
 fastapi==0.163.0
 uvicorn[standard]==0.54.0

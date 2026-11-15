@@ -46,7 +46,9 @@ class CatalogSnapshot(Base):
     __tablename__ = "catalog_snapshots"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    source: Mapped[str] = mapped_column(String(64), index=True)  # dr24_tce | koi_cumulative | confirmed | stellar
+    source: Mapped[str] = mapped_column(
+        String(64), index=True
+    )  # dr24_tce | koi_cumulative | confirmed | stellar
     table_name: Mapped[str] = mapped_column(String(64))
     query: Mapped[str] = mapped_column(Text)
     url: Mapped[str] = mapped_column(Text)
@@ -93,7 +95,9 @@ class Signal(Base):
     __table_args__ = (Index("ix_signals_kepid_category", "kepid", "category"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    signal_key: Mapped[str] = mapped_column(String(64), unique=True)  # TCE-011442793-01 | KOI-K00351.08 | PL-Kepler-90_i
+    signal_key: Mapped[str] = mapped_column(
+        String(64), unique=True
+    )  # TCE-011442793-01 | KOI-K00351.08 | PL-Kepler-90_i
     kepid: Mapped[int] = mapped_column(ForeignKey("targets.kepid"), index=True)
     primary_source: Mapped[str] = mapped_column(String(16))  # dr24_tce | koi | confirmed
 
@@ -112,7 +116,9 @@ class Signal(Base):
 
     # labels — raw values exactly as published
     av_training_set: Mapped[str | None] = mapped_column(String(8), index=True)  # PC | AFP | NTP | UNK
-    koi_disposition: Mapped[str | None] = mapped_column(String(24), index=True)  # CONFIRMED | CANDIDATE | FALSE POSITIVE
+    koi_disposition: Mapped[str | None] = mapped_column(
+        String(24), index=True
+    )  # CONFIRMED | CANDIDATE | FALSE POSITIVE
     koi_pdisposition: Mapped[str | None] = mapped_column(String(24))
     koi_score: Mapped[float | None] = mapped_column(Float)  # display only — NEVER a model feature
     fpflag_nt: Mapped[int | None] = mapped_column(Integer)
@@ -121,10 +127,16 @@ class Signal(Base):
     fpflag_ec: Mapped[int | None] = mapped_column(Integer)
 
     # derived
-    category: Mapped[str] = mapped_column(String(16), index=True)  # confirmed | false_positive | candidate | unknown
+    category: Mapped[str] = mapped_column(
+        String(16), index=True
+    )  # confirmed | false_positive | candidate | unknown
     label_conflict: Mapped[bool] = mapped_column(Boolean, default=False)
-    match_status: Mapped[str | None] = mapped_column(String(24))  # tce_only | koi_matched | koi_only | match_conflict | confirmed_only
-    provenance: Mapped[dict] = mapped_column(JSON, default=dict)  # {field: {table, column, snapshot_id, value}}
+    match_status: Mapped[str | None] = mapped_column(
+        String(24)
+    )  # tce_only | koi_matched | koi_only | match_conflict | confirmed_only
+    provenance: Mapped[dict] = mapped_column(
+        JSON, default=dict
+    )  # {field: {table, column, snapshot_id, value}}
 
     target: Mapped[Target] = relationship(back_populates="signals")
 
@@ -178,9 +190,13 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)  # uuid4 hex
-    kind: Mapped[str] = mapped_column(String(32), index=True)  # catalog_refresh | download | build_dataset | train | evaluate | batch_predict
+    kind: Mapped[str] = mapped_column(
+        String(32), index=True
+    )  # catalog_refresh | download | build_dataset | train | evaluate | batch_predict
     title: Mapped[str] = mapped_column(String(256))
-    status: Mapped[str] = mapped_column(String(16), default="queued", index=True)  # queued | running | succeeded | failed | cancelled
+    status: Mapped[str] = mapped_column(
+        String(16), default="queued", index=True
+    )  # queued | running | succeeded | failed | cancelled
     progress: Mapped[float] = mapped_column(Float, default=0.0)  # 0..1
     message: Mapped[str | None] = mapped_column(Text)
     params: Mapped[dict] = mapped_column(JSON, default=dict)
@@ -190,6 +206,10 @@ class Job(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     started_at: Mapped[datetime | None] = mapped_column(DateTime)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # Liveness: the owning process refreshes heartbeat_at every few seconds while the job is queued or
+    # running, so a server start only marks jobs whose owner has died (see jobs.runner).
+    heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime)
+    owner: Mapped[str | None] = mapped_column(String(128))  # "<kind>:<host>:<pid>" of the owning process
 
 
 # --------------------------------------------------------------------------------------------------
@@ -202,11 +222,15 @@ class Experiment(Base):
     name: Mapped[str] = mapped_column(String(128))
     model_type: Mapped[str] = mapped_column(String(32))  # logreg | random_forest | cnn_single | cnn_two_view
     dataset_id: Mapped[int] = mapped_column(ForeignKey("datasets.id"), index=True)
-    status: Mapped[str] = mapped_column(String(16), default="queued")  # queued | running | succeeded | failed | cancelled
+    status: Mapped[str] = mapped_column(
+        String(16), default="queued"
+    )  # queued | running | succeeded | failed | cancelled
     config: Mapped[dict] = mapped_column(JSON, default=dict)
     seed: Mapped[int] = mapped_column(Integer, default=42)
     device: Mapped[str | None] = mapped_column(String(16))
-    environment: Mapped[dict] = mapped_column(JSON, default=dict)  # python/torch/sklearn versions, git commit, cpu
+    environment: Mapped[dict] = mapped_column(
+        JSON, default=dict
+    )  # python/torch/sklearn versions, git commit, cpu
     val_metrics: Mapped[dict] = mapped_column(JSON, default=dict)
     best_epoch: Mapped[int | None] = mapped_column(Integer)
     epochs_run: Mapped[int | None] = mapped_column(Integer)
@@ -219,7 +243,9 @@ class Experiment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime)
 
-    epochs: Mapped[list[EpochMetric]] = relationship(back_populates="experiment", order_by="EpochMetric.epoch")
+    epochs: Mapped[list[EpochMetric]] = relationship(
+        back_populates="experiment", order_by="EpochMetric.epoch"
+    )
 
 
 class EpochMetric(Base):
