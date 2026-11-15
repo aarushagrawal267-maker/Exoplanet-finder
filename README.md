@@ -159,8 +159,13 @@ The **Overview** page always shows the next step for your installation. A typica
 
    *Measured on a 4-core CPU (no GPU), with other work running:* building the Standard dataset took
    31 minutes of processing; training the suite took 14 minutes (logistic regression 9 s, random
-   forest 18 s, single-view CNN 3 min, two-view CNN 10 min). A Pilot dataset is processed in about
-   2–3 minutes. Results: [Reference results](docs/reference-results.md).
+   forest 18 s, single-view CNN 3 min, two-view CNN 10 min). On the Full tier (≈15 500 signals,
+   ≈9 900 stars, about 6 GB of light-curve cache) processing takes a few hours and the suite about
+   45 minutes. A Pilot dataset is processed in about 2–3 minutes.
+
+   **Reference results** on held-out test stars: on the Full tier, the two-view CNN reaches ROC-AUC
+   0.988 and PR-AUC 0.965 at NASA's natural class balance. See
+   [Reference results](docs/reference-results.md).
 6. **Evaluate.** In **Model Evaluation**, run the final evaluation on the held-out **test** set and
    compare models. The test set is used only here; model choices are made on the validation set.
 7. **Detect.** In **Planet Detection**, score a catalogue signal or upload your own light curve.
@@ -321,7 +326,7 @@ setup.ps1, start.ps1, stop.ps1   Windows scripts
 * [Pipeline](docs/pipeline.md): light-curve processing and quality gates
 * [Models](docs/models.md) and [Training](docs/training.md)
 * [Evaluation](docs/evaluation.md): metrics, confidence intervals, calibration
-* [Reference results](docs/reference-results.md): real results of the four models on the Standard tier
+* [Reference results](docs/reference-results.md): real results of the four models on the Standard and Full tiers
 * [Predictions](docs/prediction.md): how to read a score
 * [Experiments and reports](docs/experiments.md)
 * [Limitations](docs/limitations.md)
