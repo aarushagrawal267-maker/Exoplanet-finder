@@ -59,3 +59,6 @@ Branch: `claude/hopeful-edison-jbmnjq`.
   test 1,568; 22% planet-like = natural DR24 prevalence), 207 exclusions. Training split into two runs
   (LR+RF+single-view CNN, then two-view CNN) to stay under the limit; default configs, decided before
   any Full test evaluation.
+- Full DR24 suite trained (models 8 LR, 9 RF, 10 cnn_single, 11 cnn_two_view; val PR-AUC 0.919 / 0.951 /
+  0.949 / 0.960). Decision BEFORE Full test evaluation: active model = Full two-view CNN (#11), best
+  validation PR-AUC on the largest dataset; each Full model evaluated on test exactly once.
