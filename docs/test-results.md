@@ -77,3 +77,29 @@ folders. Models trained in tests are flagged `is_fixture`.
   Troubleshooting).
 * GPU (CUDA) training was not tested; all results are CPU-only.
 * Timing numbers were measured on a shared 4-core VM while other work was running.
+
+## Clean-clone verification (2026-11-24)
+A fresh clone of the repository was installed and run from scratch in a Linux container
+(4 vCPU, no GPU, Python 3.12, CPU PyTorch 2.15.0, Node 22), with the built web app served by the
+backend (`EXOF_FRONTEND_DIST`, the single-server / Docker mode). Every number was produced by the run.
+
+| Check | Result |
+|---|---|
+| `pytest -q` (backend, offline) | **423 passed**, 4 deselected (network); after adding the hosted-mode tests: **429 passed** |
+| `ruff check` / `ruff format --check` | clean |
+| `npm run typecheck`, `npx vitest run`, `npm run build` | pass, **232 passed** (32 files), pass |
+| Playwright (desktop + mobile) against the single-server app with real NASA data | **88 passed** (`smoke`, `science-pages`, `detect-fixtures`, `ops-pages`, `ops-fixtures`) |
+| Catalogue refresh (via the API) | 22 644 signals, 14 233 stars; 6.0 min through this environment's proxy |
+| Pilot dataset build (downloads included) | 284 examples (train 213 / val 28 / test 43), 25 exclusions; 5.8 min |
+| Training suite on Pilot | 4 models in 5.3 min |
+| One-time test evaluation on Pilot (43 signals, 18 stars) | two-view CNN accuracy 0.884, F1 0.921, ROC-AUC 0.892, PR-AUC 0.939; single-view CNN 0.860 / 0.906 / 0.869 / 0.924; random forest 0.860 / 0.906 / 0.916 / 0.949; logistic regression 0.837 / 0.892 / 0.926 / 0.963 |
+| Kepler-90 (held-out showcase star), all 8 signals × 4 Pilot models | all 32 scores planet-like |
+
+The Pilot test set is tiny (43 signals), so these numbers have wide confidence intervals and are
+**not** comparable with the Standard/Full [reference results](reference-results.md); they only prove
+that the full flow works from a clean clone.
+
+Bug fixed during this verification: in the single-server mode, FastAPI's Swagger UI occupied `/docs`, so opening
+the Research Docs page directly (or reloading it) showed the API documentation instead of the app. The
+API documentation now moves to `/api/docs` in that mode (the local two-server mode keeps
+`http://localhost:8000/docs`), and the app's "API docs" link follows it.

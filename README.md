@@ -20,17 +20,23 @@ models are trained on your computer from NASA data that you download.
 
 ## Contents
 1. [What you can do](#what-you-can-do)
-2. [Installation (Windows)](#installation-windows)
-3. [Start and stop](#start-and-stop)
-4. [Your first research session](#your-first-research-session)
-5. [The pages](#the-pages)
-6. [Command line](#command-line)
-7. [How it works](#how-it-works)
-8. [Testing](#testing)
-9. [Troubleshooting](#troubleshooting)
-10. [Project layout](#project-layout)
-11. [Documentation](#documentation)
-12. [Credits and data acknowledgement](#credits-and-data-acknowledgement)
+2. [Screenshots](#screenshots)
+3. [Installation (Windows)](#installation-windows)
+4. [Installation (macOS / Linux)](#installation-macos--linux)
+5. [Run with Docker](#run-with-docker)
+6. [Start and stop](#start-and-stop)
+7. [Your first research session](#your-first-research-session)
+8. [The pages](#the-pages)
+9. [Command line](#command-line)
+10. [How it works](#how-it-works)
+11. [Tech stack](#tech-stack)
+12. [Testing](#testing)
+13. [Troubleshooting](#troubleshooting)
+14. [Project layout](#project-layout)
+15. [Limitations](#limitations)
+16. [Documentation](#documentation)
+17. [License](#license)
+18. [Credits and data acknowledgement](#credits-and-data-acknowledgement)
 
 ---
 
@@ -53,6 +59,20 @@ models are trained on your computer from NASA data that you download.
   with a calibrated probability, an uncertainty, a data-quality grade, and a note on whether the star was
   part of training.
 * **Track experiments** in a local database and download reports (Markdown, HTML, JSON).
+
+---
+
+## Screenshots
+
+Captured from a fresh install after refreshing the NASA catalogue and building and training on the
+*Pilot* tier (about 300 signals); the numbers shown come from that small run, not from the
+[reference results](docs/reference-results.md).
+
+| | |
+|---|---|
+| ![Overview](docs/screenshots/overview.png) **Overview**: status and next steps | ![Signal Explorer](docs/screenshots/signal-explorer.png) **Signal Explorer**: 22 644 NASA signals |
+| ![Target Dossier](docs/screenshots/target-dossier.png) **Target Dossier**: Kepler-90 and its eight planets | ![Transit Analysis](docs/screenshots/transit-analysis.png) **Transit Analysis**: BLS, folded transit, fit |
+| ![Model Evaluation](docs/screenshots/model-evaluation.png) **Model Evaluation**: held-out test metrics | ![Planet Detection](docs/screenshots/planet-detection.png) **Planet Detection**: scores with uncertainty |
 
 ---
 
@@ -81,7 +101,7 @@ automatically if present.
    ```
 
 ### Step 3: Get the project
-* With Git: `git clone <repository-url> Exoplanet-finder`
+* With Git: `git clone https://github.com/aarushagrawal267-maker/exoplanet-finder.git Exoplanet-finder`
 * Or download the ZIP from GitHub (**Code → Download ZIP**) and extract it, for example to
   `C:\Users\<you>\Exoplanet-finder`.
 
@@ -107,6 +127,41 @@ The script:
 
 It takes 5–15 minutes, mostly downloading PyTorch. You only need to run it once, or again after an
 update.
+
+---
+
+## Installation (macOS / Linux)
+
+You need Python 3.11–3.13, Node.js 20.19 or newer, and `git`.
+
+```bash
+git clone https://github.com/aarushagrawal267-maker/exoplanet-finder.git
+cd exoplanet-finder
+scripts/setup.sh          # creates .venv, installs PyTorch + requirements + frontend packages
+scripts/start.sh          # backend on :8000, web app on :5173
+# open http://localhost:5173 ; stop with: scripts/stop.sh
+```
+
+On a machine without a GPU you can save about 2 GB by installing the CPU build of PyTorch first:
+`python3 -m venv .venv && .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu`,
+then run `scripts/setup.sh`.
+
+---
+
+## Run with Docker
+
+A single container serves both the API and the built web app (CPU only):
+
+```bash
+docker build -t exoplanet-finder .
+docker run --rm -p 8000:8000 \
+  -v exof-data:/home/user/app/data -v exof-artifacts:/home/user/app/artifacts exoplanet-finder
+```
+
+Open <http://localhost:8000>; the interactive API documentation is then at
+<http://localhost:8000/api/docs> (the web app uses `/docs` for its Research Docs page). The two
+volumes keep downloaded NASA data and trained models between runs. The same image can be published as
+a free Hugging Face Space: see [deploy/huggingface/README.md](deploy/huggingface/README.md).
 
 ---
 
@@ -141,7 +196,7 @@ start without opening the browser.
 
 The **Overview** page always shows the next step for your installation. A typical first session:
 
-1. **Load the NASA catalogue.** Overview → *Refresh catalogue* (about 1 minute). This downloads the
+1. **Load the NASA catalogue.** Overview → *Refresh catalogue* (1–6 minutes, depending on the connection). This downloads the
    DR24 TCE table, the KOI table, the confirmed-planet list and stellar parameters from the NASA
    Exoplanet Archive. Each snapshot is stored with its query, timestamp and SHA-256.
 2. **Look at a famous system.** Search for `Kepler-90` (Ctrl+K). The **Target Dossier** shows its
@@ -254,6 +309,20 @@ Astropy, Astroquery and Lightkurve; React, TypeScript, Vite, Tailwind, Recharts,
 
 ---
 
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Backend API | Python 3.11–3.13, FastAPI, Uvicorn, Pydantic, SQLAlchemy, SQLite |
+| Astronomy | Astropy (FITS, BLS periodogram), Astroquery, Lightkurve, NumPy, SciPy, pandas |
+| Machine learning | PyTorch (single-view and two-view CNNs), scikit-learn (logistic regression, random forest, calibration) |
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, TanStack Query/Table, Recharts, Plotly.js, Lucide icons |
+| Testing | pytest, Ruff, Vitest, React Testing Library, Playwright |
+| Data | NASA Exoplanet Archive (TAP), NASA MAST (Kepler long-cadence FITS) |
+| Deployment | Windows PowerShell scripts, Bash scripts, Docker, Hugging Face Spaces |
+
+---
+
 ## Testing
 
 ```powershell
@@ -316,7 +385,24 @@ docs/           research and developer documentation
 data/           your downloaded data and database (created on first run, not in git)
 artifacts/      trained models and reports (created on first run)
 setup.ps1, start.ps1, stop.ps1   Windows scripts
+scripts/         macOS / Linux scripts (setup.sh, start.sh, stop.sh, test.sh)
+Dockerfile       single-container build (API + web app)
+deploy/          Hugging Face Space files
 ```
+
+---
+
+## Limitations
+* Scores are **research leads**: the models rank how planet-like a signal looks; they cannot confirm a
+  planet. Follow-up observations are required.
+* Kepler long-cadence data only (no TESS, no short cadence). Uploaded light curves from other missions
+  can be scored, but the models were trained on Kepler, so such scores are out of distribution.
+* Labels come from NASA's DR24 Autovetter and KOI dispositions, which contain some errors; 150 label
+  conflicts are flagged in the catalogue.
+* A fresh install contains no data or trained models: the first session downloads the NASA catalogue
+  and light curves and trains the models on your computer (minutes for Pilot, about an hour for
+  Standard on a 4-core CPU).
+* Full details: [docs/limitations.md](docs/limitations.md).
 
 ---
 
@@ -333,6 +419,12 @@ setup.ps1, start.ps1, stop.ps1   Windows scripts
 * [Research report template](docs/research-report-template.md)
 * [Architecture](docs/architecture.md) and [Testing](docs/testing.md) for developers
 * [Test results and acceptance checklist](docs/test-results.md)
+
+---
+
+## License
+Released under the [MIT License](LICENSE). NASA data downloaded by the app is public and subject to
+the NASA Exoplanet Archive and MAST acknowledgement policies below.
 
 ---
 
