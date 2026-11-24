@@ -329,10 +329,14 @@ Astropy, Astroquery and Lightkurve; React, TypeScript, Vite, Tailwind, Recharts,
 powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1
 ```
 
+(macOS / Linux: `scripts/test.sh`, add `--skip-e2e` to skip the browser tests.)
+
 This runs the backend tests (pytest), frontend unit tests (Vitest and React Testing Library) and
-end-to-end browser tests (Playwright). Individually:
+end-to-end browser tests (Playwright). The test tools (pytest, Ruff) are not installed by setup; the
+test script installs them from `requirements-dev.txt` the first time. Individually:
 
 ```powershell
+.\.venv\Scripts\python -m pip install -r requirements-dev.txt   # once: pytest and Ruff
 cd backend;  ..\.venv\Scripts\python -m pytest            # backend unit + API tests (offline)
 cd backend;  ..\.venv\Scripts\python -m pytest -m network  # live NASA checks (needs internet)
 cd frontend; npm.cmd test                                  # frontend unit tests

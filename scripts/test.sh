@@ -7,6 +7,8 @@ SKIP_E2E=0; NETWORK=0
 for a in "$@"; do case $a in --skip-e2e) SKIP_E2E=1;; --network) NETWORK=1;; esac; done
 declare -a NAMES RESULTS
 run() { local name=$1; shift; echo; echo "==> $name"; if "$@"; then RESULTS+=(passed); else RESULTS+=("FAILED"); fi; NAMES+=("$name"); }
+# Test tools (pytest, ruff) are not part of the runtime setup: install them on first use.
+.venv/bin/python -c "import pytest" 2>/dev/null || .venv/bin/python -m pip install -q -r requirements-dev.txt
 run "Backend tests (pytest)" bash -c "cd backend && ../.venv/bin/python -m pytest -q"
 [ $NETWORK = 1 ] && run "Backend live NASA checks" bash -c "cd backend && ../.venv/bin/python -m pytest -q -m network"
 run "Frontend type check" bash -c "cd frontend && npm run typecheck"

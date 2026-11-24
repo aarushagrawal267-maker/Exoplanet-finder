@@ -103,3 +103,27 @@ Bug fixed during this verification: in the single-server mode, FastAPI's Swagger
 the Research Docs page directly (or reloading it) showed the API documentation instead of the app. The
 API documentation now moves to `/api/docs` in that mode (the local two-server mode keeps
 `http://localhost:8000/docs`), and the app's "API docs" link follows it.
+
+## Independent re-verification (2026-11-24, second pass)
+A second, independent check of the same branch, again from a clean install (`scripts/setup.sh` with
+CPU PyTorch, Python 3.12, Node 22, 4 vCPU, no GPU). Every number below was produced by this run.
+
+| Check | Result |
+|---|---|
+| `pytest -q` (backend, offline) | **430 passed**, 4 deselected (one new regression test, see below) |
+| `pytest -q -m network` (live NASA) | **4 passed** |
+| `ruff check` / `ruff format --check` | clean |
+| `npm run typecheck`, `npx vitest run`, `npm run build` | pass, **232 passed** (32 files), pass |
+| CLI flow: `refresh-catalog` → `build-dataset --tier pilot` → `train-suite` → `evaluate --split test` → `predict --kepid 11442793` | all succeeded: 22 644 signals on 14 233 stars (3.5 min); Pilot dataset 284 examples (5.3 min, 164 stars downloaded); 4 models trained (2.5 min); two-view CNN test accuracy 0.884, F1 0.921, ROC-AUC 0.892, PR-AUC 0.939 (identical to the first pass); all 8 Kepler-90 signals planet-like |
+| Upload flow (API): Kepler-2 Q3 FITS fixture → parse → BLS → 4 models | BLS period 2.2055 d (Kepler-2 b), quality grade A, 4 predictions stored |
+| Playwright against the single-server app with this data | **88 passed** (`smoke`, `science-pages`, `detect-fixtures`, `ops-pages`, `ops-fixtures`) + **1 passed** for the opt-in write flow `ops-live` (`E2E_OPS_WRITE=1`, a "UI check" dataset) |
+| `docker build` of the root `Dockerfile` | **built** (with the environment's proxy CA added in a throw-away copy of the Dockerfile); the container served the app on `/`, the Research Docs on `/docs` and Swagger on `/api/docs`; `exofinder doctor` OK inside it; Playwright `smoke.spec.ts` against the container: **34 passed** |
+
+Bug fixed during this pass: during a catalogue refresh, the first downloaded snapshot row opened a
+SQLite write transaction that stayed open through the following downloads (minutes). Meanwhile every
+other write failed after 30 s with `database is locked`: the job's progress and heartbeat updates
+(the refresh showed no progress) and any API write made at the same time. `refresh_catalog` now
+commits each snapshot row as soon as it is recorded, and the ingested catalogue before its final
+progress report; `tests/unit/data/test_data_catalog.py::TestRefreshCatalog::test_database_stays_writable_during_downloads`
+covers it. Also: `scripts/test.sh` / `scripts/test.ps1` now install the test tools
+(`requirements-dev.txt`: pytest, Ruff) on first use, since setup installs only the runtime packages.

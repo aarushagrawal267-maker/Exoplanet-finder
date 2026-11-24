@@ -28,6 +28,13 @@ if (-not (Test-Path $python)) {
     exit 1
 }
 
+# Test tools (pytest, ruff) are not part of the runtime setup: install them on first use.
+& $python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('pytest') else 1)"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Installing test tools (requirements-dev.txt)..." -ForegroundColor Cyan
+    & $python -m pip install -q -r (Join-Path $root 'requirements-dev.txt')
+}
+
 $results = [ordered]@{}
 function Invoke-Suite($name, [scriptblock]$block) {
     Write-Host "`n==> $name" -ForegroundColor Cyan
