@@ -23,7 +23,7 @@ ENV HOME=/home/user PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
     PORT=8000
 WORKDIR /home/user/app
 COPY requirements.txt .
-RUN pip install --index-url https://download.pytorch.org/whl/cpu torch && pip install -r requirements.txt
+RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.6,<2.16" && pip install -r requirements.txt
 COPY backend/ backend/
 COPY docs/ docs/
 COPY README.md .env.example ./

@@ -143,7 +143,7 @@ scripts/start.sh          # backend on :8000, web app on :5173
 ```
 
 On a machine without a GPU you can save about 2 GB by installing the CPU build of PyTorch first:
-`python3 -m venv .venv && .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu`,
+`python3 -m venv .venv && .venv/bin/pip install "torch>=2.6,<2.16" --index-url https://download.pytorch.org/whl/cpu`,
 then run `scripts/setup.sh`.
 
 ---
