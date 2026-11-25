@@ -56,8 +56,9 @@ models are trained on your computer from NASA data that you download.
   PR-AUC, confusion matrix, Brier score, calibration (ECE and reliability diagram), inference time, and
   95 % bootstrap confidence intervals.
 * **Score signals** from the catalogue or from your own uploaded FITS/CSV light curves. Each score comes
-  with a calibrated probability, an uncertainty, a data-quality grade, and a note on whether the star was
-  part of training.
+  with a calibrated probability, a data-quality grade, and a note on whether the star was part of
+  training; the CNNs (MC dropout or ensemble spread) and the random forest (spread over trees) also give
+  an uncertainty, logistic regression does not.
 * **Track experiments** in a local database and download reports (Markdown, HTML, JSON).
 
 ---
@@ -216,11 +217,13 @@ The **Overview** page always shows the next step for your installation. A typica
    31 minutes of processing; training the suite took 14 minutes (logistic regression 9 s, random
    forest 18 s, single-view CNN 3 min, two-view CNN 10 min). On the Full tier (≈15 500 signals,
    ≈9 900 stars, about 6 GB of light-curve cache) processing took about 2.5 hours and training the
-   suite 28 minutes. A Pilot dataset is processed in about 2–3 minutes.
+   suite 28 minutes. A Pilot dataset took 5–6 minutes to build, downloads included (about 4 minutes
+   of processing), and its suite 2.5–8 minutes, in three separate runs.
 
    **Reference results** on held-out test stars: on the Full tier, the two-view CNN reaches ROC-AUC
-   0.988 and PR-AUC 0.965 at NASA's natural class balance. See
-   [Reference results](docs/reference-results.md).
+   0.988 and PR-AUC 0.965 at NASA's natural class balance (23 % planet-like, so chance PR-AUC is
+   0.23). The random-forest baseline reaches the same two numbers; logistic regression reaches 0.980
+   and 0.937. See [Reference results](docs/reference-results.md).
 6. **Evaluate.** In **Model Evaluation**, run the final evaluation on the held-out **test** set and
    compare models. The test set is used only here; model choices are made on the validation set.
 7. **Detect.** In **Planet Detection**, score a catalogue signal or upload your own light curve.

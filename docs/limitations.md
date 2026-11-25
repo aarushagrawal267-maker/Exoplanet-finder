@@ -34,8 +34,14 @@ its results.
 
 ## Data and compute
 * **Dataset size.** The Pilot and Standard tiers are much smaller than the full DR24 training set
-  used by AstroNet, so expect lower and noisier performance than the published results.
-  Confidence intervals are reported to make this visible.
+  used by AstroNet, so expect noisier results than the published ones. Confidence intervals are
+  reported to make this visible.
+* **Class balance changes the numbers.** The Standard tier is class-balanced (about 50 %
+  planet-like), the Full tier keeps NASA's natural balance (about 23 %). PR-AUC and precision are
+  therefore higher on Standard than on Full for the same model quality; compare models only on the
+  same dataset, and compare PR-AUC with its chance level (the planet-like fraction of the test set).
+* **No paired model comparison.** Each model's confidence intervals are computed separately; the
+  app does not run a paired significance test of the difference between two models.
 * **Download volume.** The full labelled set is about 70 GB of raw FITS. MAST availability and
   speed vary, and downloads are resumable.
 * **CPU training.** CNN training on a laptop CPU is feasible for the Standard tier but slow for

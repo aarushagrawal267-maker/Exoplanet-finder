@@ -127,3 +127,32 @@ commits each snapshot row as soon as it is recorded, and the ingested catalogue 
 progress report; `tests/unit/data/test_data_catalog.py::TestRefreshCatalog::test_database_stays_writable_during_downloads`
 covers it. Also: `scripts/test.sh` / `scripts/test.ps1` now install the test tools
 (`requirements-dev.txt`: pytest, Ruff) on first use, since setup installs only the runtime packages.
+
+## Metric audit (2026-11-25, third pass)
+An independent check that every published metric matches what the code produces. Linux, 4 vCPU, no
+GPU, Python 3.12, CPU PyTorch 2.15.0. Every number below was produced by this run.
+
+| Check | Result |
+|---|---|
+| Every Standard/Full number in [reference results](reference-results.md) and the README against the machine-generated reports in `docs/reference/*.json` | all match (PR-AUC, ROC-AUC, F1, precision, recall, specificity, accuracy, Brier, ECE, confidence intervals, confusion matrices, thresholds, training times, split sizes) |
+| Internal consistency of those reports | precision, recall, specificity, accuracy and F1 recomputed from each confusion matrix, and ECE recomputed from each stored reliability curve: all equal the stored values |
+| Metric code (`exofinder/ml/metrics.py`, `calibration.py`) | PR-AUC is average precision, ROC-AUC is Mann-Whitney U, ECE uses 10 equal-width bins, bootstrap resamples whole stars; threshold and temperature are fitted on validation only; baseline hyper-parameters use grouped CV on train only; splits are by star with a leakage check; catalogue scores and dispositions are refused as features |
+| CLI flow from an empty data folder: `refresh-catalog` → `build-dataset --tier pilot --seed 42` → `train-suite` → `evaluate --split test` (×4) → `predict --kepid 11442793` | 22 644 signals on 14 233 stars (1.1 min); Pilot 284 examples (train 213 / val 28 / test 43), 25 exclusions (6.1 min including downloads); 4 models (7.7 min); test accuracy / F1 / ROC-AUC / PR-AUC: two-view CNN 0.884 / 0.921 / 0.892 / 0.939, single-view CNN 0.860 / 0.906 / 0.869 / 0.924, random forest 0.860 / 0.906 / 0.916 / 0.949, logistic regression 0.837 / 0.892 / 0.926 / 0.963, **identical to both earlier passes**; all 8 Kepler-90 signals planet-like |
+| Catalogue label conflicts (README: "150") | 150 of 22 644 signals flagged (110 DR24 PC, 40 AFP) |
+| `pytest -q` (backend, offline) | **430 passed**, 4 deselected |
+
+**How to read the Pilot numbers.** The Pilot test set has 43 signals on 18 stars, 29 of them
+planet-like (67 %). Simply calling every signal planet-like would score accuracy 0.674, F1 0.806 and
+PR-AUC 0.674 (the chance level). The two-view CNN's 95 % star-bootstrap intervals are wide: F1
+[0.79, 0.98], ROC-AUC [0.71, 0.99], PR-AUC [0.82, 1.00]. All four models recall all 29 planet-like
+signals and differ only by 5–7 false positives. The Pilot tier proves that the flow works; it cannot
+rank the models.
+
+Documentation corrected in this pass: the reference-results summary no longer calls the two-view CNN
+"the best-calibrated model" without qualification (its ECE interval overlaps those of logistic
+regression and the single-view CNN; only the random forest is clearly worse), and it now says that the
+random forest reaches the same ROC-AUC and PR-AUC. Chance levels (prevalence and majority-class
+accuracy) were added, as were a note that no paired model-comparison test is run, and a note on the
+random forest's under-confident mid-range probabilities on the Full tier. The README no longer says that every score
+comes with an uncertainty (logistic regression has none), and the limitations page explains how class
+balance changes PR-AUC between tiers.
