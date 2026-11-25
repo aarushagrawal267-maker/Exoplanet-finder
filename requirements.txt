@@ -1,5 +1,7 @@
 # Exoplanet Finder - Python runtime dependencies (Python 3.11 - 3.13; no compiler needed on Windows x64).
-# PyTorch is installed separately by setup.ps1 (CPU or CUDA build chosen automatically).
+# PyTorch is installed separately by setup.ps1 / scripts/setup.sh (CPU or CUDA build chosen automatically),
+# always as "torch>=2.6,<2.16" (the CUDA 12.6 index stops at 2.14.1, the CPU index has 2.15.0). Keep that
+# range in sync in setup.ps1, scripts/setup.sh, both Dockerfiles and .github/workflows/ci.yml.
 fastapi==0.163.0
 uvicorn[standard]==0.54.0
 pydantic==2.14.3

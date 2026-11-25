@@ -412,7 +412,8 @@ def cmd_refresh_catalog(args: argparse.Namespace) -> int:
         from exofinder.db.session import session_scope
 
         def progress(done: int, total: int, msg: str) -> None:
-            ctx.check_cancelled()
+            if done < total:  # the final report follows the commit of the new catalogue
+                ctx.check_cancelled()
             ctx.progress(done / max(total, 1), msg)
 
         kwargs: dict[str, Any] = {"progress": progress}

@@ -44,9 +44,13 @@ EPOCH_KEYS = {
 def test_overfits_tiny_separable_set(tmp_path: Path) -> None:
     """A correct training loop must be able to drive the training loss to ~0 on a tiny easy set."""
     arrays = make_toy_arrays(n_stars=30, seed=11)
-    cfg = small_cnn_config(lr=3e-3, max_epochs=25, patience=25, dropout=0.0, batch_size=8)
+    # lr 1e-3 (not 3e-3): with the larger step Adam occasionally spikes the loss for a few epochs,
+    # and on some CPUs (GitHub Actions runners) such a spike landed on the last epoch. The check is
+    # that the loop *can* reach ~0 loss, so it looks at the best of the last five epochs.
+    cfg = small_cnn_config(lr=1e-3, max_epochs=25, patience=25, dropout=0.0, batch_size=8)
     result = train(cfg, arrays, tmp_path)
-    assert result.history[-1]["train_loss"] < 0.05 < result.history[0]["train_loss"]
+    late_loss = min(h["train_loss"] for h in result.history[-5:])
+    assert late_loss < 0.05 < result.history[0]["train_loss"]
     tr = arrays.subset("train")
     out = Predictor.from_dir(tmp_path).predict(tr.global_view, tr.local_view)
     assert np.mean((out.raw_prob >= 0.5) == (tr.labels == 1)) == 1.0

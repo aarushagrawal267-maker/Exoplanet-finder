@@ -419,6 +419,37 @@ class TestRefreshCatalog:
         assert done == sorted(done) and done[-1] == events[-1][1] == 5
         assert db_session.get(Target, 10666592).teff == 6440
 
+    def test_database_stays_writable_during_downloads(self, db_session, tmp_env):
+        """Regression: the refresh used to hold SQLite's write lock from the first snapshot row
+        through all later downloads, so job progress/heartbeat updates and other API writes failed
+        with "database is locked" for the whole refresh. Every download after the first must find
+        the database writable by another connection."""
+        import sqlite3
+
+        from exofinder.data.catalog import refresh_catalog
+
+        db_file = tmp_env / "test.db"
+        writable: list[bool] = []
+
+        class ProbingTAP(FakeTAP):
+            def post(self, url, data=None, timeout=None, headers=None):
+                if self.queries:  # a snapshot row has already been recorded
+                    con = sqlite3.connect(db_file, timeout=0.2)
+                    try:
+                        con.execute("CREATE TABLE IF NOT EXISTS _probe (x INTEGER)")
+                        con.execute("INSERT INTO _probe VALUES (1)")
+                        con.commit()
+                        writable.append(True)
+                    except sqlite3.OperationalError:
+                        writable.append(False)
+                    finally:
+                        con.close()
+                return super().post(url, data=data, timeout=timeout, headers=headers)
+
+        res = refresh_catalog(db_session, client=_tap_client(ProbingTAP()))
+        assert res["summary"]["n_signals"] == 21
+        assert writable == [True, True, True]
+
     def test_partial_refresh_reuses_latest_verified_snapshots(self, db_session):
         from exofinder.data.catalog import refresh_catalog
 

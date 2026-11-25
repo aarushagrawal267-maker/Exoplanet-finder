@@ -1,5 +1,7 @@
 # Python
 .venv/
+venv/
+env/
 __pycache__/
 *.pyc
 *.egg-info/
@@ -19,5 +21,15 @@ artifacts/*
 !artifacts/reference/
 logs/
 .run/
+# Local config can hold secrets: root .env and Vite's frontend/.env*, .env.local, .env.<mode>.local
 .env
+.env.*
+!.env.example
+# SQLite databases / dumps outside data/ (e.g. a custom EXOF_DB_URL)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
 *.log

@@ -120,6 +120,49 @@ def test_refresh_job_success_and_nasa_unavailable(client, sci_catalog, monkeypat
     assert client.post("/api/catalog/refresh", json={"sources": ["bogus"]}).status_code == 400
 
 
+def test_cancel_after_catalogue_commit_does_not_mark_refresh_cancelled(
+    client, sci_catalog, monkeypatch: pytest.MonkeyPatch
+):
+    """refresh_catalog commits the new catalogue before its final progress report; a cancel request
+    arriving during the ingest must not turn that report into "cancelled" for a refresh that took
+    effect. Earlier reports still honour the cancellation."""
+    import threading
+
+    from exofinder.data import catalog
+
+    in_ingest, proceed = threading.Event(), threading.Event()
+
+    def fake_refresh(session, progress=None, sources=(), **kw):
+        progress(4, 5, "Linking TCEs, KOIs and confirmed planets")
+        in_ingest.set()
+        assert proceed.wait(30)
+        progress(5, 5, "Catalogue ready: 0 signals on 0 stars")  # after the commit
+        return {"summary": {"n_signals": 0}}
+
+    monkeypatch.setattr(catalog, "refresh_catalog", fake_refresh)
+    job_id = client.post("/api/catalog/refresh").json()["id"]
+    assert in_ingest.wait(30)
+    assert client.post(f"/api/jobs/{job_id}/cancel").status_code == 200
+    proceed.set()
+    done = wait_job(job_id)
+    assert done["status"] == "succeeded" and done["result"]["summary"] == {"n_signals": 0}
+
+    def cancelled_early(session, progress=None, sources=(), **kw):
+        in_ingest.set()
+        assert proceed.wait(30)
+        progress(1, 5, "Downloading koi_cumulative from the NASA Exoplanet Archive")
+        raise AssertionError("cancellation was not honoured")
+
+    in_ingest.clear()
+    proceed.clear()
+    monkeypatch.setattr(catalog, "refresh_catalog", cancelled_early)
+    job_id = client.post("/api/catalog/refresh").json()["id"]
+    assert in_ingest.wait(30)
+    assert client.post(f"/api/jobs/{job_id}/cancel").status_code == 200
+    proceed.set()
+    assert wait_job(job_id)["status"] == "cancelled"
+
+
 def test_refresh_refuses_while_running(client, sci_catalog):
     from exofinder.db.models import Job
     from exofinder.db.session import session_scope

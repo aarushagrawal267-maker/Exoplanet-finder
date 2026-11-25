@@ -1,0 +1,23 @@
+.git
+.venv
+**/venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+frontend/node_modules
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+data
+artifacts
+logs
+.run
+.env
+# Any .env file at any depth (frontend/.env* would be inlined into the built bundle); the Dockerfiles COPY .env.example
+**/.env
+**/.env.*
+!.env.example
+**/*.db
+**/*.sqlite
+**/*.sqlite3

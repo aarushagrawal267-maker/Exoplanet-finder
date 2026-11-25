@@ -137,14 +137,14 @@ if ($hasTorch) {
     $useCuda = (-not $Cpu) -and [bool](Get-Command nvidia-smi -ErrorAction SilentlyContinue)
     if ($useCuda) {
         Write-Host "    NVIDIA GPU detected - installing the CUDA build (about 2.5 GB download)..."
-        & $venvPy -m pip install torch --index-url https://download.pytorch.org/whl/cu126
+        & $venvPy -m pip install "torch>=2.6,<2.16" --index-url https://download.pytorch.org/whl/cu126
         if ($LASTEXITCODE -ne 0) {
             Write-Warn2 "CUDA build failed to install - falling back to the CPU build."
-            & $venvPy -m pip install torch
+            & $venvPy -m pip install "torch>=2.6,<2.16"
         }
     } else {
         Write-Host "    No NVIDIA GPU detected (or -Cpu given) - installing the CPU build..."
-        & $venvPy -m pip install torch
+        & $venvPy -m pip install "torch>=2.6,<2.16"
     }
     if ($LASTEXITCODE -ne 0) { Fail "PyTorch installation failed." "Check your internet connection and free disk space (needs ~1-3 GB), then re-run setup." }
     Write-Ok "PyTorch installed"

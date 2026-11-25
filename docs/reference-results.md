@@ -11,9 +11,16 @@ Standard tier ([MD](reference/standard-dr24-comparison.md), [HTML](reference/sta
 
 **Summary.** On the Full DR24 tier (15 539 signals, natural class balance, 1 568 held-out test
 signals), the two-view CNN reaches test ROC-AUC 0.988 [0.983, 0.993], PR-AUC 0.965 [0.948, 0.977] and
-F1 0.913. It is the best-calibrated model, ties the random forest on PR-AUC, and clearly beats
-logistic regression. On the smaller, class-balanced Standard tier the four models cannot be told
-apart statistically.
+F1 0.913. The random forest baseline reaches the same ROC-AUC and PR-AUC, and the two cannot be told
+apart on this test set; both score above logistic regression (PR-AUC 0.937). The two-view CNN has the
+lowest Brier score and ECE; its ECE interval [0.012, 0.028] lies below the random forest's
+[0.036, 0.057] but overlaps those of logistic regression and the single-view CNN. On the
+smaller, class-balanced Standard tier the four models cannot be told apart statistically.
+
+**Chance levels** (to read the numbers against): ROC-AUC 0.5 for any test set; PR-AUC equal to the
+test set's planet-like fraction (0.518 on Standard, 0.232 on Full); accuracy of always answering
+"false-positive-like" 0.482 on Standard and **0.768 on Full**. On the imbalanced Full tier, accuracy
+therefore says little on its own; PR-AUC, F1 and recall are the informative numbers.
 
 ## Standard DR24 tier: class-balanced
 
@@ -129,9 +136,22 @@ single-view CNN 322 / 33 / 41 / 1 172 · two-view CNN 334 / 35 / 29 / 1 170.
 
 ### How to read this
 * With more data and the natural class balance, the ranking becomes clearer. The **two-view CNN
-  and the random forest** lead, and the two-view CNN has the best F1, recall, accuracy and
-  calibration (Brier 0.033, ECE 0.017). **Logistic regression is clearly weaker** (PR-AUC 0.937,
-  F1 0.870). The single-view CNN sits in between: the zoomed local view adds information.
+  and the random forest** lead with identical ROC-AUC and PR-AUC. The two-view CNN has the highest
+  point estimates for F1, recall, accuracy and calibration (Brier 0.033, ECE 0.017), but these leads
+  are inside the confidence intervals (F1 0.913 [0.889, 0.933] against 0.904 [0.876, 0.926]), so
+  this test set does not show that it is better than the random forest. **Logistic regression is
+  weaker** (PR-AUC 0.937 [0.913, 0.957], F1 0.870), and its PR-AUC interval lies mostly below
+  the leaders' ([0.948, 0.978] and [0.948, 0.977]). The single-view CNN sits in between: the zoomed local view adds information.
+* The intervals are computed separately for each model. No paired test of the differences
+  between models (same test stars resampled together) was run, so treat "overlapping" and
+  "almost separate" as rough guides, not significance tests.
+* **Random-forest probabilities are under-confident in the middle range.** Its reliability curve
+  on the Full test set shows 36 %, 52 % and 79 % planet-like signals in the bins where it predicts
+  about 15 %, 25 % and 35 % (50, 29 and 24 signals), hence its ECE of 0.046, the highest of the four.
+  Its ranking (ROC-AUC, PR-AUC) is unaffected, but read its probabilities between 0.1 and 0.5 as
+  "uncertain", not as literal odds. The single-view CNN shows a milder version (28 %, 36 % and 57 %
+  observed where it predicts about 13 %, 26 % and 35 %; 18, 14 and 21 signals). Logistic regression
+  and the two-view CNN do not show it.
 * PR-AUC and precision are lower than on the Standard tier because only 22 % of signals are
   planet-like here, not 50 %. These Full-tier numbers are the realistic ones.
 * **Comparison with the literature (indicative only).** Shallue & Vanderburg (2018) are reported to

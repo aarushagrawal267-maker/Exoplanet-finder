@@ -929,8 +929,11 @@ def refresh_catalog(
     Sources not listed reuse their latest recorded snapshot (verified by SHA-256). ``dr24_tce`` and
     ``koi_cumulative`` must be available one way or the other; ``confirmed`` and ``stellar`` are
     optional. The ``stellar`` query is restricted to the kepids present in the other tables.
-    ``progress(done, total, message)`` is called before each step. Rows are added to ``session``;
-    the caller commits.
+    ``progress(done, total, message)`` is called before each step. Each downloaded snapshot row is
+    committed as soon as it is recorded: SQLite allows one writer at a time, and holding the write
+    lock through the following downloads (minutes) would block every other write meanwhile (job
+    progress and heartbeats, other API requests) until they fail with "database is locked". The
+    ingested catalogue is committed before the final progress report.
     """
     wanted = list(dict.fromkeys(sources))
     for s in wanted:
@@ -951,6 +954,7 @@ def refresh_catalog(
         if source in wanted:
             report(i, f"Downloading {source} from the NASA Exoplanet Archive")
             res = fetch_snapshot(source, client=client, session=session)
+            session.commit()  # release the SQLite write lock before the next download
             frames[source], snapshot_ids[source] = res.frame, res.snapshot_id
             snapshots[source] = {**res.summary(), "reused": False}
         else:
@@ -965,6 +969,7 @@ def refresh_catalog(
     if "stellar" in wanted and kepids:
         report(3, f"Downloading stellar parameters for {len(kepids)} stars")
         res = fetch_snapshot("stellar", client=client, session=session, kepids=sorted(kepids))
+        session.commit()
         frames["stellar"], snapshot_ids["stellar"] = res.frame, res.snapshot_id
         snapshots["stellar"] = {**res.summary(), "reused": False}
     else:
@@ -973,6 +978,7 @@ def refresh_catalog(
 
     report(4, "Linking TCEs, KOIs and confirmed planets")
     result = _ingest(session, frames, snapshot_ids)
+    session.commit()  # the final progress update below must not wait for the ingest's write lock
     result["snapshots"] = snapshots
     summary = result["summary"]
     report(total, f"Catalogue ready: {summary['n_signals']} signals on {summary['n_targets']} stars")

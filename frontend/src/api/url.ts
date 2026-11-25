@@ -2,10 +2,16 @@
 
 export const API_BASE: string = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") || "/api";
 
-/** Where the backend's interactive OpenAPI docs live (not proxied; opened in a new tab). */
+/**
+ * Where the backend's interactive OpenAPI docs live (opened in a new tab).
+ * Development: the backend's own `/docs` (not proxied). Production build: the backend serves the
+ * app itself and moves its API docs to `/api/docs` on the same origin (the app owns `/docs`).
+ */
 export const API_DOCS_URL: string =
   (import.meta.env.VITE_API_DOCS_URL as string | undefined) ||
-  `${((import.meta.env.VITE_API_URL as string | undefined) || "http://localhost:8000").replace(/\/$/, "")}/docs`;
+  (import.meta.env.PROD
+    ? `${API_BASE}/docs`
+    : `${((import.meta.env.VITE_API_URL as string | undefined) || "http://localhost:8000").replace(/\/$/, "")}/docs`);
 
 export type QueryValue = string | number | boolean | null | undefined | ReadonlyArray<string | number>;
 
