@@ -156,3 +156,24 @@ accuracy) were added, as were a note that no paired model-comparison test is run
 random forest's under-confident mid-range probabilities on the Full tier. The README no longer says that every score
 comes with an uncertainty (logistic regression has none), and the limitations page explains how class
 balance changes PR-AUC between tiers.
+
+## Merge-gate check (2026-11-25, fourth pass)
+A newcomer run of the README from a fresh `git clone` of `claude/project-completion` (15517e2). Linux,
+4 vCPU, no GPU, Python 3.13, Node 22, CPU PyTorch 2.15.0 (installed with the README's CPU tip). Every
+number below was produced by this run.
+
+| Check | Result |
+|---|---|
+| `scripts/setup.sh` | OK; `exofinder doctor`: 0 failures, 1 warning (catalogue not downloaded yet) |
+| `scripts/test.sh --skip-e2e` | backend **431 passed**, 4 deselected; Ruff check and format clean; typecheck pass; Vitest **232 passed** (32 files) |
+| `scripts/start.sh` | backend `/api/health` ok, `/docs` (API docs in local mode) 200, web app 200 |
+| Overview → *Refresh catalogue* (clicked in the browser) | 22 644 signals on 14 233 stars in 60 s; a second refresh updated 22 644 and changed 0 |
+| Pilot dataset → train suite → test evaluation of the two-view CNN (via the API) | 284 examples (train 213 / val 28 / test 43), 5.7 min; suite 5.4 min; accuracy / F1 / ROC-AUC / PR-AUC 0.884 / 0.921 / 0.892 / 0.939, identical to earlier passes |
+| Planet Detection, Kepler-90 h, logistic regression (in the browser) | planet-like, calibrated 0.947, data quality grade A, no console errors |
+| Playwright, all specs against the running dev server | **88 passed**, 2 skipped (opt-in live write tests) |
+| Test merge of `origin/main` (85a2d93) into the branch | clean, no conflicts; the merged tree is identical to the branch, so `main` adds no changes |
+
+Fixed in this pass: in the Overview's narrow catalogue card (desktop widths 1280–1536 px), the job's
+"Running" badge and Cancel button were drawn over the "CATALOG REFRESH" label; they now wrap below the
+title. Removed `frontend/src/pages/_shared/PlaceholderPage.tsx`, an unused "content arrives in a later
+build phase" stub that no route referenced.

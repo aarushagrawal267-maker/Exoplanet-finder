@@ -58,8 +58,10 @@ export function JobProgress({ jobId, initial, onDone, onDismiss, successAction, 
 
   return (
     <section className={cn("rounded-lg border border-hairline-strong bg-space/70 p-4", className)} aria-label={`Job: ${job?.title ?? jobId}`} aria-busy={active}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      {/* flex-wrap + basis-40: in a narrow card (e.g. Overview at 1280-1536 px) the badge and Cancel
+          button drop below the title instead of being drawn over it. */}
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <div className="min-w-0 flex-1 basis-40">
           <div className="eyebrow text-fg-secondary">{job ? job.kind.replace(/_/g, " ") : "Background job"}</div>
           <p className="mt-0.5 text-sm font-medium text-fg">{job?.title ?? "Starting…"}</p>
         </div>
