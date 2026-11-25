@@ -40,7 +40,7 @@ build a Docker image and route traffic to port 7860.
    interactive API documentation is at `/api/docs` on the Space URL.
 
 The Space starts **empty** (no catalogue, no models): open it and follow the Overview page (refresh the
-catalogue, build a Pilot dataset, train). To ship your own trained models with the demo, run the app
-locally first, then copy your `data/app.db`, `data/` caches and `artifacts/` into the Space repository
-with Git LFS (`git lfs track "*.db" "*.pt" "*.joblib" "*.npz"`) and remove `data`/`artifacts` from
-`.dockerignore` before pushing. Mind the Space size limits.
+catalogue, build a Pilot dataset, train). Copying a locally trained `data/app.db` and `artifacts/`
+into the Space does **not** work as-is: this Dockerfile does not copy those folders into the image,
+and the database stores absolute paths to model checkpoints, datasets and light curves on the
+computer that made them, which do not exist inside the container. Train inside the Space instead.

@@ -98,7 +98,10 @@ def start_refresh(session: Session, sources: list[str] | None = None) -> str:
         from exofinder.db.session import session_scope
 
         def progress(done: int, total: int, message: str) -> None:
-            ctx.check_cancelled()
+            # The final report comes after the new catalogue is committed: cancelling then would
+            # mark the job "cancelled" although the refresh took effect, so it is not checked.
+            if done < total:
+                ctx.check_cancelled()
             ctx.progress(min(0.99, done / max(total, 1)), message)
             ctx.log(message)
 
