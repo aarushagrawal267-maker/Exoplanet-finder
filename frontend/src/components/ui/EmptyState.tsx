@@ -28,7 +28,7 @@ export function EmptyState({ title, description, actions, art, atmosphere = true
     >
       {art ?? <OrbitArt width={size === "sm" ? 128 : 168} />}
       <div className="flex max-w-md flex-col gap-1.5">
-        <h3 className={cn("font-display text-fg", size === "sm" ? "text-lg" : "text-xl")}>{title}</h3>
+        <h3 className={cn("font-medium text-fg", size === "sm" ? "text-lg" : "text-xl")}>{title}</h3>
         {description ? <p className="text-base text-fg-secondary">{description}</p> : null}
       </div>
       {actions ? <div className="mt-1 flex flex-wrap items-center justify-center gap-2">{actions}</div> : null}

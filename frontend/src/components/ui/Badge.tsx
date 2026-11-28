@@ -1,12 +1,13 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-export type BadgeTone = "neutral" | "cosmic" | "nebula" | "planet" | "fp" | "uncertain" | "warn" | "danger";
+export type BadgeTone = "neutral" | "cosmic" | "fixture" | "planet" | "fp" | "uncertain" | "warn" | "danger";
 
 const soft: Record<BadgeTone, string> = {
   neutral: "border-hairline-strong bg-fg/[0.04] text-fg-secondary",
   cosmic: "border-cosmic/35 bg-cosmic/10 text-cosmic",
-  nebula: "border-nebula/35 bg-nebula/10 text-nebula",
+  // Test fixtures / synthetic data: dashed neutral, so it reads as "not real" without a new hue.
+  fixture: "border-dashed border-fg-muted/60 bg-transparent text-fg-secondary",
   planet: "border-signal-planet/35 bg-signal-planet/10 text-signal-planet",
   fp: "border-signal-fp/35 bg-signal-fp/10 text-signal-fp",
   uncertain: "border-signal-uncertain/35 bg-signal-uncertain/10 text-signal-uncertain",
@@ -17,7 +18,7 @@ const soft: Record<BadgeTone, string> = {
 const dotColor: Record<BadgeTone, string> = {
   neutral: "bg-fg-secondary",
   cosmic: "bg-cosmic",
-  nebula: "bg-nebula",
+  fixture: "bg-fg-muted",
   planet: "bg-signal-planet",
   fp: "bg-signal-fp",
   uncertain: "bg-signal-uncertain",
@@ -41,7 +42,7 @@ export function Badge({ tone = "neutral", size = "sm", icon, dot, mono, classNam
     <span
       className={cn(
         "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full border font-medium [&_svg]:shrink-0",
-        size === "sm" ? "h-[22px] px-2 text-xs [&_svg]:size-3" : "h-7 px-2.5 text-sm [&_svg]:size-3.5",
+        size === "sm" ? "h-6 px-2 text-xs [&_svg]:size-3" : "h-7 px-2.5 text-sm [&_svg]:size-3.5",
         mono && "num",
         soft[tone],
         className,

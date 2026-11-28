@@ -216,7 +216,7 @@ export function ExperimentDetail({ id, onClose, onDeleted }: ExperimentDetailPro
               {exp.dataset_name ?? `dataset #${exp.dataset_id}`}
             </Link>
             {exp.is_active_model ? <Badge tone="planet">active model</Badge> : null}
-            {exp.is_fixture ? <Badge tone="nebula">test fixture</Badge> : null}
+            {exp.is_fixture ? <Badge tone="fixture">test fixture</Badge> : null}
             {exp.archived ? <Badge tone="uncertain">archived</Badge> : null}
             {exp.tags.map((t) => (
               <Badge key={t} tone="cosmic">

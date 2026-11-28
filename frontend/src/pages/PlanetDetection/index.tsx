@@ -63,7 +63,7 @@ function Results({ r }: { r: PredictResponse }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="eyebrow text-fg-secondary">Results</div>
-          <h2 id="results-title" className="font-display text-lg text-fg">
+          <h2 id="results-title" className="text-lg font-medium text-fg">
             {r.signal ? signalName(r.signal) : r.source.input_name}
           </h2>
           <p className="mt-1 text-sm text-fg-secondary">
@@ -71,7 +71,7 @@ function Results({ r }: { r: PredictResponse }) {
           </p>
         </div>
         {r.results.length > 1 ? (
-          <Badge tone="nebula" size="md">
+          <Badge tone="neutral" size="md">
             {nPlanet} of {r.results.length} models read planet-like ({formatPercent(nPlanet / r.results.length, { digits: 0 })})
           </Badge>
         ) : null}

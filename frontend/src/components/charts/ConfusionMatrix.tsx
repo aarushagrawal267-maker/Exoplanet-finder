@@ -24,14 +24,14 @@ function Cell({ count, rowTotal, correct, caption }: { count: number; rowTotal: 
   const share = rowTotal > 0 ? count / rowTotal : 0;
   return (
     <div
-      className="flex min-h-[92px] flex-col justify-between rounded-md border border-hairline p-3"
+      className="flex min-h-24 flex-col justify-between rounded-md border border-hairline p-3"
       style={{ background: `rgba(110, 155, 255, ${0.04 + share * 0.26})` }}
     >
       {/* Both rows wrap as whole words in narrow cells (phones, two-up layouts) instead of
           breaking "TRUE POS." or squeezing the share against the count. */}
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
         <span className="eyebrow whitespace-nowrap text-fg-secondary">{caption}</span>
-        <span className={cn("whitespace-nowrap text-2xs font-medium uppercase tracking-[0.1em]", correct ? "text-fg" : "text-fg-secondary")}>
+        <span className={cn("whitespace-nowrap text-xs font-medium", correct ? "text-fg" : "text-fg-secondary")}>
           {correct ? "correct" : "error"}
         </span>
       </div>

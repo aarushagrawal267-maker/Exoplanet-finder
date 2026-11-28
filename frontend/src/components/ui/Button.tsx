@@ -12,12 +12,12 @@ const base =
 
 const variants: Record<ButtonVariant, string> = {
   // Cosmic blue fill with void text: 7.5:1 contrast.
-  primary: "bg-cosmic text-void hover:bg-[#86ADFF] active:bg-[#5D8BF0] shadow-[inset_0_1px_0_rgb(255_255_255/0.25)]",
-  secondary: "border border-hairline-strong bg-surface-raised text-fg hover:border-fg-muted hover:bg-[#1A2340]",
+  primary: "bg-cosmic text-void hover:bg-cosmic-hover active:bg-cosmic-press",
+  secondary: "border border-hairline-strong bg-surface-raised text-fg hover:border-fg-muted hover:bg-surface-hover",
   ghost: "text-fg-secondary hover:bg-fg/[0.06] hover:text-fg",
   outline: "border border-cosmic/50 text-cosmic hover:border-cosmic hover:bg-cosmic/10",
-  // Model / AI actions use nebula violet.
-  model: "border border-nebula/50 bg-nebula/10 text-nebula hover:border-nebula hover:bg-nebula/15",
+  // Model actions (score, train): the quiet blue outline. Violet is reserved for model output.
+  model: "border border-cosmic/50 bg-cosmic/[0.08] text-cosmic hover:border-cosmic hover:bg-cosmic/15",
   danger: "border border-danger/45 bg-danger/10 text-danger hover:border-danger hover:bg-danger/15",
 };
 

@@ -86,7 +86,7 @@ export function TrainedModels() {
                     active
                   </Badge>
                 ) : null}
-                {m.is_fixture ? <Badge tone="nebula">test fixture</Badge> : null}
+                {m.is_fixture ? <Badge tone="fixture">test fixture</Badge> : null}
                 {!m.compatible ? <Badge tone="warn">old pipeline</Badge> : null}
               </span>
               <span className="text-xs text-fg-secondary">

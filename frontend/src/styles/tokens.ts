@@ -3,12 +3,12 @@
  * motion. Consumed by `tailwind.config.ts` (utility classes), the chart themes (Plotly / Recharts
  * need literal colour strings) and a few inline SVGs.
  *
- * The palette is dark-first: a near-black "void" background with navy surfaces, hairline borders,
- * and a small set of semantic signal colours. Semantic colours are reserved:
+ * The palette is dark-first: a blue-black ink ramp (void → space → surface → raised) with hairline
+ * borders, and a small set of semantic signal colours. Semantic colours are reserved:
  *   - signal.planet (teal)  → class 1, "planet-like"
  *   - signal.fp (amber)     → class 0, "false-positive-like"
  *   - signal.uncertain      → undecided / low-quality verdicts
- *   - nebula (violet)       → AI / model-generated elements
+ *   - nebula (violet)       → model output figures only (the model readout and model chart series)
  *   - cosmic (blue)         → primary actions, focus, links
  * They are never used for arbitrary chart series (see `MODEL_PALETTE` in charts/theme.ts).
  *
@@ -16,22 +16,29 @@
  */
 
 export const colors = {
-  void: "#05070F",
-  space: "#0A0F1E",
-  surface: "#0F1629",
-  "surface-raised": "#151D35",
-  hairline: "#1F2A47",
-  "hairline-strong": "#2C3A60",
-  "text-primary": "#E6EAF5",
-  "text-secondary": "#9AA6C4",
-  "text-muted": "#5F6B8A",
+  void: "#06080D",
+  space: "#0A0D14",
+  surface: "#0E121B",
+  "surface-raised": "#141924",
+  "surface-hover": "#1A2030",
+  hairline: "#1E2431",
+  "hairline-strong": "#2B3343",
+  "text-primary": "#E6E9F0",
+  "text-secondary": "#A1A9BA",
+  "text-muted": "#7A8498",
   cosmic: "#6E9BFF",
+  "cosmic-hover": "#86ADFF",
+  "cosmic-press": "#5D8BF0",
   nebula: "#A08BFF",
   "signal-planet": "#4FD1C5",
   "signal-fp": "#F5A95B",
   "signal-uncertain": "#8B93B8",
   warn: "#F2C94C",
   danger: "#F2727F",
+  /* Limb-darkened stellar disc (TransitMark, TransitDiagram, TransitLoader): core → mid → limb. */
+  "star-core": "#EEF1FA",
+  "star-mid": "#C3CCE8",
+  "star-limb": "#7C88B4",
 } as const;
 
 export type ColorToken = keyof typeof colors;
@@ -44,7 +51,7 @@ export const fonts = {
 } as const;
 
 /**
- * Type scale: 12 / 13 / 14 / 16 / 20 / 28 / 40 px, plus the 11 px uppercase mono "eyebrow".
+ * Type scale: 11 / 12 / 13 / 14 / 16 / 20 / 28 / 40 px. 11 px is the floor (meta labels).
  * 14 px is the UI body size.
  */
 export const fontSize = {

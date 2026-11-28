@@ -11,8 +11,8 @@ const tones: Record<BannerTone, { icon: ReactNode; className: string; iconClass:
   // Predictions from a fixture (pipeline-test) model must never be mistaken for real results.
   "fixture-model": {
     icon: <FlaskConical />,
-    className: "border-dashed border-nebula/50 bg-nebula/[0.06]",
-    iconClass: "text-nebula",
+    className: "border-dashed border-fg-muted/60 bg-fg/[0.03]",
+    iconClass: "text-warn",
   },
 };
 

@@ -209,7 +209,7 @@ export function DataTable<T>({
                           type="button"
                           onClick={header.column.getToggleSortingHandler()}
                           className={cn(
-                            "group inline-flex items-center gap-1 rounded-sm uppercase tracking-[inherit] hover:text-fg",
+                            "group inline-flex items-center gap-1 rounded-sm hover:text-fg",
                             (meta?.numeric || meta?.align === "right") && "flex-row-reverse",
                             sorted && "text-fg",
                           )}

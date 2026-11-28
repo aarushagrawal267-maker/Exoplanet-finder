@@ -166,7 +166,7 @@ export function VerdictPanel({
               <span className="absolute top-3.5 h-7 w-0 -translate-x-1/2 border-l border-dashed border-fg" style={{ left: pct(t) }} aria-hidden="true" />
               {/* probability needle */}
               {hasP ? (
-                <span className="absolute top-[14px] -translate-x-1/2" style={{ left: pct(probability as number) }} aria-hidden="true" data-testid="probability-needle">
+                <span className="absolute top-3.5 -translate-x-1/2" style={{ left: pct(probability as number) }} aria-hidden="true" data-testid="probability-needle">
                   <span className="block h-7 w-0.5 rounded-full bg-fg shadow-[0_0_0_2px_var(--c-surface)]" />
                 </span>
               ) : null}
@@ -225,7 +225,7 @@ export function VerdictPanel({
             </div>
             {catalogue ? (
               <div className="flex flex-col items-start gap-1.5">
-                <span className="num text-sm uppercase tracking-wide text-fg">{catalogue.disposition}</span>
+                <span className="num text-sm text-fg">{catalogue.disposition}</span>
                 {catalogue.cls ? <ClassBadge cls={catalogue.cls} context="Catalogue classification" /> : null}
                 {catalogue.cls && cls !== "uncertain" && catalogue.cls !== cls ? (
                   <span className="flex items-center gap-1 text-xs text-warn">

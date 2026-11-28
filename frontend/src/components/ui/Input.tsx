@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 import { useFieldControl } from "./Field";
 
 /**
- * Shared look for text-like controls. Borders use text-muted (#5F6B8A, ≥3:1 against surfaces) so
+ * Shared look for text-like controls. Borders use text-muted (#7A8498, ≥4.5:1 against surfaces) so
  * the control boundary meets WCAG 1.4.11 non-text contrast.
  */
 export const controlClasses =

@@ -32,7 +32,7 @@ export function NoModelState({ className, compact = false }: { className?: strin
     <EmptyState
       size={compact ? "sm" : "md"}
       className={className}
-      art={<Cpu className="size-10 text-nebula" aria-hidden="true" />}
+      art={<Cpu className="size-10 text-fg-secondary" aria-hidden="true" />}
       title="No trained model yet"
       description="Planet Detection scores signals with models you train on your own dataset. Build a dataset, train a model (logistic regression takes about a minute), then come back."
       actions={
@@ -77,14 +77,14 @@ export function ModelPicker({ models, value, onChange, single = false, className
             className={cn(
               "flex items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors",
               usable.ok ? "cursor-pointer" : "cursor-not-allowed opacity-60",
-              checked ? "border-nebula/60 bg-nebula/[0.07]" : "border-hairline hover:border-hairline-strong",
+              checked ? "border-cosmic/60 bg-cosmic/[0.06]" : "border-hairline hover:border-hairline-strong",
               m.is_fixture && "border-dashed",
             )}
           >
             <input
               type={single ? "radio" : "checkbox"}
               name="model-picker"
-              className="mt-1 accent-[var(--c-nebula)]"
+              className="mt-1 accent-[var(--c-cosmic)]"
               checked={checked}
               disabled={!usable.ok}
               onChange={() => toggle(m.id)}
@@ -92,7 +92,7 @@ export function ModelPicker({ models, value, onChange, single = false, className
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-center gap-1.5">
                 <span className="text-sm font-medium text-fg">{m.name}</span>
-                {m.is_active ? <Badge tone="nebula">Active</Badge> : null}
+                {m.is_active ? <Badge tone="cosmic">Active</Badge> : null}
                 {m.is_fixture ? <Badge tone="warn">Fixture — test only</Badge> : null}
                 {!usable.ok ? <Badge tone="danger">Unavailable: {usable.reason}</Badge> : null}
               </span>

@@ -11,6 +11,7 @@ import { useRefreshCatalog } from "@/api/endpoints/catalog";
 import { qk } from "@/api/endpoints/keys";
 import { useSystemSummary } from "@/api/endpoints/system";
 import type { JobOut, ModelBrief, NextStep, SystemSummaryOut } from "@/api/schemas";
+import { DipRule } from "@/components/brand/Dip";
 import { TransitDiagram } from "@/components/brand/TransitDiagram";
 import { JobProgress } from "@/components/jobs/JobProgress";
 import { predictionModel } from "@/components/layout/useSystemStatus";
@@ -397,7 +398,7 @@ export default function OverviewPage() {
         <div className="grid grid-cols-1 items-center gap-8 xl:grid-cols-[1.15fr_1fr] xl:gap-12">
           <div className="min-w-0">
             <div className="eyebrow mb-4 flex items-center gap-2 text-fg-secondary">
-              <span className="h-px w-5 bg-gradient-to-r from-nebula to-cosmic" aria-hidden="true" />
+              <DipRule />
               Kepler transit-signal laboratory
             </div>
             <h1 id="hero-title" className="font-display text-xl text-fg md:text-2xl">

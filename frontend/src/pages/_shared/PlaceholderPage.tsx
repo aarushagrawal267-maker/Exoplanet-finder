@@ -49,7 +49,7 @@ export function PlaceholderPage({ navId, title, description, planned, related = 
           <ul className="flex flex-col gap-2.5">
             {planned.map((p) => (
               <li key={p} className="flex gap-2.5 text-sm text-fg">
-                <span className="mt-[7px] size-1 shrink-0 rounded-full bg-cosmic" aria-hidden="true" />
+                <span className="mt-2 size-1 shrink-0 rounded-full bg-cosmic" aria-hidden="true" />
                 <span>{p}</span>
               </li>
             ))}

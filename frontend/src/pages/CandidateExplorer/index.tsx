@@ -192,7 +192,7 @@ function useColumns(): ColumnDef<CandidateOut>[] {
             <span className="inline-flex items-center gap-1">
               {r.seen_in_training ? <Badge tone="warn" title="A model saw this star in its training or validation split: its score is optimistic">Seen in training</Badge> : null}
               {r.has_fixture_model_scores ? (
-                <Badge tone="nebula" icon={<FlaskConical aria-hidden="true" />} title="Includes scores from a fixture (pipeline-test) model">
+                <Badge tone="fixture" icon={<FlaskConical aria-hidden="true" />} title="Includes scores from a fixture (pipeline-test) model">
                   Fixture
                 </Badge>
               ) : null}
@@ -215,7 +215,7 @@ function CandidateDetail({ c }: { c: CandidateOut }) {
         <CategoryBadge category={c.category} />
         {c.koi_disposition ? <KoiBadge disposition={c.koi_disposition} prefix /> : null}
         {c.seen_in_training ? <Badge tone="warn">Seen in training</Badge> : null}
-        {c.has_fixture_model_scores ? <Badge tone="nebula">Fixture scores included</Badge> : null}
+        {c.has_fixture_model_scores ? <Badge tone="fixture">Fixture scores included</Badge> : null}
       </div>
       <div className="flex flex-wrap gap-2">
         <Link to={`/targets/${c.kepid}?signal=${c.signal_id}`} className={buttonClasses({ variant: "secondary", size: "sm" })}>

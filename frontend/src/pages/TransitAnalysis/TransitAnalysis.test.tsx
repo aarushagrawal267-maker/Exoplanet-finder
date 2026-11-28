@@ -80,9 +80,9 @@ describe("Transit Analysis", () => {
     const api = mockApi(routes);
     const user = userEvent.setup();
     renderPage(<TransitAnalysisPage />, { path: "/transit", route: "/transit?kepid=10666592&signal=19997" });
-    expect(await screen.findByText("SYNTHETIC")).toBeInTheDocument();
+    expect(await screen.findByText("Synthetic")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Inject and search" }));
-    expect(await screen.findByText("SYNTHETIC — not an observation")).toBeInTheDocument();
+    expect(await screen.findByText("Synthetic — not an observation")).toBeInTheDocument();
     expect(screen.getByText("Injected signal recovered")).toBeInTheDocument();
     expect(api.find("POST", "/analysis/injection")[0]!.body).toMatchObject({ kepid: 10666592, period_days: 5.3, depth_ppm: 500, duration_hours: 3 });
   });

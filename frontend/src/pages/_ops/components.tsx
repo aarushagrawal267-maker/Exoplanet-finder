@@ -340,7 +340,7 @@ export function useParamState(): [URLSearchParams, (patch: Record<string, string
 export function Hint({ text, children }: { text: string; children?: ReactNode }) {
   return (
     <UiTooltip content={text}>
-      <button type="button" className="ml-1 inline-flex size-4 items-center justify-center rounded-full border border-hairline-strong text-[10px] text-fg-secondary hover:text-fg" aria-label={text}>
+      <button type="button" className="ml-1 inline-flex size-4 items-center justify-center rounded-full border border-hairline-strong text-2xs text-fg-secondary hover:text-fg" aria-label={text}>
         {children ?? "?"}
       </button>
     </UiTooltip>

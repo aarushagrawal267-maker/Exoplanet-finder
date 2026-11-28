@@ -90,7 +90,7 @@ const TOC = [
 
 function DemoTag() {
   return (
-    <span className="eyebrow inline-flex h-5 shrink-0 items-center whitespace-nowrap rounded-sm border border-dashed border-warn/60 px-1.5 text-[10px] text-warn" title={DEMO_LABEL}>
+    <span className="eyebrow inline-flex h-5 shrink-0 items-center whitespace-nowrap rounded-sm border border-dashed border-warn/60 px-1.5 text-2xs text-warn" title={DEMO_LABEL}>
       Demo data
     </span>
   );
@@ -118,7 +118,7 @@ const SWATCHES: Array<{ token: keyof typeof colors; role: string; ink?: boolean 
   { token: "text-secondary", role: "Secondary text", ink: true },
   { token: "text-muted", role: "Placeholders, decoration", ink: true },
   { token: "cosmic", role: "Primary, focus, binned data" },
-  { token: "nebula", role: "AI / model elements" },
+  { token: "nebula", role: "Model output figures" },
   { token: "signal-planet", role: "Class 1 · planet-like" },
   { token: "signal-fp", role: "Class 0 · false-positive-like" },
   { token: "signal-uncertain", role: "Uncertain verdicts" },
@@ -129,8 +129,8 @@ const SWATCHES: Array<{ token: keyof typeof colors; role: string; ink?: boolean 
 const TYPE_SCALE = [
   { size: "text-2xl", px: 40, sample: "Kepler-like transit", font: "font-display" },
   { size: "text-xl", px: 28, sample: "Signal Explorer", font: "font-display" },
-  { size: "text-lg", px: 20, sample: "Editorial heading", font: "font-display" },
-  { size: "text-md", px: 16, sample: "Card title and lead paragraph", font: "font-sans font-semibold" },
+  { size: "text-lg", px: 20, sample: "Section heading", font: "font-sans font-medium" },
+  { size: "text-md", px: 16, sample: "Card title and lead paragraph", font: "font-sans font-medium" },
   { size: "text-base", px: 14, sample: "Body text for the interface — readable at length.", font: "font-sans" },
   { size: "text-sm", px: 13, sample: "Secondary text, table cells and help copy.", font: "font-sans" },
   { size: "text-xs", px: 12, sample: "Captions, legends, metadata", font: "font-sans" },
@@ -192,10 +192,10 @@ export default function DesignSystemPage() {
         description="Observatory Night: every primitive, chart and science component in one place for visual QA. Components are documented in their source files."
         meta={
           <>
-            <Badge tone="nebula" mono>
+            <Badge mono>
               {Object.keys(colors).length} colour tokens
             </Badge>
-            <Badge mono>7 type sizes + eyebrow</Badge>
+            <Badge mono>8 type sizes</Badge>
           </>
         }
       />
@@ -215,7 +215,7 @@ export default function DesignSystemPage() {
       </div>
 
       {/* ------------------------------------------------------------------ Foundations */}
-      <Section id="foundations" eyebrow="01" title="Foundations" description="Dark-first colour tokens with reserved semantic roles; Inter Tight for UI, JetBrains Mono for every number, Instrument Serif italic for titles.">
+      <Section id="foundations" eyebrow="01" title="Foundations" description="Dark-first colour tokens with reserved semantic roles; Inter Tight for UI, JetBrains Mono for every number, Instrument Serif (upright) for page titles and the hero.">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
           <Specimen label="Colour tokens">
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
@@ -238,8 +238,8 @@ export default function DesignSystemPage() {
                 </li>
               ))}
               <li className="flex items-baseline gap-4">
-                <span className="num w-10 shrink-0 text-xs text-fg-secondary">11</span>
-                <span className="eyebrow text-fg-secondary">Eyebrow · mono uppercase</span>
+                <span className="num w-10 shrink-0 text-xs text-fg-secondary">12</span>
+                <span className="eyebrow text-fg-secondary">Eyebrow · sentence-case label</span>
               </li>
               <li className="flex items-baseline gap-4">
                 <span className="num w-10 shrink-0 text-xs text-fg-secondary">mono</span>
@@ -321,7 +321,7 @@ export default function DesignSystemPage() {
               <Badge tone="cosmic" dot>
                 Running
               </Badge>
-              <Badge tone="nebula">Model</Badge>
+              <Badge tone="fixture">Fixture</Badge>
               <Badge tone="warn" dot>
                 Label conflict
               </Badge>

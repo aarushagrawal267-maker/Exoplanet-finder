@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
+import { DipRule } from "@/components/brand/Dip";
 import { cn } from "@/lib/cn";
 
 export interface PageHeaderProps {
-  /** Small uppercase mono label above the title (e.g. "Observe · 02"). */
+  /** Small sentence-case label above the title (e.g. "Observe · 02"). */
   eyebrow?: ReactNode;
-  /** Page title, set in Instrument Serif italic. */
+  /** Page title, set in Instrument Serif (upright). */
   title: ReactNode;
   description?: ReactNode;
   /** Right-aligned actions (buttons). */
@@ -21,7 +22,7 @@ export function PageHeader({ eyebrow, title, description, actions, meta, classNa
       <div className="min-w-0">
         {eyebrow ? (
           <div className="eyebrow mb-2 flex items-center gap-2 text-fg-secondary">
-            <span className="h-px w-5 bg-gradient-to-r from-nebula to-cosmic" aria-hidden="true" />
+            <DipRule />
             {eyebrow}
           </div>
         ) : null}

@@ -3,7 +3,7 @@
  *
  * Colours, type scale, radii and motion all come from `src/styles/tokens.ts` so charts and
  * utilities can never drift apart. The font-size scale is *replaced* (not extended) to enforce
- * the 11/12/13/14/16/20/28/40 px scale.
+ * the 11/12/13/14/16/20/28/40 px scale (11 px is the floor).
  */
 import type { Config } from "tailwindcss";
 import plugin from "tailwindcss/plugin";
@@ -23,7 +23,7 @@ const config: Config = {
       colors: {
         void: colors.void,
         space: colors.space,
-        surface: { DEFAULT: colors.surface, raised: colors["surface-raised"] },
+        surface: { DEFAULT: colors.surface, raised: colors["surface-raised"], hover: colors["surface-hover"] },
         hairline: { DEFAULT: colors.hairline, strong: colors["hairline-strong"] },
         fg: {
           DEFAULT: colors["text-primary"],
@@ -31,7 +31,7 @@ const config: Config = {
           secondary: colors["text-secondary"],
           muted: colors["text-muted"],
         },
-        cosmic: colors.cosmic,
+        cosmic: { DEFAULT: colors.cosmic, hover: colors["cosmic-hover"], press: colors["cosmic-press"] },
         nebula: colors.nebula,
         signal: {
           planet: colors["signal-planet"],
@@ -109,19 +109,21 @@ const config: Config = {
           fontVariantNumeric: "tabular-nums",
           fontFeatureSettings: '"tnum" 1, "zero" 0',
         },
+        // Section and field labels: sentence case, set in the UI family. (Mono stays for meta
+        // values: IDs, counts, coordinates — see `.num`.)
         ".eyebrow": {
-          fontFamily: fonts.mono.join(", "),
-          fontSize: "11px",
+          fontFamily: fonts.sans.join(", "),
+          fontSize: "12px",
           lineHeight: "16px",
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
+          letterSpacing: "0",
           fontWeight: "500",
         },
+        // Instrument Serif, upright, only for page titles and the Overview hero.
         ".font-display": {
           fontFamily: fonts.serif.join(", "),
-          fontStyle: "italic",
+          fontStyle: "normal",
           fontWeight: "400",
-          letterSpacing: "-0.005em",
+          letterSpacing: "0",
         },
       });
     }),

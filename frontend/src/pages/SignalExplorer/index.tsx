@@ -165,10 +165,10 @@ function Filters({ u, onReset }: { u: ReturnType<typeof useUrlState>; onReset: (
         </div>
       </div>
       <div className="flex flex-wrap items-end gap-3">
-        <Field label="Period from" className="w-[150px]">
+        <Field label="Period from" className="w-[152px]">
           <NumberInput value={u.num("pmin")} onChange={setNum("pmin")} min={0} step={0.1} precision={2} unit="d" allowEmpty hideSteppers placeholder="0" />
         </Field>
-        <Field label="Period to" className="w-[150px]">
+        <Field label="Period to" className="w-[152px]">
           <NumberInput value={u.num("pmax")} onChange={setNum("pmax")} min={0} step={0.1} precision={2} unit="d" allowEmpty hideSteppers placeholder="∞" />
         </Field>
         <Field label="Min. model SNR" className="w-[140px]">
@@ -266,7 +266,7 @@ function SignalDetail({ kepid, signalId, fallback }: { kepid: number; signalId: 
         {s.av_training_set ? <AvLabelBadge label={s.av_training_set} prefix /> : null}
         <ConflictBadge conflict={s.label_conflict} compact />
         <LcStatusBadge status={target.data?.target.lc_status ?? s.lc_status} />
-        {target.data?.reserved_showcase ? <Badge tone="nebula" title="Forced into test splits; never trained on">Reserved showcase</Badge> : null}
+        {target.data?.reserved_showcase ? <Badge tone="neutral" title="Forced into test splits; never trained on">Reserved showcase</Badge> : null}
       </div>
       <div className="flex flex-wrap gap-2">
         <Link to={`/targets/${s.kepid}?signal=${s.id}`} className={buttonClasses({ variant: "secondary", size: "sm" })}>

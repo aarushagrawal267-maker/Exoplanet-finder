@@ -224,7 +224,7 @@ export function JobTray({ jobs, onCancel, onOpenJob, connection, notify = true, 
             {running.length ? <ProgressRing value={meanProgress} /> : <ListChecks className="size-[18px]" strokeWidth={1.75} aria-hidden="true" />}
             <span className="hidden text-sm lg:inline">Jobs</span>
             {active.length ? (
-              <span className="num flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-cosmic px-1 text-[11px] font-medium text-void">
+              <span className="num flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmic px-1 text-2xs font-medium text-void">
                 {active.length}
               </span>
             ) : null}

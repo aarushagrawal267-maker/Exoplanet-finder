@@ -140,7 +140,7 @@ function Dossier({ d, signalId, onSignal }: { d: TargetDetailOut; signalId: numb
 
       <section aria-labelledby="signals-title">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <h2 id="signals-title" className="font-display text-lg text-fg">
+          <h2 id="signals-title" className="text-lg font-medium text-fg">
             Signals on this star <span className="num text-base text-fg-secondary">({d.signals.length})</span>
           </h2>
           <span className="text-xs text-fg-secondary">Select a signal to fold the light curve on its ephemeris.</span>
@@ -279,7 +279,7 @@ export default function TargetDossierPage() {
               <Badge mono>KIC {raw.padStart(9, "0")}</Badge>
               {d ? <LcStatusBadge status={d.target.lc_status} /> : null}
               {d?.reserved_showcase ? (
-                <Badge tone="nebula" title="Forced into test splits, never trained on">
+                <Badge tone="neutral" title="Forced into test splits, never trained on">
                   Reserved showcase
                 </Badge>
               ) : null}

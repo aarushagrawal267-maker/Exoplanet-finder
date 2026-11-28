@@ -100,7 +100,7 @@ function ExperimentCurves({ id, live, running }: { id: number; live: LiveState |
       <div className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
         <StatusBadge status={e.status} />
         <span>{e.name}</span>
-        {e.model_version_id ? <Badge tone="nebula">model #{e.model_version_id}</Badge> : null}
+        {e.model_version_id ? <Badge tone="neutral" mono>model #{e.model_version_id}</Badge> : null}
         {e.epochs_run ? (
           <span className="num">
             {formatInt(e.epochs_run)} epochs run{e.best_epoch ? ` · best ${e.best_epoch}` : ""}
