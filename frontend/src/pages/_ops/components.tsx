@@ -263,7 +263,7 @@ export function ViewThumb({ values, label, width = 160, height = 56, className }
   return (
     <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" role="img" aria-label={label} className={cn("block h-14 w-full", className)}>
       <line x1="0" x2={width} y1={zeroY} y2={zeroY} stroke="var(--c-hairline-strong)" strokeWidth="1" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />
-      <path d={pathFor(values, width, height, lo, hi)} fill="none" stroke="var(--c-cosmic)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      <path d={pathFor(values, width, height, lo, hi)} fill="none" stroke="var(--c-nebula)" strokeWidth="1.25" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
     </svg>
   );
 }

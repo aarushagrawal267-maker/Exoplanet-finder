@@ -7,7 +7,8 @@
  *  - Model inputs and outputs: nebula violet.
  *  - Class colours (teal planet-like / amber false-positive-like) are reserved for class meaning.
  *  - Model comparison series use MODEL_PALETTE, validated for colour-vision deficiency on the
- *    #0F1629 surface (worst adjacent CVD ΔE 10.1, all pairs ≥ 8.9; see below) and always paired
+ *    original #0F1629 surface (worst adjacent CVD ΔE 10.1, all pairs ≥ 8.9; see below) and
+ *    re-checked for contrast on the current #0E121B surface (all ≥ 6.9:1). Always paired
  *    with a distinct dash pattern + legend label, so identity is never colour alone.
  */
 import type { Config, Layout } from "plotly.js";
@@ -17,7 +18,7 @@ import { colors, fonts } from "@/styles/tokens";
 export const chartColors = {
   background: "rgba(0,0,0,0)",
   surface: colors.surface,
-  grid: "rgba(31, 42, 71, 0.75)", // hairline
+  grid: "rgba(30, 36, 49, 0.75)", // hairline (#1E2431)
   axis: colors["hairline-strong"],
   tick: colors["text-secondary"],
   title: colors["text-secondary"],
@@ -38,7 +39,9 @@ export const SANS = fonts.sans.join(", ");
 
 /**
  * Categorical palette for comparing models. Order validated with the dataviz palette checker
- * (dark mode, surface #0F1629, --pairs all): CVD worst ΔE 10.1 (protan), all four ≥ 3:1 contrast.
+ * (dark mode, surface #0F1629, --pairs all): CVD worst ΔE 10.1 (protan). On the current #0E121B
+ * surface the four series measure 6.95 / 7.04 / 11.15 / 10.46 : 1 (up from 6.68 / 6.77 / 10.71 /
+ * 10.05 on #0F1629).
  * Blue and violet were deliberately NOT both used: they collapse under deuteranopia (ΔE 0.7).
  */
 export const SERIES_PALETTE = ["#6E9BFF", "#E07FB8", "#B5D36B", "#C7B8FF"] as const;
