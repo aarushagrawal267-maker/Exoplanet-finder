@@ -50,6 +50,10 @@ npm run test:e2e         # Playwright, desktop 1440×900 and mobile 390×844
 * End-to-end tests start the Vite dev server automatically (or use `E2E_BASE_URL`). Tests that need a
   running backend use the real API; states that are slow to reach (for example a finished evaluation)
   intercept the API with fixtures that are labelled as test fixtures.
+* `e2e/science-pages.spec.ts` needs the NASA catalogue in the running backend. Before its tests it
+  downloads the two light curves they open (Kepler-2 and Kepler-90, about 8 MB each from NASA MAST)
+  through the API if they are not cached; without a catalogue, or if MAST cannot be reached, those tests
+  are skipped with a message saying what to run.
 * After changing the backend API, run `npm run gen:api` to regenerate `src/api/schema.d.ts`; the type
   check then shows where the frontend must adapt.
 
