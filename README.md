@@ -2,6 +2,9 @@
 
 **Train your own AI to vet planet signals in real NASA Kepler data, on your own computer.**
 
+**Live demo:** https://huggingface.co/spaces/agrawalaarush08/exoplanet-finder (results viewer: the held-out
+test results of the four models from a Pilot-tier run, precomputed by the app; the full app runs locally)
+
 Exoplanet Finder is a local research application. It downloads public NASA Kepler data, processes
 light curves into the "global" and "local" views used by the AstroNet research model, trains four
 machine-learning models from scratch, and scores transit-like signals as
@@ -162,7 +165,9 @@ docker run --rm -p 8000:8000 \
 Open <http://localhost:8000>; the interactive API documentation is then at
 <http://localhost:8000/api/docs> (the web app uses `/docs` for its Research Docs page). The two
 volumes keep downloaded NASA data and trained models between runs. The same image can be published as
-a free Hugging Face Space: see [deploy/huggingface/README.md](deploy/huggingface/README.md).
+a Hugging Face Docker Space, optionally pre-loaded with a trained run: see
+[deploy/huggingface/README.md](deploy/huggingface/README.md). A static results viewer that needs no
+server is in [deploy/browser-demo](deploy/browser-demo/build_results_viewer.py).
 
 ---
 
@@ -224,6 +229,11 @@ The **Overview** page always shows the next step for your installation. A typica
    0.988 and PR-AUC 0.965 at NASA's natural class balance (23 % planet-like, so chance PR-AUC is
    0.23). The random-forest baseline reaches the same two numbers; logistic regression reaches 0.980
    and 0.937. See [Reference results](docs/reference-results.md).
+
+   **Pilot run in this repository** (2026-11-28, about 20 minutes of CPU): on its 43 held-out test
+   signals (chance PR-AUC 0.67) the two-view CNN reaches PR-AUC 0.939 [95 % CI 0.820, 0.995] and ROC-AUC
+   0.892 [0.710, 0.986]; the other three models are within the same wide intervals. Model files and
+   per-signal test predictions: [artifacts/reference/pilot-dr24](artifacts/reference/pilot-dr24/README.md).
 6. **Evaluate.** In **Model Evaluation**, run the final evaluation on the held-out **test** set and
    compare models. The test set is used only here; model choices are made on the validation set.
 7. **Detect.** In **Planet Detection**, score a catalogue signal or upload your own light curve.
@@ -408,7 +418,8 @@ deploy/          Hugging Face Space files
   conflicts are flagged in the catalogue.
 * A fresh install contains no data or trained models: the first session downloads the NASA catalogue
   and light curves and trains the models on your computer (minutes for Pilot, about an hour for
-  Standard on a 4-core CPU).
+  Standard on a 4-core CPU). The Pilot reference run's model files in `artifacts/reference/pilot-dr24`
+  are for inspection; the app does not load them on its own.
 * Full details: [docs/limitations.md](docs/limitations.md).
 
 ---

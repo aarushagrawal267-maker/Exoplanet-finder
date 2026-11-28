@@ -76,6 +76,10 @@ export default defineConfig(({ mode }) => {
       css: false,
       include: ["src/**/*.test.{ts,tsx}"],
       restoreMocks: true,
+      // Vitest's default 5 s per test/hook is too tight on slow or busy machines (page tests render
+      // whole pages in jsdom and some wait up to 5 s for async UI), so they timed out spuriously.
+      testTimeout: 30_000,
+      hookTimeout: 30_000,
     },
   };
 });

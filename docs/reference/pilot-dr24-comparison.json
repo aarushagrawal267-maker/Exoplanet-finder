@@ -1,0 +1,2042 @@
+{
+  "report_type": "comparison",
+  "title": "Comparison of 4 experiments",
+  "generated_at": "2026-11-28T09:43:43+00:00",
+  "app_version": "1.0.0",
+  "pipeline_version": "1.0",
+  "disclaimer": "Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.",
+  "is_fixture": false,
+  "same_dataset": true,
+  "experiments": [
+    {
+      "report_type": "experiment",
+      "title": "Experiment report: Pilot DR24 - Logistic regression",
+      "generated_at": "2026-11-28T09:43:43+00:00",
+      "app_version": "1.0.0",
+      "pipeline_version": "1.0",
+      "disclaimer": "Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.",
+      "is_fixture": false,
+      "experiment": {
+        "id": 1,
+        "name": "Pilot DR24 - Logistic regression",
+        "model_type": "logreg",
+        "status": "succeeded",
+        "error": null,
+        "seed": 42,
+        "device": "cpu",
+        "created_at": "2026-11-28T09:27:08.458077",
+        "finished_at": "2026-11-28T09:27:28.828737",
+        "notes": "",
+        "tags": []
+      },
+      "model_card": {
+        "type": "logreg",
+        "name": "Logistic regression",
+        "description": "A linear classifier on standardised view bins and physical features. It weighs each input independently, so it shows how much of the problem is solvable without learned shape detectors.",
+        "inputs": [
+          "Global view block-averaged to 201 bins",
+          "Local view (201 bins)",
+          "Physical features measured from the light curve (depth, duration, SNR, odd/even, secondary eclipse, shape, scatter...). No catalogue scores or dispositions."
+        ],
+        "reference": "Classical baseline"
+      },
+      "data_provenance": {
+        "label_mode": "astronet_dr24",
+        "label_mode_description": "DR24 TCE av_training_set: PC -> planet-like (1); AFP, NTP -> false-positive-like (0); UNK or no TCE -> excluded (Shallue & Vanderburg 2018).",
+        "exclude_label_conflicts": true,
+        "catalogue_snapshots": [
+          {
+            "file": "dr24_tce_20261128T091619Z.csv",
+            "id": 1,
+            "retrieved_at": "2026-11-28T09:16:19.291394",
+            "rows": 20367,
+            "sha256": "b99ddf128aa10d4a5b027246ccf0986ffa8d9209c77fd1d307103efa0055b6c0",
+            "source": "dr24_tce",
+            "table": "q1_q17_dr24_tce"
+          },
+          {
+            "file": "koi_cumulative_20261128T091624Z.csv",
+            "id": 2,
+            "retrieved_at": "2026-11-28T09:16:24.925052",
+            "rows": 9564,
+            "sha256": "45f942add39344a65b9a4bfbc1b19573e3326202282609fff800583a6e5cad43",
+            "source": "koi_cumulative",
+            "table": "cumulative"
+          },
+          {
+            "file": "confirmed_20261128T091629Z.csv",
+            "id": 3,
+            "retrieved_at": "2026-11-28T09:16:29.227952",
+            "rows": 2818,
+            "sha256": "4fe1558486466fb629e5be80c0150a9f2631bece331a6b9ff977ed3e3e96d31d",
+            "source": "confirmed",
+            "table": "pscomppars+keplernames"
+          }
+        ],
+        "lightcurves": {
+          "digests_sha256": "3a256fb6b9ed0f9be15cb0930c93850ebee91b8cf70773d87dbc21f860fd388d",
+          "file": "lightcurves.json",
+          "n_stars": 164
+        },
+        "synthetic_data": false
+      },
+      "dataset": {
+        "available": true,
+        "id": 1,
+        "name": "Pilot DR24",
+        "tier": "pilot",
+        "status": "ready",
+        "pipeline_version": "1.0",
+        "split_seed": 42,
+        "content_hash": "1ea6beefc5a5e4b661a8b2973d10309ac1efaae8c062ea40c7db65c63b57d74a",
+        "n_examples": 284,
+        "per_split": {
+          "train": {
+            "n": 213,
+            "n_pos": 101,
+            "n_neg": 112,
+            "n_stars": 126
+          },
+          "val": {
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "n_stars": 18
+          },
+          "test": {
+            "n": 43,
+            "n_pos": 29,
+            "n_neg": 14,
+            "n_stars": 18
+          }
+        },
+        "exclusions_by_reason": {
+          "label_conflict": 14,
+          "no_av_label": 8,
+          "quality:too_few_transits": 2,
+          "av_unknown": 1
+        },
+        "quality_grades": {
+          "A": 245,
+          "B": 3,
+          "C": 45,
+          "D": 2
+        },
+        "reserved": [
+          {
+            "kepid": 4852528,
+            "name": "Kepler-80",
+            "n_signals": 6,
+            "n_included": 5
+          },
+          {
+            "kepid": 6541920,
+            "name": "Kepler-11",
+            "n_signals": 6,
+            "n_included": 6
+          },
+          {
+            "kepid": 8120608,
+            "name": "Kepler-186",
+            "n_signals": 5,
+            "n_included": 5
+          },
+          {
+            "kepid": 8311864,
+            "name": "Kepler-452",
+            "n_signals": 1,
+            "n_included": 0
+          },
+          {
+            "kepid": 11442793,
+            "name": "Kepler-90",
+            "n_signals": 8,
+            "n_included": 1
+          }
+        ],
+        "pipeline_config": {
+          "quality_bitmask": "default",
+          "gap_days": 0.75,
+          "detrend_method": "spline",
+          "mask_width_factor": 1.5,
+          "knot_spacing_days": null,
+          "min_knot_spacing_days": 0.5,
+          "max_knot_spacing_days": 20.0,
+          "n_knot_grid": 20,
+          "savgol_window_days": null,
+          "fit_clip_sigma": 3.0,
+          "sigma_clip": 3.0,
+          "global_bins": 2001,
+          "local_bins": 201,
+          "local_num_durations": 4.0,
+          "keep_stages": true,
+          "max_stage_points": 20000,
+          "max_individual_transits": 40
+        }
+      },
+      "config": {
+        "model_type": "logreg",
+        "lr": 0.0001,
+        "batch_size": 64,
+        "max_epochs": 50,
+        "patience": 8,
+        "min_delta": 0.0001,
+        "weight_decay": 0.0,
+        "dropout": 0.3,
+        "fc_width": 512,
+        "fc_layers": 4,
+        "augment_flip": true,
+        "ensemble_size": 1,
+        "seed": 42,
+        "device": "cpu",
+        "num_threads": null,
+        "cv_folds": 3,
+        "logreg_c_grid": [
+          0.001,
+          0.01,
+          0.1,
+          1.0
+        ],
+        "logreg_max_iter": 5000,
+        "rf_n_estimators": 300,
+        "rf_max_depth_grid": [
+          null,
+          16
+        ],
+        "rf_min_samples_leaf_grid": [
+          1,
+          4
+        ],
+        "rf_max_features_grid": [
+          "sqrt"
+        ]
+      },
+      "training": {
+        "epochs_run": 1,
+        "best_epoch": 1,
+        "duration_s": 20.28869614900009,
+        "n_params": 418,
+        "curve": {
+          "available": true,
+          "n_epochs_logged": 1,
+          "first": {
+            "epoch": 1,
+            "train_loss": 0.21667809457318807,
+            "val_loss": 0.36236271049295155,
+            "val_pr_auc": 0.919717995679534,
+            "val_roc_auc": 0.9282051282051282,
+            "val_accuracy": 0.8571428571428571,
+            "lr": null,
+            "elapsed_s": 20.28869614900009
+          },
+          "best": {
+            "epoch": 1,
+            "train_loss": 0.21667809457318807,
+            "val_loss": 0.36236271049295155,
+            "val_pr_auc": 0.919717995679534,
+            "val_roc_auc": 0.9282051282051282,
+            "val_accuracy": 0.8571428571428571,
+            "lr": null,
+            "elapsed_s": 20.28869614900009
+          },
+          "last": {
+            "epoch": 1,
+            "train_loss": 0.21667809457318807,
+            "val_loss": 0.36236271049295155,
+            "val_pr_auc": 0.919717995679534,
+            "val_roc_auc": 0.9282051282051282,
+            "val_accuracy": 0.8571428571428571,
+            "lr": null,
+            "elapsed_s": 20.28869614900009
+          }
+        }
+      },
+      "model_version": {
+        "id": 1,
+        "threshold": 0.30074409653520134,
+        "threshold_rule": "F1-optimal on the validation split",
+        "temperature": 0.830010466372715,
+        "ensemble_size": 1,
+        "is_active": false,
+        "is_fixture": false
+      },
+      "validation": {
+        "from_training": {
+          "available": true,
+          "metrics": {
+            "accuracy": 0.8928571428571429,
+            "precision": 0.8125,
+            "recall": 1.0,
+            "sensitivity": 1.0,
+            "specificity": 0.8,
+            "f1": 0.896551724137931,
+            "roc_auc": 0.9282051282051282,
+            "pr_auc": 0.919717995679534,
+            "brier": 0.1155078357526079,
+            "ece": 0.19174435925985356,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 13,
+            "fp": 3,
+            "tn": 12,
+            "fn": 0,
+            "threshold": 0.30074409653520134
+          },
+          "metrics_at_0_5": {
+            "accuracy": 0.8571428571428571,
+            "precision": 0.8,
+            "recall": 0.9230769230769231,
+            "sensitivity": 0.9230769230769231,
+            "specificity": 0.8,
+            "f1": 0.8571428571428571,
+            "roc_auc": 0.9282051282051282,
+            "pr_auc": 0.919717995679534,
+            "brier": 0.1155078357526079,
+            "ece": 0.19174435925985356,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 12,
+            "fp": 3,
+            "tn": 12,
+            "fn": 1,
+            "threshold": 0.5
+          }
+        },
+        "evaluation": {
+          "available": false
+        }
+      },
+      "test": {
+        "available": true,
+        "evaluation_id": 1,
+        "created_at": "2026-11-28T09:37:57.566769",
+        "threshold": 0.30074409653520134,
+        "metrics": {
+          "accuracy": 0.8372093023255814,
+          "precision": 0.8055555555555556,
+          "recall": 1.0,
+          "sensitivity": 1.0,
+          "specificity": 0.5,
+          "f1": 0.8923076923076924,
+          "roc_auc": 0.9261083743842364,
+          "pr_auc": 0.9632208956271713,
+          "brier": 0.10474211302358048,
+          "ece": 0.11751936935063913,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 29,
+          "fp": 7,
+          "tn": 7,
+          "fn": 0,
+          "threshold": 0.30074409653520134
+        },
+        "metrics_at_0_5": {
+          "accuracy": 0.8372093023255814,
+          "precision": 0.84375,
+          "recall": 0.9310344827586207,
+          "sensitivity": 0.9310344827586207,
+          "specificity": 0.6428571428571429,
+          "f1": 0.8852459016393442,
+          "roc_auc": 0.9261083743842364,
+          "pr_auc": 0.9632208956271713,
+          "brier": 0.10474211302358048,
+          "ece": 0.11751936935063913,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 27,
+          "fp": 5,
+          "tn": 9,
+          "fn": 2,
+          "threshold": 0.5
+        },
+        "ci": {
+          "accuracy": [
+            0.6857142857142857,
+            0.9412047511312217
+          ],
+          "precision": [
+            0.5861350574712644,
+            0.9333333333333333
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "sensitivity": [
+            1.0,
+            1.0
+          ],
+          "specificity": [
+            0.25,
+            0.7272727272727273
+          ],
+          "f1": [
+            0.7390732265446224,
+            0.9655172413793104
+          ],
+          "roc_auc": [
+            0.7809383753501401,
+            0.9897435897435898
+          ],
+          "pr_auc": [
+            0.8463672685147839,
+            0.9961873997699108
+          ],
+          "brier": [
+            0.050912659821628986,
+            0.18597569798036978
+          ],
+          "ece": [
+            0.08333724452464152,
+            0.23671018151671075
+          ]
+        },
+        "ci_method": {
+          "n_boot": 1000,
+          "alpha": 0.05,
+          "method": "percentile",
+          "resample": "star",
+          "seed": 0
+        },
+        "confusion": {
+          "tn": 7,
+          "fp": 7,
+          "fn": 0,
+          "tp": 29
+        },
+        "calibration": [
+          {
+            "bin_lo": 0.0,
+            "bin_hi": 0.1,
+            "mean_pred": 0.055127423321774914,
+            "frac_pos": 0.0,
+            "count": 6
+          },
+          {
+            "bin_lo": 0.1,
+            "bin_hi": 0.2,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.2,
+            "bin_hi": 0.3,
+            "mean_pred": 0.29996087430172025,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.3,
+            "bin_hi": 0.4,
+            "mean_pred": 0.3887667298866499,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.4,
+            "bin_hi": 0.5,
+            "mean_pred": 0.4437506417497345,
+            "frac_pos": 0.6666666666666666,
+            "count": 3
+          },
+          {
+            "bin_lo": 0.5,
+            "bin_hi": 0.6,
+            "mean_pred": 0.5557703850264978,
+            "frac_pos": 0.6666666666666666,
+            "count": 3
+          },
+          {
+            "bin_lo": 0.6,
+            "bin_hi": 0.7,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.7,
+            "bin_hi": 0.8,
+            "mean_pred": 0.7333761611283298,
+            "frac_pos": 0.25,
+            "count": 4
+          },
+          {
+            "bin_lo": 0.8,
+            "bin_hi": 0.9,
+            "mean_pred": 0.8596739925186965,
+            "frac_pos": 1.0,
+            "count": 7
+          },
+          {
+            "bin_lo": 0.9,
+            "bin_hi": 1.0,
+            "mean_pred": 0.9379657154775158,
+            "frac_pos": 0.9444444444444444,
+            "count": 18
+          }
+        ],
+        "timing": {
+          "ms_per_sample_batch1": 0.43923149996771826,
+          "ms_per_sample_batch64": 0.016671093753473087,
+          "device": "cpu",
+          "n_single_calls": 20,
+          "n_batch_repeats": 3,
+          "with_uncertainty": false
+        },
+        "n_evaluations_of_this_split": 1
+      },
+      "environment": {
+        "python": "3.12.3",
+        "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "cpu_count": 4,
+        "torch": "2.15.0+cpu",
+        "torch_num_threads": 1,
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "sklearn": "1.9.1",
+        "cuda_available": false,
+        "cuda_version": null,
+        "cuda_device": null,
+        "mps_available": false,
+        "default_device": "cpu",
+        "exofinder": "1.0.0",
+        "pipeline_version": "1.0",
+        "git_commit": "ec9a20dfbab36d246e45167fadb94aa224c2812e"
+      },
+      "limitations": "These results describe how well a model separates Kepler transit-like signals labelled planet-like from those labelled false-positive-like by published NASA vetting, on star-separated held-out data processed by this application's pipeline. Labels are expert/automated judgements and contain noise; class 0 mixes astrophysical false positives and non-transiting phenomena. Photometry alone cannot rule out background eclipsing binaries or contamination (no pixel or centroid data are used). Models are trained on Kepler long-cadence data only; other missions or cadences are out of distribution. Small datasets give wide confidence intervals, so differences between models inside overlapping intervals are not evidence of a real difference.",
+      "missing_sections": []
+    },
+    {
+      "report_type": "experiment",
+      "title": "Experiment report: Pilot DR24 - Random forest",
+      "generated_at": "2026-11-28T09:43:43+00:00",
+      "app_version": "1.0.0",
+      "pipeline_version": "1.0",
+      "disclaimer": "Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.",
+      "is_fixture": false,
+      "experiment": {
+        "id": 2,
+        "name": "Pilot DR24 - Random forest",
+        "model_type": "random_forest",
+        "status": "succeeded",
+        "error": null,
+        "seed": 42,
+        "device": "cpu",
+        "created_at": "2026-11-28T09:27:08.463171",
+        "finished_at": "2026-11-28T09:27:39.851820",
+        "notes": "",
+        "tags": []
+      },
+      "model_card": {
+        "type": "random_forest",
+        "name": "Random forest",
+        "description": "An ensemble of decision trees on the same inputs as logistic regression. Trees capture non-linear rules and interactions between diagnostics without feature scaling.",
+        "inputs": [
+          "Global view block-averaged to 201 bins",
+          "Local view (201 bins)",
+          "Physical features measured from the light curve (depth, duration, SNR, odd/even, secondary eclipse, shape, scatter...). No catalogue scores or dispositions."
+        ],
+        "reference": "Breiman, L. (2001), Random Forests, Machine Learning 45, 5"
+      },
+      "data_provenance": {
+        "label_mode": "astronet_dr24",
+        "label_mode_description": "DR24 TCE av_training_set: PC -> planet-like (1); AFP, NTP -> false-positive-like (0); UNK or no TCE -> excluded (Shallue & Vanderburg 2018).",
+        "exclude_label_conflicts": true,
+        "catalogue_snapshots": [
+          {
+            "file": "dr24_tce_20261128T091619Z.csv",
+            "id": 1,
+            "retrieved_at": "2026-11-28T09:16:19.291394",
+            "rows": 20367,
+            "sha256": "b99ddf128aa10d4a5b027246ccf0986ffa8d9209c77fd1d307103efa0055b6c0",
+            "source": "dr24_tce",
+            "table": "q1_q17_dr24_tce"
+          },
+          {
+            "file": "koi_cumulative_20261128T091624Z.csv",
+            "id": 2,
+            "retrieved_at": "2026-11-28T09:16:24.925052",
+            "rows": 9564,
+            "sha256": "45f942add39344a65b9a4bfbc1b19573e3326202282609fff800583a6e5cad43",
+            "source": "koi_cumulative",
+            "table": "cumulative"
+          },
+          {
+            "file": "confirmed_20261128T091629Z.csv",
+            "id": 3,
+            "retrieved_at": "2026-11-28T09:16:29.227952",
+            "rows": 2818,
+            "sha256": "4fe1558486466fb629e5be80c0150a9f2631bece331a6b9ff977ed3e3e96d31d",
+            "source": "confirmed",
+            "table": "pscomppars+keplernames"
+          }
+        ],
+        "lightcurves": {
+          "digests_sha256": "3a256fb6b9ed0f9be15cb0930c93850ebee91b8cf70773d87dbc21f860fd388d",
+          "file": "lightcurves.json",
+          "n_stars": 164
+        },
+        "synthetic_data": false
+      },
+      "dataset": {
+        "available": true,
+        "id": 1,
+        "name": "Pilot DR24",
+        "tier": "pilot",
+        "status": "ready",
+        "pipeline_version": "1.0",
+        "split_seed": 42,
+        "content_hash": "1ea6beefc5a5e4b661a8b2973d10309ac1efaae8c062ea40c7db65c63b57d74a",
+        "n_examples": 284,
+        "per_split": {
+          "train": {
+            "n": 213,
+            "n_pos": 101,
+            "n_neg": 112,
+            "n_stars": 126
+          },
+          "val": {
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "n_stars": 18
+          },
+          "test": {
+            "n": 43,
+            "n_pos": 29,
+            "n_neg": 14,
+            "n_stars": 18
+          }
+        },
+        "exclusions_by_reason": {
+          "label_conflict": 14,
+          "no_av_label": 8,
+          "quality:too_few_transits": 2,
+          "av_unknown": 1
+        },
+        "quality_grades": {
+          "A": 245,
+          "B": 3,
+          "C": 45,
+          "D": 2
+        },
+        "reserved": [
+          {
+            "kepid": 4852528,
+            "name": "Kepler-80",
+            "n_signals": 6,
+            "n_included": 5
+          },
+          {
+            "kepid": 6541920,
+            "name": "Kepler-11",
+            "n_signals": 6,
+            "n_included": 6
+          },
+          {
+            "kepid": 8120608,
+            "name": "Kepler-186",
+            "n_signals": 5,
+            "n_included": 5
+          },
+          {
+            "kepid": 8311864,
+            "name": "Kepler-452",
+            "n_signals": 1,
+            "n_included": 0
+          },
+          {
+            "kepid": 11442793,
+            "name": "Kepler-90",
+            "n_signals": 8,
+            "n_included": 1
+          }
+        ],
+        "pipeline_config": {
+          "quality_bitmask": "default",
+          "gap_days": 0.75,
+          "detrend_method": "spline",
+          "mask_width_factor": 1.5,
+          "knot_spacing_days": null,
+          "min_knot_spacing_days": 0.5,
+          "max_knot_spacing_days": 20.0,
+          "n_knot_grid": 20,
+          "savgol_window_days": null,
+          "fit_clip_sigma": 3.0,
+          "sigma_clip": 3.0,
+          "global_bins": 2001,
+          "local_bins": 201,
+          "local_num_durations": 4.0,
+          "keep_stages": true,
+          "max_stage_points": 20000,
+          "max_individual_transits": 40
+        }
+      },
+      "config": {
+        "model_type": "random_forest",
+        "lr": 0.0001,
+        "batch_size": 64,
+        "max_epochs": 50,
+        "patience": 8,
+        "min_delta": 0.0001,
+        "weight_decay": 0.0,
+        "dropout": 0.3,
+        "fc_width": 512,
+        "fc_layers": 4,
+        "augment_flip": true,
+        "ensemble_size": 1,
+        "seed": 42,
+        "device": "cpu",
+        "num_threads": null,
+        "cv_folds": 3,
+        "logreg_c_grid": [
+          0.001,
+          0.01,
+          0.1,
+          1.0
+        ],
+        "logreg_max_iter": 5000,
+        "rf_n_estimators": 300,
+        "rf_max_depth_grid": [
+          null,
+          16
+        ],
+        "rf_min_samples_leaf_grid": [
+          1,
+          4
+        ],
+        "rf_max_features_grid": [
+          "sqrt"
+        ]
+      },
+      "training": {
+        "epochs_run": 1,
+        "best_epoch": 1,
+        "duration_s": 10.777857917999881,
+        "n_params": 6862,
+        "curve": {
+          "available": true,
+          "n_epochs_logged": 1,
+          "first": {
+            "epoch": 1,
+            "train_loss": 0.1540982059874566,
+            "val_loss": 0.3663486964116639,
+            "val_pr_auc": 0.9331959706959707,
+            "val_roc_auc": 0.9384615384615385,
+            "val_accuracy": 0.8214285714285714,
+            "lr": null,
+            "elapsed_s": 10.777857917999881
+          },
+          "best": {
+            "epoch": 1,
+            "train_loss": 0.1540982059874566,
+            "val_loss": 0.3663486964116639,
+            "val_pr_auc": 0.9331959706959707,
+            "val_roc_auc": 0.9384615384615385,
+            "val_accuracy": 0.8214285714285714,
+            "lr": null,
+            "elapsed_s": 10.777857917999881
+          },
+          "last": {
+            "epoch": 1,
+            "train_loss": 0.1540982059874566,
+            "val_loss": 0.3663486964116639,
+            "val_pr_auc": 0.9331959706959707,
+            "val_roc_auc": 0.9384615384615385,
+            "val_accuracy": 0.8214285714285714,
+            "lr": null,
+            "elapsed_s": 10.777857917999881
+          }
+        }
+      },
+      "model_version": {
+        "id": 2,
+        "threshold": 0.24865724785802906,
+        "threshold_rule": "F1-optimal on the validation split",
+        "temperature": 0.558845946744638,
+        "ensemble_size": 1,
+        "is_active": false,
+        "is_fixture": false
+      },
+      "validation": {
+        "from_training": {
+          "available": true,
+          "metrics": {
+            "accuracy": 0.8928571428571429,
+            "precision": 0.8125,
+            "recall": 1.0,
+            "sensitivity": 1.0,
+            "specificity": 0.8,
+            "f1": 0.896551724137931,
+            "roc_auc": 0.9384615384615385,
+            "pr_auc": 0.9331959706959707,
+            "brier": 0.10849793010805762,
+            "ece": 0.1393970101634209,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 13,
+            "fp": 3,
+            "tn": 12,
+            "fn": 0,
+            "threshold": 0.24865724785802906
+          },
+          "metrics_at_0_5": {
+            "accuracy": 0.7857142857142857,
+            "precision": 0.7692307692307693,
+            "recall": 0.7692307692307693,
+            "sensitivity": 0.7692307692307693,
+            "specificity": 0.8,
+            "f1": 0.7692307692307693,
+            "roc_auc": 0.9384615384615385,
+            "pr_auc": 0.9331959706959707,
+            "brier": 0.10849793010805762,
+            "ece": 0.1393970101634209,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 10,
+            "fp": 3,
+            "tn": 12,
+            "fn": 3,
+            "threshold": 0.5
+          }
+        },
+        "evaluation": {
+          "available": false
+        }
+      },
+      "test": {
+        "available": true,
+        "evaluation_id": 2,
+        "created_at": "2026-11-28T09:38:02.714634",
+        "threshold": 0.24865724785802906,
+        "metrics": {
+          "accuracy": 0.8604651162790697,
+          "precision": 0.8285714285714286,
+          "recall": 1.0,
+          "sensitivity": 1.0,
+          "specificity": 0.5714285714285714,
+          "f1": 0.90625,
+          "roc_auc": 0.916256157635468,
+          "pr_auc": 0.9491789154688364,
+          "brier": 0.09196841826530401,
+          "ece": 0.08067619917102847,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 29,
+          "fp": 6,
+          "tn": 8,
+          "fn": 0,
+          "threshold": 0.24865724785802906
+        },
+        "metrics_at_0_5": {
+          "accuracy": 0.8604651162790697,
+          "precision": 0.896551724137931,
+          "recall": 0.896551724137931,
+          "sensitivity": 0.896551724137931,
+          "specificity": 0.7857142857142857,
+          "f1": 0.896551724137931,
+          "roc_auc": 0.916256157635468,
+          "pr_auc": 0.9491789154688364,
+          "brier": 0.09196841826530401,
+          "ece": 0.08067619917102847,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 26,
+          "fp": 3,
+          "tn": 11,
+          "fn": 3,
+          "threshold": 0.5
+        },
+        "ci": {
+          "accuracy": [
+            0.7141114982578397,
+            0.9574689716312057
+          ],
+          "precision": [
+            0.6175904977375566,
+            0.9487179487179487
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "sensitivity": [
+            1.0,
+            1.0
+          ],
+          "specificity": [
+            0.2727272727272727,
+            0.8183155080213903
+          ],
+          "f1": [
+            0.7635930735930736,
+            0.9736842105263158
+          ],
+          "roc_auc": [
+            0.7640196078431372,
+            0.9888961038961039
+          ],
+          "pr_auc": [
+            0.7906583742688845,
+            0.9962870657749026
+          ],
+          "brier": [
+            0.044186279847951385,
+            0.1718415766963044
+          ],
+          "ece": [
+            0.05627453031614166,
+            0.21625744818052228
+          ]
+        },
+        "ci_method": {
+          "n_boot": 1000,
+          "alpha": 0.05,
+          "method": "percentile",
+          "resample": "star",
+          "seed": 0
+        },
+        "confusion": {
+          "tn": 8,
+          "fp": 6,
+          "fn": 0,
+          "tp": 29
+        },
+        "calibration": [
+          {
+            "bin_lo": 0.0,
+            "bin_hi": 0.1,
+            "mean_pred": 0.025359525588375682,
+            "frac_pos": 0.0,
+            "count": 8
+          },
+          {
+            "bin_lo": 0.1,
+            "bin_hi": 0.2,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.2,
+            "bin_hi": 0.3,
+            "mean_pred": 0.28436241885472835,
+            "frac_pos": 1.0,
+            "count": 2
+          },
+          {
+            "bin_lo": 0.3,
+            "bin_hi": 0.4,
+            "mean_pred": 0.3712770310641887,
+            "frac_pos": 0.3333333333333333,
+            "count": 3
+          },
+          {
+            "bin_lo": 0.4,
+            "bin_hi": 0.5,
+            "mean_pred": 0.40643963312115405,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.5,
+            "bin_hi": 0.6,
+            "mean_pred": 0.5626544858089828,
+            "frac_pos": 0.5,
+            "count": 4
+          },
+          {
+            "bin_lo": 0.6,
+            "bin_hi": 0.7,
+            "mean_pred": 0.6700993187250082,
+            "frac_pos": 1.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.7,
+            "bin_hi": 0.8,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.8,
+            "bin_hi": 0.9,
+            "mean_pred": 0.8882855254815755,
+            "frac_pos": 1.0,
+            "count": 2
+          },
+          {
+            "bin_lo": 0.9,
+            "bin_hi": 1.0,
+            "mean_pred": 0.9777594044315993,
+            "frac_pos": 0.9545454545454546,
+            "count": 22
+          }
+        ],
+        "timing": {
+          "ms_per_sample_batch1": 16.81663799990929,
+          "ms_per_sample_batch64": 0.3418398437489145,
+          "device": "cpu",
+          "n_single_calls": 20,
+          "n_batch_repeats": 3,
+          "with_uncertainty": false
+        },
+        "n_evaluations_of_this_split": 1
+      },
+      "environment": {
+        "python": "3.12.3",
+        "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "cpu_count": 4,
+        "torch": "2.15.0+cpu",
+        "torch_num_threads": 1,
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "sklearn": "1.9.1",
+        "cuda_available": false,
+        "cuda_version": null,
+        "cuda_device": null,
+        "mps_available": false,
+        "default_device": "cpu",
+        "exofinder": "1.0.0",
+        "pipeline_version": "1.0",
+        "git_commit": "ec9a20dfbab36d246e45167fadb94aa224c2812e"
+      },
+      "limitations": "These results describe how well a model separates Kepler transit-like signals labelled planet-like from those labelled false-positive-like by published NASA vetting, on star-separated held-out data processed by this application's pipeline. Labels are expert/automated judgements and contain noise; class 0 mixes astrophysical false positives and non-transiting phenomena. Photometry alone cannot rule out background eclipsing binaries or contamination (no pixel or centroid data are used). Models are trained on Kepler long-cadence data only; other missions or cadences are out of distribution. Small datasets give wide confidence intervals, so differences between models inside overlapping intervals are not evidence of a real difference.",
+      "missing_sections": []
+    },
+    {
+      "report_type": "experiment",
+      "title": "Experiment report: Pilot DR24 - Single-view CNN",
+      "generated_at": "2026-11-28T09:43:43+00:00",
+      "app_version": "1.0.0",
+      "pipeline_version": "1.0",
+      "disclaimer": "Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.",
+      "is_fixture": false,
+      "experiment": {
+        "id": 3,
+        "name": "Pilot DR24 - Single-view CNN",
+        "model_type": "cnn_single",
+        "status": "succeeded",
+        "error": null,
+        "seed": 42,
+        "device": "cpu",
+        "created_at": "2026-11-28T09:27:08.463998",
+        "finished_at": "2026-11-28T09:34:37.067881",
+        "notes": "",
+        "tags": []
+      },
+      "model_card": {
+        "type": "cnn_single",
+        "name": "Single-view CNN (global view)",
+        "description": "AstroNet's global-view network: a 1-D convolutional column reads the whole phase-folded orbit (2001 bins) and learns shape detectors for transits, secondary eclipses and variability.",
+        "inputs": [
+          "Global view (2001 bins, whole orbit)"
+        ],
+        "reference": "Shallue, C. J. & Vanderburg, A. (2018), Identifying Exoplanets with Deep Learning, AJ 155, 94"
+      },
+      "data_provenance": {
+        "label_mode": "astronet_dr24",
+        "label_mode_description": "DR24 TCE av_training_set: PC -> planet-like (1); AFP, NTP -> false-positive-like (0); UNK or no TCE -> excluded (Shallue & Vanderburg 2018).",
+        "exclude_label_conflicts": true,
+        "catalogue_snapshots": [
+          {
+            "file": "dr24_tce_20261128T091619Z.csv",
+            "id": 1,
+            "retrieved_at": "2026-11-28T09:16:19.291394",
+            "rows": 20367,
+            "sha256": "b99ddf128aa10d4a5b027246ccf0986ffa8d9209c77fd1d307103efa0055b6c0",
+            "source": "dr24_tce",
+            "table": "q1_q17_dr24_tce"
+          },
+          {
+            "file": "koi_cumulative_20261128T091624Z.csv",
+            "id": 2,
+            "retrieved_at": "2026-11-28T09:16:24.925052",
+            "rows": 9564,
+            "sha256": "45f942add39344a65b9a4bfbc1b19573e3326202282609fff800583a6e5cad43",
+            "source": "koi_cumulative",
+            "table": "cumulative"
+          },
+          {
+            "file": "confirmed_20261128T091629Z.csv",
+            "id": 3,
+            "retrieved_at": "2026-11-28T09:16:29.227952",
+            "rows": 2818,
+            "sha256": "4fe1558486466fb629e5be80c0150a9f2631bece331a6b9ff977ed3e3e96d31d",
+            "source": "confirmed",
+            "table": "pscomppars+keplernames"
+          }
+        ],
+        "lightcurves": {
+          "digests_sha256": "3a256fb6b9ed0f9be15cb0930c93850ebee91b8cf70773d87dbc21f860fd388d",
+          "file": "lightcurves.json",
+          "n_stars": 164
+        },
+        "synthetic_data": false
+      },
+      "dataset": {
+        "available": true,
+        "id": 1,
+        "name": "Pilot DR24",
+        "tier": "pilot",
+        "status": "ready",
+        "pipeline_version": "1.0",
+        "split_seed": 42,
+        "content_hash": "1ea6beefc5a5e4b661a8b2973d10309ac1efaae8c062ea40c7db65c63b57d74a",
+        "n_examples": 284,
+        "per_split": {
+          "train": {
+            "n": 213,
+            "n_pos": 101,
+            "n_neg": 112,
+            "n_stars": 126
+          },
+          "val": {
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "n_stars": 18
+          },
+          "test": {
+            "n": 43,
+            "n_pos": 29,
+            "n_neg": 14,
+            "n_stars": 18
+          }
+        },
+        "exclusions_by_reason": {
+          "label_conflict": 14,
+          "no_av_label": 8,
+          "quality:too_few_transits": 2,
+          "av_unknown": 1
+        },
+        "quality_grades": {
+          "A": 245,
+          "B": 3,
+          "C": 45,
+          "D": 2
+        },
+        "reserved": [
+          {
+            "kepid": 4852528,
+            "name": "Kepler-80",
+            "n_signals": 6,
+            "n_included": 5
+          },
+          {
+            "kepid": 6541920,
+            "name": "Kepler-11",
+            "n_signals": 6,
+            "n_included": 6
+          },
+          {
+            "kepid": 8120608,
+            "name": "Kepler-186",
+            "n_signals": 5,
+            "n_included": 5
+          },
+          {
+            "kepid": 8311864,
+            "name": "Kepler-452",
+            "n_signals": 1,
+            "n_included": 0
+          },
+          {
+            "kepid": 11442793,
+            "name": "Kepler-90",
+            "n_signals": 8,
+            "n_included": 1
+          }
+        ],
+        "pipeline_config": {
+          "quality_bitmask": "default",
+          "gap_days": 0.75,
+          "detrend_method": "spline",
+          "mask_width_factor": 1.5,
+          "knot_spacing_days": null,
+          "min_knot_spacing_days": 0.5,
+          "max_knot_spacing_days": 20.0,
+          "n_knot_grid": 20,
+          "savgol_window_days": null,
+          "fit_clip_sigma": 3.0,
+          "sigma_clip": 3.0,
+          "global_bins": 2001,
+          "local_bins": 201,
+          "local_num_durations": 4.0,
+          "keep_stages": true,
+          "max_stage_points": 20000,
+          "max_individual_transits": 40
+        }
+      },
+      "config": {
+        "model_type": "cnn_single",
+        "lr": 0.0001,
+        "batch_size": 64,
+        "max_epochs": 50,
+        "patience": 8,
+        "min_delta": 0.0001,
+        "weight_decay": 0.0,
+        "dropout": 0.3,
+        "fc_width": 512,
+        "fc_layers": 4,
+        "augment_flip": true,
+        "ensemble_size": 1,
+        "seed": 42,
+        "device": "cpu",
+        "num_threads": null,
+        "cv_folds": 3,
+        "logreg_c_grid": [
+          0.001,
+          0.01,
+          0.1,
+          1.0
+        ],
+        "logreg_max_iter": 5000,
+        "rf_n_estimators": 300,
+        "rf_max_depth_grid": [
+          null,
+          16
+        ],
+        "rf_min_samples_leaf_grid": [
+          1,
+          4
+        ],
+        "rf_max_features_grid": [
+          "sqrt"
+        ]
+      },
+      "training": {
+        "epochs_run": 21,
+        "best_epoch": 13,
+        "duration_s": 416.97781249900004,
+        "n_params": 9177393,
+        "curve": {
+          "available": true,
+          "n_epochs_logged": 21,
+          "first": {
+            "epoch": 1,
+            "train_loss": 0.7361626977651892,
+            "val_loss": 0.7179903984069824,
+            "val_pr_auc": 0.6520470270470271,
+            "val_roc_auc": 0.6871794871794872,
+            "val_accuracy": 0.5357142857142857,
+            "lr": 0.0001,
+            "elapsed_s": 31.444069635000005
+          },
+          "best": {
+            "epoch": 13,
+            "train_loss": 0.34148305892384667,
+            "val_loss": 0.48496896028518677,
+            "val_pr_auc": 0.9150335775335776,
+            "val_roc_auc": 0.9282051282051282,
+            "val_accuracy": 0.8571428571428571,
+            "lr": 0.0001,
+            "elapsed_s": 229.9680068099999
+          },
+          "last": {
+            "epoch": 21,
+            "train_loss": 0.21919068757077337,
+            "val_loss": 0.4215543866157532,
+            "val_pr_auc": 0.8400124448201371,
+            "val_roc_auc": 0.9128205128205128,
+            "val_accuracy": 0.8928571428571429,
+            "lr": 0.0001,
+            "elapsed_s": 415.9612866350001
+          }
+        }
+      },
+      "model_version": {
+        "id": 3,
+        "threshold": 0.5464757062662593,
+        "threshold_rule": "F1-optimal on the validation split",
+        "temperature": 1.7105368963391683,
+        "ensemble_size": 1,
+        "is_active": false,
+        "is_fixture": false
+      },
+      "validation": {
+        "from_training": {
+          "available": true,
+          "metrics": {
+            "accuracy": 0.8928571428571429,
+            "precision": 0.8125,
+            "recall": 1.0,
+            "sensitivity": 1.0,
+            "specificity": 0.8,
+            "f1": 0.896551724137931,
+            "roc_auc": 0.9282051282051282,
+            "pr_auc": 0.9150335775335776,
+            "brier": 0.1266581109895952,
+            "ece": 0.16283783377161853,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 13,
+            "fp": 3,
+            "tn": 12,
+            "fn": 0,
+            "threshold": 0.5464757062662593
+          },
+          "metrics_at_0_5": {
+            "accuracy": 0.8571428571428571,
+            "precision": 0.7647058823529411,
+            "recall": 1.0,
+            "sensitivity": 1.0,
+            "specificity": 0.7333333333333333,
+            "f1": 0.8666666666666667,
+            "roc_auc": 0.9282051282051282,
+            "pr_auc": 0.9150335775335776,
+            "brier": 0.1266581109895952,
+            "ece": 0.16283783377161853,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 13,
+            "fp": 4,
+            "tn": 11,
+            "fn": 0,
+            "threshold": 0.5
+          }
+        },
+        "evaluation": {
+          "available": false
+        }
+      },
+      "test": {
+        "available": true,
+        "evaluation_id": 3,
+        "created_at": "2026-11-28T09:38:08.609985",
+        "threshold": 0.5464757062662593,
+        "metrics": {
+          "accuracy": 0.8604651162790697,
+          "precision": 0.8285714285714286,
+          "recall": 1.0,
+          "sensitivity": 1.0,
+          "specificity": 0.5714285714285714,
+          "f1": 0.90625,
+          "roc_auc": 0.8694581280788177,
+          "pr_auc": 0.9241240275244689,
+          "brier": 0.11916369962333205,
+          "ece": 0.11842037913503353,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 29,
+          "fp": 6,
+          "tn": 8,
+          "fn": 0,
+          "threshold": 0.5464757062662593
+        },
+        "metrics_at_0_5": {
+          "accuracy": 0.8604651162790697,
+          "precision": 0.8285714285714286,
+          "recall": 1.0,
+          "sensitivity": 1.0,
+          "specificity": 0.5714285714285714,
+          "f1": 0.90625,
+          "roc_auc": 0.8694581280788177,
+          "pr_auc": 0.9241240275244689,
+          "brier": 0.11916369962333205,
+          "ece": 0.11842037913503353,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 29,
+          "fp": 6,
+          "tn": 8,
+          "fn": 0,
+          "threshold": 0.5
+        },
+        "ci": {
+          "accuracy": [
+            0.7221666666666666,
+            0.9565448658649399
+          ],
+          "precision": [
+            0.6332407407407408,
+            0.9474021592442644
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "sensitivity": [
+            1.0,
+            1.0
+          ],
+          "specificity": [
+            0.2857142857142857,
+            0.8235294117647058
+          ],
+          "f1": [
+            0.7754406307977736,
+            0.9729907539118066
+          ],
+          "roc_auc": [
+            0.7099889705882353,
+            0.9687534722222222
+          ],
+          "pr_auc": [
+            0.8027729837501363,
+            0.9880778617964578
+          ],
+          "brier": [
+            0.04653184443407121,
+            0.22635181533368726
+          ],
+          "ece": [
+            0.061965030834324725,
+            0.29207314491935776
+          ]
+        },
+        "ci_method": {
+          "n_boot": 1000,
+          "alpha": 0.05,
+          "method": "percentile",
+          "resample": "star",
+          "seed": 0
+        },
+        "confusion": {
+          "tn": 8,
+          "fp": 6,
+          "fn": 0,
+          "tp": 29
+        },
+        "calibration": [
+          {
+            "bin_lo": 0.0,
+            "bin_hi": 0.1,
+            "mean_pred": 0.016549196390895162,
+            "frac_pos": 0.0,
+            "count": 5
+          },
+          {
+            "bin_lo": 0.1,
+            "bin_hi": 0.2,
+            "mean_pred": 0.1777501925185607,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.2,
+            "bin_hi": 0.3,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.3,
+            "bin_hi": 0.4,
+            "mean_pred": 0.30410846070864234,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.4,
+            "bin_hi": 0.5,
+            "mean_pred": 0.41346606098485766,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.5,
+            "bin_hi": 0.6,
+            "mean_pred": 0.583534442232628,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.6,
+            "bin_hi": 0.7,
+            "mean_pred": 0.6650007631608394,
+            "frac_pos": 1.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.7,
+            "bin_hi": 0.8,
+            "mean_pred": 0.7506588007540755,
+            "frac_pos": 1.0,
+            "count": 5
+          },
+          {
+            "bin_lo": 0.8,
+            "bin_hi": 0.9,
+            "mean_pred": 0.878109172262958,
+            "frac_pos": 0.7777777777777778,
+            "count": 18
+          },
+          {
+            "bin_lo": 0.9,
+            "bin_hi": 1.0,
+            "mean_pred": 0.914280083060525,
+            "frac_pos": 0.9,
+            "count": 10
+          }
+        ],
+        "timing": {
+          "ms_per_sample_batch1": 6.764030000113053,
+          "ms_per_sample_batch64": 3.2495451718759227,
+          "device": "cpu",
+          "n_single_calls": 20,
+          "n_batch_repeats": 3,
+          "with_uncertainty": false
+        },
+        "n_evaluations_of_this_split": 1
+      },
+      "environment": {
+        "python": "3.12.3",
+        "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "cpu_count": 4,
+        "torch": "2.15.0+cpu",
+        "torch_num_threads": 1,
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "sklearn": "1.9.1",
+        "cuda_available": false,
+        "cuda_version": null,
+        "cuda_device": null,
+        "mps_available": false,
+        "default_device": "cpu",
+        "exofinder": "1.0.0",
+        "pipeline_version": "1.0",
+        "git_commit": "ec9a20dfbab36d246e45167fadb94aa224c2812e"
+      },
+      "limitations": "These results describe how well a model separates Kepler transit-like signals labelled planet-like from those labelled false-positive-like by published NASA vetting, on star-separated held-out data processed by this application's pipeline. Labels are expert/automated judgements and contain noise; class 0 mixes astrophysical false positives and non-transiting phenomena. Photometry alone cannot rule out background eclipsing binaries or contamination (no pixel or centroid data are used). Models are trained on Kepler long-cadence data only; other missions or cadences are out of distribution. Small datasets give wide confidence intervals, so differences between models inside overlapping intervals are not evidence of a real difference.",
+      "missing_sections": []
+    },
+    {
+      "report_type": "experiment",
+      "title": "Experiment report: Pilot DR24 - Two-view CNN (AstroNet)",
+      "generated_at": "2026-11-28T09:43:43+00:00",
+      "app_version": "1.0.0",
+      "pipeline_version": "1.0",
+      "disclaimer": "Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.",
+      "is_fixture": false,
+      "experiment": {
+        "id": 4,
+        "name": "Pilot DR24 - Two-view CNN (AstroNet)",
+        "model_type": "cnn_two_view",
+        "status": "succeeded",
+        "error": null,
+        "seed": 42,
+        "device": "cpu",
+        "created_at": "2026-11-28T09:27:08.466485",
+        "finished_at": "2026-11-28T09:37:29.625520",
+        "notes": "",
+        "tags": []
+      },
+      "model_card": {
+        "type": "cnn_two_view",
+        "name": "Two-view CNN (AstroNet)",
+        "description": "The AstroNet architecture: a global column reads the whole folded orbit and a local column zooms on the transit (+/- 2 durations, 201 bins); their features are combined by fully-connected layers. This design found Kepler-90 i and Kepler-80 g.",
+        "inputs": [
+          "Global view (2001 bins, whole orbit)",
+          "Local view (201 bins, transit +/- 2 durations)"
+        ],
+        "reference": "Shallue, C. J. & Vanderburg, A. (2018), Identifying Exoplanets with Deep Learning, AJ 155, 94"
+      },
+      "data_provenance": {
+        "label_mode": "astronet_dr24",
+        "label_mode_description": "DR24 TCE av_training_set: PC -> planet-like (1); AFP, NTP -> false-positive-like (0); UNK or no TCE -> excluded (Shallue & Vanderburg 2018).",
+        "exclude_label_conflicts": true,
+        "catalogue_snapshots": [
+          {
+            "file": "dr24_tce_20261128T091619Z.csv",
+            "id": 1,
+            "retrieved_at": "2026-11-28T09:16:19.291394",
+            "rows": 20367,
+            "sha256": "b99ddf128aa10d4a5b027246ccf0986ffa8d9209c77fd1d307103efa0055b6c0",
+            "source": "dr24_tce",
+            "table": "q1_q17_dr24_tce"
+          },
+          {
+            "file": "koi_cumulative_20261128T091624Z.csv",
+            "id": 2,
+            "retrieved_at": "2026-11-28T09:16:24.925052",
+            "rows": 9564,
+            "sha256": "45f942add39344a65b9a4bfbc1b19573e3326202282609fff800583a6e5cad43",
+            "source": "koi_cumulative",
+            "table": "cumulative"
+          },
+          {
+            "file": "confirmed_20261128T091629Z.csv",
+            "id": 3,
+            "retrieved_at": "2026-11-28T09:16:29.227952",
+            "rows": 2818,
+            "sha256": "4fe1558486466fb629e5be80c0150a9f2631bece331a6b9ff977ed3e3e96d31d",
+            "source": "confirmed",
+            "table": "pscomppars+keplernames"
+          }
+        ],
+        "lightcurves": {
+          "digests_sha256": "3a256fb6b9ed0f9be15cb0930c93850ebee91b8cf70773d87dbc21f860fd388d",
+          "file": "lightcurves.json",
+          "n_stars": 164
+        },
+        "synthetic_data": false
+      },
+      "dataset": {
+        "available": true,
+        "id": 1,
+        "name": "Pilot DR24",
+        "tier": "pilot",
+        "status": "ready",
+        "pipeline_version": "1.0",
+        "split_seed": 42,
+        "content_hash": "1ea6beefc5a5e4b661a8b2973d10309ac1efaae8c062ea40c7db65c63b57d74a",
+        "n_examples": 284,
+        "per_split": {
+          "train": {
+            "n": 213,
+            "n_pos": 101,
+            "n_neg": 112,
+            "n_stars": 126
+          },
+          "val": {
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "n_stars": 18
+          },
+          "test": {
+            "n": 43,
+            "n_pos": 29,
+            "n_neg": 14,
+            "n_stars": 18
+          }
+        },
+        "exclusions_by_reason": {
+          "label_conflict": 14,
+          "no_av_label": 8,
+          "quality:too_few_transits": 2,
+          "av_unknown": 1
+        },
+        "quality_grades": {
+          "A": 245,
+          "B": 3,
+          "C": 45,
+          "D": 2
+        },
+        "reserved": [
+          {
+            "kepid": 4852528,
+            "name": "Kepler-80",
+            "n_signals": 6,
+            "n_included": 5
+          },
+          {
+            "kepid": 6541920,
+            "name": "Kepler-11",
+            "n_signals": 6,
+            "n_included": 6
+          },
+          {
+            "kepid": 8120608,
+            "name": "Kepler-186",
+            "n_signals": 5,
+            "n_included": 5
+          },
+          {
+            "kepid": 8311864,
+            "name": "Kepler-452",
+            "n_signals": 1,
+            "n_included": 0
+          },
+          {
+            "kepid": 11442793,
+            "name": "Kepler-90",
+            "n_signals": 8,
+            "n_included": 1
+          }
+        ],
+        "pipeline_config": {
+          "quality_bitmask": "default",
+          "gap_days": 0.75,
+          "detrend_method": "spline",
+          "mask_width_factor": 1.5,
+          "knot_spacing_days": null,
+          "min_knot_spacing_days": 0.5,
+          "max_knot_spacing_days": 20.0,
+          "n_knot_grid": 20,
+          "savgol_window_days": null,
+          "fit_clip_sigma": 3.0,
+          "sigma_clip": 3.0,
+          "global_bins": 2001,
+          "local_bins": 201,
+          "local_num_durations": 4.0,
+          "keep_stages": true,
+          "max_stage_points": 20000,
+          "max_individual_transits": 40
+        }
+      },
+      "config": {
+        "model_type": "cnn_two_view",
+        "lr": 0.0001,
+        "batch_size": 64,
+        "max_epochs": 50,
+        "patience": 8,
+        "min_delta": 0.0001,
+        "weight_decay": 0.0,
+        "dropout": 0.3,
+        "fc_width": 512,
+        "fc_layers": 4,
+        "augment_flip": true,
+        "ensemble_size": 1,
+        "seed": 42,
+        "device": "cpu",
+        "num_threads": null,
+        "cv_folds": 3,
+        "logreg_c_grid": [
+          0.001,
+          0.01,
+          0.1,
+          1.0
+        ],
+        "logreg_max_iter": 5000,
+        "rf_n_estimators": 300,
+        "rf_max_depth_grid": [
+          null,
+          16
+        ],
+        "rf_min_samples_leaf_grid": [
+          1,
+          4
+        ],
+        "rf_max_features_grid": [
+          "sqrt"
+        ]
+      },
+      "training": {
+        "epochs_run": 24,
+        "best_epoch": 16,
+        "duration_s": 172.369437049,
+        "n_params": 9940193,
+        "curve": {
+          "available": true,
+          "n_epochs_logged": 24,
+          "first": {
+            "epoch": 1,
+            "train_loss": 0.7388385679800186,
+            "val_loss": 0.7151526808738708,
+            "val_pr_auc": 0.7933800792100387,
+            "val_roc_auc": 0.8102564102564103,
+            "val_accuracy": 0.75,
+            "lr": 0.0001,
+            "elapsed_s": 10.395371985999873
+          },
+          "best": {
+            "epoch": 16,
+            "train_loss": 0.2764880808306412,
+            "val_loss": 0.3865887224674225,
+            "val_pr_auc": 0.9499330797407719,
+            "val_roc_auc": 0.9538461538461539,
+            "val_accuracy": 0.8571428571428571,
+            "lr": 0.0001,
+            "elapsed_s": 150.37727267799983
+          },
+          "last": {
+            "epoch": 24,
+            "train_loss": 0.20814689168348,
+            "val_loss": 0.4389658272266388,
+            "val_pr_auc": 0.9044355217432141,
+            "val_roc_auc": 0.9333333333333333,
+            "val_accuracy": 0.8571428571428571,
+            "lr": 0.0001,
+            "elapsed_s": 172.14987965799992
+          }
+        }
+      },
+      "model_version": {
+        "id": 4,
+        "threshold": 0.6576731367375208,
+        "threshold_rule": "F1-optimal on the validation split",
+        "temperature": 1.4702694964275322,
+        "ensemble_size": 1,
+        "is_active": true,
+        "is_fixture": false
+      },
+      "validation": {
+        "from_training": {
+          "available": true,
+          "metrics": {
+            "accuracy": 0.8928571428571429,
+            "precision": 0.8125,
+            "recall": 1.0,
+            "sensitivity": 1.0,
+            "specificity": 0.8,
+            "f1": 0.896551724137931,
+            "roc_auc": 0.9538461538461539,
+            "pr_auc": 0.9499330797407719,
+            "brier": 0.10382044769261946,
+            "ece": 0.13559244556475983,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 13,
+            "fp": 3,
+            "tn": 12,
+            "fn": 0,
+            "threshold": 0.6576731367375208
+          },
+          "metrics_at_0_5": {
+            "accuracy": 0.8928571428571429,
+            "precision": 0.8125,
+            "recall": 1.0,
+            "sensitivity": 1.0,
+            "specificity": 0.8,
+            "f1": 0.896551724137931,
+            "roc_auc": 0.9538461538461539,
+            "pr_auc": 0.9499330797407719,
+            "brier": 0.10382044769261946,
+            "ece": 0.13559244556475983,
+            "n": 28,
+            "n_pos": 13,
+            "n_neg": 15,
+            "tp": 13,
+            "fp": 3,
+            "tn": 12,
+            "fn": 0,
+            "threshold": 0.5
+          }
+        },
+        "evaluation": {
+          "available": false
+        }
+      },
+      "test": {
+        "available": true,
+        "evaluation_id": 4,
+        "created_at": "2026-11-28T09:38:15.134707",
+        "threshold": 0.6576731367375208,
+        "metrics": {
+          "accuracy": 0.8837209302325582,
+          "precision": 0.8529411764705882,
+          "recall": 1.0,
+          "sensitivity": 1.0,
+          "specificity": 0.6428571428571429,
+          "f1": 0.9206349206349206,
+          "roc_auc": 0.8916256157635468,
+          "pr_auc": 0.938681990509117,
+          "brier": 0.113399350960696,
+          "ece": 0.09326006791353822,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 29,
+          "fp": 5,
+          "tn": 9,
+          "fn": 0,
+          "threshold": 0.6576731367375208
+        },
+        "metrics_at_0_5": {
+          "accuracy": 0.8604651162790697,
+          "precision": 0.8285714285714286,
+          "recall": 1.0,
+          "sensitivity": 1.0,
+          "specificity": 0.5714285714285714,
+          "f1": 0.90625,
+          "roc_auc": 0.8916256157635468,
+          "pr_auc": 0.938681990509117,
+          "brier": 0.113399350960696,
+          "ece": 0.09326006791353822,
+          "n": 43,
+          "n_pos": 29,
+          "n_neg": 14,
+          "tp": 29,
+          "fp": 6,
+          "tn": 8,
+          "fn": 0,
+          "threshold": 0.5
+        },
+        "ci": {
+          "accuracy": [
+            0.75,
+            0.975
+          ],
+          "precision": [
+            0.6551724137931034,
+            0.9655459770114942
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "sensitivity": [
+            1.0,
+            1.0
+          ],
+          "specificity": [
+            0.375,
+            0.9090909090909091
+          ],
+          "f1": [
+            0.7916666666666666,
+            0.9824710080285459
+          ],
+          "roc_auc": [
+            0.7101413043478262,
+            0.9861286630036631
+          ],
+          "pr_auc": [
+            0.8199791884483979,
+            0.9948547553535237
+          ],
+          "brier": [
+            0.04513387204167488,
+            0.21450964790587612
+          ],
+          "ece": [
+            0.04598290561255574,
+            0.2619398531996907
+          ]
+        },
+        "ci_method": {
+          "n_boot": 1000,
+          "alpha": 0.05,
+          "method": "percentile",
+          "resample": "star",
+          "seed": 0
+        },
+        "confusion": {
+          "tn": 9,
+          "fp": 5,
+          "fn": 0,
+          "tp": 29
+        },
+        "calibration": [
+          {
+            "bin_lo": 0.0,
+            "bin_hi": 0.1,
+            "mean_pred": 0.02104189092968031,
+            "frac_pos": 0.0,
+            "count": 6
+          },
+          {
+            "bin_lo": 0.1,
+            "bin_hi": 0.2,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.2,
+            "bin_hi": 0.3,
+            "mean_pred": null,
+            "frac_pos": null,
+            "count": 0
+          },
+          {
+            "bin_lo": 0.3,
+            "bin_hi": 0.4,
+            "mean_pred": 0.3883450171137643,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.4,
+            "bin_hi": 0.5,
+            "mean_pred": 0.47487195810876814,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.5,
+            "bin_hi": 0.6,
+            "mean_pred": 0.5442703658365621,
+            "frac_pos": 0.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.6,
+            "bin_hi": 0.7,
+            "mean_pred": 0.6727229008329432,
+            "frac_pos": 1.0,
+            "count": 1
+          },
+          {
+            "bin_lo": 0.7,
+            "bin_hi": 0.8,
+            "mean_pred": 0.7231241156113313,
+            "frac_pos": 1.0,
+            "count": 2
+          },
+          {
+            "bin_lo": 0.8,
+            "bin_hi": 0.9,
+            "mean_pred": 0.8667815405892596,
+            "frac_pos": 0.7894736842105263,
+            "count": 19
+          },
+          {
+            "bin_lo": 0.9,
+            "bin_hi": 1.0,
+            "mean_pred": 0.9272138412087201,
+            "frac_pos": 0.9166666666666666,
+            "count": 12
+          }
+        ],
+        "timing": {
+          "ms_per_sample_batch1": 8.55875549996199,
+          "ms_per_sample_batch64": 4.475369109371741,
+          "device": "cpu",
+          "n_single_calls": 20,
+          "n_batch_repeats": 3,
+          "with_uncertainty": false
+        },
+        "n_evaluations_of_this_split": 1
+      },
+      "environment": {
+        "python": "3.12.3",
+        "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "processor": "x86_64",
+        "cpu_count": 4,
+        "torch": "2.15.0+cpu",
+        "torch_num_threads": 1,
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "sklearn": "1.9.1",
+        "cuda_available": false,
+        "cuda_version": null,
+        "cuda_device": null,
+        "mps_available": false,
+        "default_device": "cpu",
+        "exofinder": "1.0.0",
+        "pipeline_version": "1.0",
+        "git_commit": "ec9a20dfbab36d246e45167fadb94aa224c2812e"
+      },
+      "limitations": "These results describe how well a model separates Kepler transit-like signals labelled planet-like from those labelled false-positive-like by published NASA vetting, on star-separated held-out data processed by this application's pipeline. Labels are expert/automated judgements and contain noise; class 0 mixes astrophysical false positives and non-transiting phenomena. Photometry alone cannot rule out background eclipsing binaries or contamination (no pixel or centroid data are used). Models are trained on Kepler long-cadence data only; other missions or cadences are out of distribution. Small datasets give wide confidence intervals, so differences between models inside overlapping intervals are not evidence of a real difference.",
+      "missing_sections": []
+    }
+  ],
+  "config_diff": [
+    {
+      "key": "model_type",
+      "values": {
+        "1": "logreg",
+        "2": "random_forest",
+        "3": "cnn_single",
+        "4": "cnn_two_view"
+      }
+    }
+  ],
+  "warnings": [],
+  "limitations": "These results describe how well a model separates Kepler transit-like signals labelled planet-like from those labelled false-positive-like by published NASA vetting, on star-separated held-out data processed by this application's pipeline. Labels are expert/automated judgements and contain noise; class 0 mixes astrophysical false positives and non-transiting phenomena. Photometry alone cannot rule out background eclipsing binaries or contamination (no pixel or centroid data are used). Models are trained on Kepler long-cadence data only; other missions or cadences are out of distribution. Small datasets give wide confidence intervals, so differences between models inside overlapping intervals are not evidence of a real difference."
+}

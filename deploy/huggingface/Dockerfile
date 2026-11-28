@@ -1,6 +1,8 @@
 # Hugging Face Docker Space: copy this file to the root of the Space repository as "Dockerfile"
-# (next to backend/, frontend/, docs/, requirements.txt). Same image as the project's root
-# Dockerfile, listening on port 7860 as Spaces expect.
+# (next to backend/, frontend/, docs/, deploy/, requirements.txt and seed/). Same image as the
+# project's root Dockerfile, listening on port 7860 as Spaces expect. seed/ holds an optional demo
+# seed made with deploy/huggingface/demo_seed.py (trained models + catalogue); an empty seed/
+# folder gives an empty app instead.
 
 # ---- Stage 1: build the React frontend -------------------------------------------------------
 FROM node:22-slim AS frontend
@@ -23,9 +25,11 @@ RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.6,<2.
 COPY backend/ backend/
 COPY docs/ docs/
 COPY README.md .env.example ./
+COPY deploy/huggingface/demo_seed.py deploy/huggingface/start.sh deploy/huggingface/
+COPY seed/ seed/
 COPY --from=frontend /src/frontend/dist frontend/dist
 RUN pip install --no-deps -e backend && mkdir -p data artifacts && chown -R user /home/user/app
 USER user
 EXPOSE 7860
 WORKDIR /home/user/app/backend
-CMD ["sh", "-c", "python -m uvicorn exofinder.api.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "/home/user/app/deploy/huggingface/start.sh"]
