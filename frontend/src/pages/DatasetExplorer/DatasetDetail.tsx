@@ -330,7 +330,7 @@ export function DatasetDetail({ id, onBack, onDeleted }: DatasetDetailProps) {
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={ds.status} />
             <Badge>{labelModeName(ds.label_mode)}</Badge>
-            {ds.is_synthetic ? <Badge tone="nebula">synthetic test data</Badge> : null}
+            {ds.is_synthetic ? <Badge tone="fixture">synthetic test data</Badge> : null}
             {!ds.compatible ? <Badge tone="warn">older pipeline {ds.pipeline_version}</Badge> : null}
             <ProvenanceChip kind="catalogue" source="NASA Exoplanet Archive labels" size="xs" />
             <ProvenanceChip kind="measured" label="Views measured" source="Model views computed by this app's pipeline" size="xs" />

@@ -266,7 +266,7 @@ function SignalDetail({ kepid, signalId, fallback }: { kepid: number; signalId: 
         {s.av_training_set ? <AvLabelBadge label={s.av_training_set} prefix /> : null}
         <ConflictBadge conflict={s.label_conflict} compact />
         <LcStatusBadge status={target.data?.target.lc_status ?? s.lc_status} />
-        {target.data?.reserved_showcase ? <Badge tone="nebula" title="Forced into test splits; never trained on">Reserved showcase</Badge> : null}
+        {target.data?.reserved_showcase ? <Badge tone="neutral" title="Forced into test splits; never trained on">Reserved showcase</Badge> : null}
       </div>
       <div className="flex flex-wrap gap-2">
         <Link to={`/targets/${s.kepid}?signal=${s.id}`} className={buttonClasses({ variant: "secondary", size: "sm" })}>

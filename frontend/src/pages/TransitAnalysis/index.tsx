@@ -447,7 +447,7 @@ function InjectionPanel({ kepid, timeSystem }: { kepid: number; timeSystem: stri
         title={
           <span className="flex flex-wrap items-center gap-2">
             Injection–recovery
-            <Badge tone="nebula" icon={<FlaskConical aria-hidden="true" />}>
+            <Badge tone="fixture" icon={<FlaskConical aria-hidden="true" />}>
               Synthetic
             </Badge>
           </span>

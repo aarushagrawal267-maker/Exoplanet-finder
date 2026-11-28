@@ -428,7 +428,7 @@ export function TrainingSetup({ cards, cardsLoading, datasets, initialDatasetId,
             <Button variant="secondary" icon={<Layers />} onClick={() => setSuiteOpen(true)} disabled={datasetId === null}>
               Train the full suite
             </Button>
-            <Badge tone="nebula">runs locally · no external AI services</Badge>
+            <Badge tone="neutral">runs locally · no external AI services</Badge>
           </div>
         </form>
       </Card>

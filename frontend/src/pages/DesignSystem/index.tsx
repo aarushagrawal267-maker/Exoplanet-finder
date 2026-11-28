@@ -192,10 +192,10 @@ export default function DesignSystemPage() {
         description="Observatory Night: every primitive, chart and science component in one place for visual QA. Components are documented in their source files."
         meta={
           <>
-            <Badge tone="nebula" mono>
+            <Badge mono>
               {Object.keys(colors).length} colour tokens
             </Badge>
-            <Badge mono>7 type sizes + eyebrow</Badge>
+            <Badge mono>8 type sizes</Badge>
           </>
         }
       />
@@ -321,7 +321,7 @@ export default function DesignSystemPage() {
               <Badge tone="cosmic" dot>
                 Running
               </Badge>
-              <Badge tone="nebula">Model</Badge>
+              <Badge tone="fixture">Fixture</Badge>
               <Badge tone="warn" dot>
                 Label conflict
               </Badge>

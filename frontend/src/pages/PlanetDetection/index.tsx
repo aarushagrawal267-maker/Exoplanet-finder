@@ -71,7 +71,7 @@ function Results({ r }: { r: PredictResponse }) {
           </p>
         </div>
         {r.results.length > 1 ? (
-          <Badge tone="nebula" size="md">
+          <Badge tone="neutral" size="md">
             {nPlanet} of {r.results.length} models read planet-like ({formatPercent(nPlanet / r.results.length, { digits: 0 })})
           </Badge>
         ) : null}

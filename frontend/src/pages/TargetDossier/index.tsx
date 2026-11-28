@@ -279,7 +279,7 @@ export default function TargetDossierPage() {
               <Badge mono>KIC {raw.padStart(9, "0")}</Badge>
               {d ? <LcStatusBadge status={d.target.lc_status} /> : null}
               {d?.reserved_showcase ? (
-                <Badge tone="nebula" title="Forced into test splits, never trained on">
+                <Badge tone="neutral" title="Forced into test splits, never trained on">
                   Reserved showcase
                 </Badge>
               ) : null}
