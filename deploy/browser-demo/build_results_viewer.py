@@ -29,10 +29,11 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "backend"))
 
+from sqlalchemy import select  # noqa: E402
+
 from exofinder.db.models import CatalogSnapshot, Dataset, Evaluation, ModelVersion, Signal  # noqa: E402
 from exofinder.db.session import session_scope  # noqa: E402
 from exofinder.services.ops_common import load_arrays_cached  # noqa: E402
-from sqlalchemy import select  # noqa: E402
 
 METRICS = ["pr_auc", "roc_auc", "f1", "precision", "recall", "specificity", "accuracy", "brier", "ece"]
 
