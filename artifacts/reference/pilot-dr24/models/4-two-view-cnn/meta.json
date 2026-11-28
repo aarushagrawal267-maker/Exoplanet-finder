@@ -1,0 +1,172 @@
+{
+  "architecture": {
+    "class": "TwoViewCNN",
+    "kwargs": {
+      "dropout": 0.3,
+      "fc_layers": 4,
+      "fc_width": 512,
+      "global_bins": 2001,
+      "local_bins": 201
+    }
+  },
+  "bundle_format": 1,
+  "calibration_method": "prior_correction+temperature",
+  "config": {
+    "augment_flip": true,
+    "batch_size": 64,
+    "cv_folds": 3,
+    "device": "cpu",
+    "dropout": 0.3,
+    "ensemble_size": 1,
+    "fc_layers": 4,
+    "fc_width": 512,
+    "logreg_c_grid": [
+      0.001,
+      0.01,
+      0.1,
+      1.0
+    ],
+    "logreg_max_iter": 5000,
+    "lr": 0.0001,
+    "max_epochs": 50,
+    "min_delta": 0.0001,
+    "model_type": "cnn_two_view",
+    "num_threads": null,
+    "patience": 8,
+    "rf_max_depth_grid": [
+      null,
+      16
+    ],
+    "rf_max_features_grid": [
+      "sqrt"
+    ],
+    "rf_min_samples_leaf_grid": [
+      1,
+      4
+    ],
+    "rf_n_estimators": 300,
+    "seed": 42,
+    "weight_decay": 0.0
+  },
+  "created_at": "2026-11-28T09:37:29+00:00",
+  "dataset_id": 1,
+  "device": "cpu",
+  "duration_s": 172.369437049,
+  "ensemble_size": 1,
+  "environment": {
+    "cpu_count": 4,
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "default_device": "cpu",
+    "machine": "x86_64",
+    "mps_available": false,
+    "numpy": "2.4.6",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3",
+    "scipy": "1.17.1",
+    "sklearn": "1.9.1",
+    "torch": "2.15.0+cpu",
+    "torch_num_threads": 4
+  },
+  "feature_names": [
+    "depth_ppm",
+    "log_depth",
+    "duration_hours",
+    "duration_over_period",
+    "log_period",
+    "snr",
+    "n_transits_observed",
+    "odd_even_sigma",
+    "secondary_sigma",
+    "secondary_depth_ratio",
+    "shape_ratio",
+    "local_asymmetry",
+    "oot_scatter_ppm",
+    "local_view_min_width",
+    "global_secondary_min"
+  ],
+  "global_bins": 2001,
+  "label_mode": "astronet_dr24",
+  "library_versions": {
+    "joblib": "1.6.0",
+    "numpy": "2.4.6",
+    "python": "3.12.3",
+    "sklearn": "1.9.1",
+    "torch": "2.15.0+cpu"
+  },
+  "local_bins": 201,
+  "logit_offset": 0.10337835445383518,
+  "member_best_epochs": [
+    16
+  ],
+  "member_epochs_run": [
+    24
+  ],
+  "model_type": "cnn_two_view",
+  "monitor": "val_pr_auc",
+  "n_params": 9940193,
+  "n_params_per_member": 9940193,
+  "n_train": 213,
+  "n_val": 28,
+  "num_threads": 4,
+  "pipeline_version": "1.0",
+  "pos_weight": 1.108910891089109,
+  "temperature": 1.4702694964275322,
+  "threshold": 0.6576731367375208,
+  "train_counts": {
+    "neg": 112,
+    "pos": 101
+  },
+  "val_counts": {
+    "neg": 15,
+    "pos": 13
+  },
+  "val_metrics": {
+    "accuracy": 0.8928571428571429,
+    "brier": 0.10382044769261946,
+    "ece": 0.13559244556475983,
+    "f1": 0.896551724137931,
+    "fn": 0,
+    "fp": 3,
+    "n": 28,
+    "n_neg": 15,
+    "n_pos": 13,
+    "pr_auc": 0.9499330797407719,
+    "precision": 0.8125,
+    "recall": 1.0,
+    "roc_auc": 0.9538461538461539,
+    "sensitivity": 1.0,
+    "specificity": 0.8,
+    "threshold": 0.6576731367375208,
+    "tn": 12,
+    "tp": 13
+  },
+  "val_metrics_at_0_5": {
+    "accuracy": 0.8928571428571429,
+    "brier": 0.10382044769261946,
+    "ece": 0.13559244556475983,
+    "f1": 0.896551724137931,
+    "fn": 0,
+    "fp": 3,
+    "n": 28,
+    "n_neg": 15,
+    "n_pos": 13,
+    "pr_auc": 0.9499330797407719,
+    "precision": 0.8125,
+    "recall": 1.0,
+    "roc_auc": 0.9538461538461539,
+    "sensitivity": 1.0,
+    "specificity": 0.8,
+    "threshold": 0.5,
+    "tn": 12,
+    "tp": 13
+  },
+  "weights": [
+    {
+      "path": "member_00/best.pt",
+      "sha256": "58d33fba06ef2b5637d67b7e9ae81ad5aec4dbb5aa95db761b9843f4709b896d"
+    }
+  ]
+}

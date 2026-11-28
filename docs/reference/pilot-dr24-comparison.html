@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparison of 4 experiments</title><style>
+body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;max-width:960px;margin:2rem auto;
+padding:0 1rem;color:#1d2433;background:#fff;line-height:1.5}
+h1{font-size:1.6rem;border-bottom:2px solid #3b4a6b;padding-bottom:.3rem}h2{font-size:1.25rem;margin-top:2rem;
+color:#22304d}h3{font-size:1.05rem}table{border-collapse:collapse;margin:.6rem 0;font-size:.9rem}
+th,td{border:1px solid #cfd6e4;padding:.3rem .6rem;text-align:left;vertical-align:top}th{background:#eef2f9}
+td{font-variant-numeric:tabular-nums;word-break:break-word}.note{background:#f3f6fb;border-left:4px solid #5b7bd5;
+padding:.5rem .8rem;margin:.6rem 0}.warn{background:#fff4e5;border-left:4px solid #e08a00;padding:.5rem .8rem;
+margin:.6rem 0;font-weight:600}dl{display:grid;grid-template-columns:max-content 1fr;gap:.2rem 1rem}
+dt{font-weight:600}dd{margin:0;word-break:break-word}
+@media (prefers-color-scheme:dark){body{background:#12161f;color:#e3e8f2}th{background:#1f2738}
+th,td{border-color:#36415a}.note{background:#1a2233}.warn{background:#2e2414}h2{color:#aebfe6}}
+</style></head><body>
+<h1>Comparison of 4 experiments</h1>
+<div class="note">Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.</div>
+<p>Generated 2026-11-28T09:43:47+00:00 by Exoplanet Finder 1.0.0 (pipeline 1.0).</p>
+<h2>Overview</h2>
+<table><thead><tr><th>Experiment</th><th>Model type</th><th>Dataset</th><th>Status</th><th>Threshold</th><th>Epochs (best)</th><th>Training time (s)</th></tr></thead><tbody><tr><td>#1 Pilot DR24 - Logistic regression</td><td>logreg</td><td>#1 Pilot DR24</td><td>succeeded</td><td>0.301</td><td>1 (1)</td><td>20.3</td></tr><tr><td>#2 Pilot DR24 - Random forest</td><td>random_forest</td><td>#1 Pilot DR24</td><td>succeeded</td><td>0.249</td><td>1 (1)</td><td>10.8</td></tr><tr><td>#3 Pilot DR24 - Single-view CNN</td><td>cnn_single</td><td>#1 Pilot DR24</td><td>succeeded</td><td>0.546</td><td>21 (13)</td><td>417.0</td></tr><tr><td>#4 Pilot DR24 - Two-view CNN (AstroNet)</td><td>cnn_two_view</td><td>#1 Pilot DR24</td><td>succeeded</td><td>0.658</td><td>24 (16)</td><td>172.4</td></tr></tbody></table>
+<h2>Validation metrics (from training)</h2>
+<table><thead><tr><th>Metric</th><th>#1 logreg</th><th>#2 random_forest</th><th>#3 cnn_single</th><th>#4 cnn_two_view</th></tr></thead><tbody><tr><td>PR-AUC (average precision)</td><td>0.920</td><td>0.933</td><td>0.915</td><td>0.950</td></tr><tr><td>ROC-AUC</td><td>0.928</td><td>0.938</td><td>0.928</td><td>0.954</td></tr><tr><td>F1</td><td>0.897</td><td>0.897</td><td>0.897</td><td>0.897</td></tr><tr><td>Precision</td><td>0.812</td><td>0.812</td><td>0.812</td><td>0.812</td></tr><tr><td>Recall / sensitivity</td><td>1.000</td><td>1.000</td><td>1.000</td><td>1.000</td></tr><tr><td>Specificity</td><td>0.800</td><td>0.800</td><td>0.800</td><td>0.800</td></tr><tr><td>Accuracy</td><td>0.893</td><td>0.893</td><td>0.893</td><td>0.893</td></tr><tr><td>Brier score (lower is better)</td><td>0.116</td><td>0.108</td><td>0.127</td><td>0.104</td></tr><tr><td>Expected calibration error (lower is better)</td><td>0.192</td><td>0.139</td><td>0.163</td><td>0.136</td></tr></tbody></table>
+<h2>Test metrics (held-out stars) with 95 % CI</h2>
+<table><thead><tr><th>Metric</th><th>#1 logreg</th><th>#2 random_forest</th><th>#3 cnn_single</th><th>#4 cnn_two_view</th></tr></thead><tbody><tr><td>PR-AUC (average precision)</td><td>0.963 [0.846, 0.996]</td><td>0.949 [0.791, 0.996]</td><td>0.924 [0.803, 0.988]</td><td>0.939 [0.820, 0.995]</td></tr><tr><td>ROC-AUC</td><td>0.926 [0.781, 0.990]</td><td>0.916 [0.764, 0.989]</td><td>0.869 [0.710, 0.969]</td><td>0.892 [0.710, 0.986]</td></tr><tr><td>F1</td><td>0.892 [0.739, 0.966]</td><td>0.906 [0.764, 0.974]</td><td>0.906 [0.775, 0.973]</td><td>0.921 [0.792, 0.982]</td></tr><tr><td>Precision</td><td>0.806 [0.586, 0.933]</td><td>0.829 [0.618, 0.949]</td><td>0.829 [0.633, 0.947]</td><td>0.853 [0.655, 0.966]</td></tr><tr><td>Recall / sensitivity</td><td>1.000 [1.000, 1.000]</td><td>1.000 [1.000, 1.000]</td><td>1.000 [1.000, 1.000]</td><td>1.000 [1.000, 1.000]</td></tr><tr><td>Specificity</td><td>0.500 [0.250, 0.727]</td><td>0.571 [0.273, 0.818]</td><td>0.571 [0.286, 0.824]</td><td>0.643 [0.375, 0.909]</td></tr><tr><td>Accuracy</td><td>0.837 [0.686, 0.941]</td><td>0.860 [0.714, 0.957]</td><td>0.860 [0.722, 0.957]</td><td>0.884 [0.750, 0.975]</td></tr><tr><td>Brier score (lower is better)</td><td>0.105 [0.051, 0.186]</td><td>0.092 [0.044, 0.172]</td><td>0.119 [0.047, 0.226]</td><td>0.113 [0.045, 0.215]</td></tr><tr><td>Expected calibration error (lower is better)</td><td>0.118 [0.083, 0.237]</td><td>0.081 [0.056, 0.216]</td><td>0.118 [0.062, 0.292]</td><td>0.093 [0.046, 0.262]</td></tr></tbody></table>
+<h2>Configuration differences</h2>
+<table><thead><tr><th>Option</th><th>#1 logreg</th><th>#2 random_forest</th><th>#3 cnn_single</th><th>#4 cnn_two_view</th></tr></thead><tbody><tr><td>model_type</td><td>logreg</td><td>random_forest</td><td>cnn_single</td><td>cnn_two_view</td></tr></tbody></table>
+<h2>Limitations</h2>
+<p>These results describe how well a model separates Kepler transit-like signals labelled planet-like from those labelled false-positive-like by published NASA vetting, on star-separated held-out data processed by this application&#x27;s pipeline. Labels are expert/automated judgements and contain noise; class 0 mixes astrophysical false positives and non-transiting phenomena. Photometry alone cannot rule out background eclipsing binaries or contamination (no pixel or centroid data are used). Models are trained on Kepler long-cadence data only; other missions or cadences are out of distribution. Small datasets give wide confidence intervals, so differences between models inside overlapping intervals are not evidence of a real difference.</p>
+<p>Planet-like predictions are research leads, not discoveries: a high score means the light-curve shape resembles signals that NASA vetting classified as planet candidates, nothing more.</p>
+</body></html>

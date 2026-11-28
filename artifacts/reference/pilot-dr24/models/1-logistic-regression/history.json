@@ -1,0 +1,20 @@
+[
+ {
+  "member": 0,
+  "epoch": 1,
+  "train_loss": 0.21667809457318807,
+  "val_loss": 0.36236271049295155,
+  "val_pr_auc": 0.919717995679534,
+  "val_roc_auc": 0.9282051282051282,
+  "val_accuracy": 0.8571428571428571,
+  "lr": null,
+  "elapsed_s": 20.28869614900009,
+  "best_epoch": 1,
+  "best_val_pr_auc": 0.919717995679534,
+  "improved": true,
+  "epochs_since_improvement": 0,
+  "n_members": 1,
+  "max_epochs": 1,
+  "progress": 1.0
+ }
+]

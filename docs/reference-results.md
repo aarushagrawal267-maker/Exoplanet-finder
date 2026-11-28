@@ -171,6 +171,38 @@ single-view CNN 322 / 33 / 41 / 1 172 · two-view CNN 334 / 35 / 29 / 1 170.
 All eight known planets are scored planet-like, including Kepler-90 i (no DR24 label; scored from its
 published ephemeris).
 
+## Pilot DR24 tier: the small run shipped with the repository (2026-11-28)
+
+A complete run on the **Pilot** tier, made to give reviewers real scores without a 16 GB download. Its
+model files and per-signal test predictions are in
+[`artifacts/reference/pilot-dr24/`](../artifacts/reference/pilot-dr24/README.md), the machine-generated
+comparison in `docs/reference/` ([MD](reference/pilot-dr24-comparison.md),
+[HTML](reference/pilot-dr24-comparison.html), [JSON](reference/pilot-dr24-comparison.json)), and the
+results can be browsed online at <https://huggingface.co/spaces/agrawalaarush08/exoplanet-finder>.
+
+| Item | Value |
+|---|---|
+| Catalogue | NASA Exoplanet Archive snapshots retrieved 2026-11-28 (22 644 signals on 14 233 stars) |
+| Dataset | "Pilot DR24": 309 signals selected on 167 stars (seed 42, the 5 reserved showcase systems included), **284 included**, 25 excluded (14 label conflicts, 8 without an Autovetter label, 2 too few transits, 1 UNK) |
+| Splits (by star) | train 213 (101 / 112) · val 28 (13 / 15) · test 43 (29 / 14), as planet-like / false-positive-like |
+| Compute | shared 4-core cloud VM, CPU only: dataset 7.9 min (145 stars downloaded in 171 s, processing 303 s on 2 workers), training 10.4 min for the four models |
+| Protocol | the two-view CNN was made the active model on validation PR-AUC (0.950) before any test evaluation; each model was evaluated once on test |
+
+Held-out test results (43 signals on 18 stars; chance PR-AUC 0.674), 95 % bootstrap intervals resampling
+whole stars (1 000 resamples):
+
+| Model | PR-AUC | ROC-AUC | F1 | Precision | Recall | Specificity | Brier | ECE |
+|---|---|---|---|---|---|---|---|---|
+| Logistic regression | 0.963 [0.846, 0.996] | 0.926 [0.781, 0.990] | 0.892 | 0.806 | 1.000 | 0.500 | 0.105 | 0.118 |
+| Random forest | 0.949 [0.791, 0.996] | 0.916 [0.764, 0.989] | 0.906 | 0.829 | 1.000 | 0.571 | 0.092 | 0.081 |
+| Single-view CNN | 0.924 [0.803, 0.988] | 0.869 [0.710, 0.969] | 0.906 | 0.829 | 1.000 | 0.571 | 0.119 | 0.118 |
+| Two-view CNN (active) | 0.939 [0.820, 0.995] | 0.892 [0.710, 0.986] | 0.921 | 0.853 | 1.000 | 0.643 | 0.113 | 0.093 |
+
+**How to read this.** Every model recovers all 29 planet-like test signals and lets through 5 to 7 of the
+14 false-positive-like ones. With 43 test signals the intervals are very wide and overlap completely, so
+the four models cannot be told apart here, and the ranking differs from the Standard and Full tiers. The
+Pilot tier is for an end-to-end run in minutes; use Standard or Full for real comparisons.
+
 ## Inference speed
 Measured on a quiet 4-core CPU (PyTorch with 4 threads), on validation-split inputs, median of 50
 single calls and of 10 batches of 64, without uncertainty estimation:
