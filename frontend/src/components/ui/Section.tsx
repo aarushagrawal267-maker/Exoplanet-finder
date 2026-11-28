@@ -21,7 +21,7 @@ export function Section({ title, eyebrow, description, actions, id, children, cl
           <div className="min-w-0">
             {eyebrow ? <div className="eyebrow mb-1 text-fg-secondary">{eyebrow}</div> : null}
             {title ? (
-              <h2 id={headingId} className="font-display text-lg text-fg">
+              <h2 id={headingId} className="text-lg font-medium text-fg">
                 {title}
               </h2>
             ) : null}

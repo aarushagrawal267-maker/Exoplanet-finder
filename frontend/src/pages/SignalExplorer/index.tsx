@@ -165,10 +165,10 @@ function Filters({ u, onReset }: { u: ReturnType<typeof useUrlState>; onReset: (
         </div>
       </div>
       <div className="flex flex-wrap items-end gap-3">
-        <Field label="Period from" className="w-[150px]">
+        <Field label="Period from" className="w-[152px]">
           <NumberInput value={u.num("pmin")} onChange={setNum("pmin")} min={0} step={0.1} precision={2} unit="d" allowEmpty hideSteppers placeholder="0" />
         </Field>
-        <Field label="Period to" className="w-[150px]">
+        <Field label="Period to" className="w-[152px]">
           <NumberInput value={u.num("pmax")} onChange={setNum("pmax")} min={0} step={0.1} precision={2} unit="d" allowEmpty hideSteppers placeholder="∞" />
         </Field>
         <Field label="Min. model SNR" className="w-[140px]">

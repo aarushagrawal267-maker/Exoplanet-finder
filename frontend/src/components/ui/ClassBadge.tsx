@@ -56,7 +56,7 @@ export function ClassBadge({ cls, probability, size = "sm", context, className }
     <span
       className={cn(
         "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border font-medium [&_svg]:shrink-0",
-        size === "sm" ? "h-[22px] px-2 text-xs [&_svg]:size-3.5" : "h-8 px-3 text-base [&_svg]:size-4",
+        size === "sm" ? "h-6 px-2 text-xs [&_svg]:size-3.5" : "h-8 px-3 text-base [&_svg]:size-4",
         s.className,
         className,
       )}

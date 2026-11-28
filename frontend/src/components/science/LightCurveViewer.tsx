@@ -122,7 +122,7 @@ export function SegmentStrip({
               onClick={() => onSelect(on ? null : s.id)}
               style={{ left: `${left}%`, width: `${width}%` }}
               className={cn(
-                "num absolute inset-y-0.5 overflow-hidden rounded-[3px] border text-[10px] leading-none transition-colors",
+                "num absolute inset-y-0.5 overflow-hidden rounded-[3px] border text-2xs leading-none transition-colors",
                 on ? "border-cosmic bg-cosmic/25 text-fg" : "border-hairline-strong bg-surface-raised text-fg-secondary hover:border-fg-muted hover:text-fg",
               )}
             >

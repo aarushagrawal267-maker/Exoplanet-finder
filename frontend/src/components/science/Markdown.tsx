@@ -60,8 +60,8 @@ export function docHref(href: string | undefined): { internal: boolean; to: stri
 
 function heading(level: 1 | 2 | 3 | 4) {
   const cls = {
-    1: "mt-0 mb-4 font-display text-xl text-fg",
-    2: "mt-10 mb-3 scroll-mt-20 border-t border-hairline pt-6 font-display text-lg text-fg first:mt-0 first:border-0 first:pt-0",
+    1: "mt-0 mb-4 text-xl font-medium text-fg",
+    2: "mt-10 mb-3 scroll-mt-20 border-t border-hairline pt-6 text-lg font-medium text-fg first:mt-0 first:border-0 first:pt-0",
     3: "mt-7 mb-2 scroll-mt-20 text-md font-semibold text-fg",
     4: "mt-5 mb-2 text-base font-semibold text-fg",
   }[level];

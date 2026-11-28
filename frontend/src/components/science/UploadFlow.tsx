@@ -191,7 +191,7 @@ function ParsedSummary({ upload, onEdit, onReset }: { upload: UploadOut; onEdit:
         <ul className="flex flex-col gap-1.5 text-sm text-fg-secondary" aria-label="Parse warnings">
           {p.warnings.map((w) => (
             <li key={w} className="flex gap-2">
-              <span className="mt-[7px] size-1 shrink-0 rounded-full bg-warn" aria-hidden="true" />
+              <span className="mt-2 size-1 shrink-0 rounded-full bg-warn" aria-hidden="true" />
               {w}
             </li>
           ))}

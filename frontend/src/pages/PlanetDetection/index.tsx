@@ -63,7 +63,7 @@ function Results({ r }: { r: PredictResponse }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="eyebrow text-fg-secondary">Results</div>
-          <h2 id="results-title" className="font-display text-lg text-fg">
+          <h2 id="results-title" className="text-lg font-medium text-fg">
             {r.signal ? signalName(r.signal) : r.source.input_name}
           </h2>
           <p className="mt-1 text-sm text-fg-secondary">

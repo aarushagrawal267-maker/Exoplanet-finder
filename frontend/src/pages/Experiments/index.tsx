@@ -184,7 +184,7 @@ export default function ExperimentsPage() {
                 <Select
                   size="sm"
                   aria-label="Model type"
-                  className="w-[170px]"
+                  className="w-[168px]"
                   value={modelType}
                   onChange={(v) => setParams({ type: v || null })}
                   options={[{ value: "", label: "All model types" }, ...MODEL_TYPES.map((t) => ({ value: t, label: modelTypeLabel(t) }))]}
