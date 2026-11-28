@@ -49,7 +49,8 @@ test.describe("with the NASA catalogue and cached light curves", () => {
     const api = await playwright.request.newContext({ baseURL: testInfo.project.use.baseURL });
     try {
       const res = await api.get("/api/system/summary");
-      testInfo.skip(!res.ok(), `The backend API is not reachable (GET /api/system/summary → HTTP ${res.status()}); start it with scripts/start.sh.`);
+      // A missing backend is a setup error (the Docs and Settings tests below fail too), not missing data: fail loudly.
+      if (!res.ok()) throw new Error(`The backend API is not reachable (GET /api/system/summary → HTTP ${res.status()}); start it with scripts/start.sh.`);
       const summary = (await res.json()) as { catalog?: { n_signals?: number } };
       testInfo.skip(
         !summary.catalog?.n_signals,

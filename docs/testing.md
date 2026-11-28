@@ -53,7 +53,7 @@ npm run test:e2e         # Playwright, desktop 1440×900 and mobile 390×844
 * `e2e/science-pages.spec.ts` needs the NASA catalogue in the running backend. Before its tests it
   downloads the two light curves they open (Kepler-2 and Kepler-90, about 8 MB each from NASA MAST)
   through the API if they are not cached; without a catalogue, or if MAST cannot be reached, those tests
-  are skipped with a message saying what to run.
+  are skipped with a message saying what to run. If the backend itself is not running, they fail.
 * After changing the backend API, run `npm run gen:api` to regenerate `src/api/schema.d.ts`; the type
   check then shows where the frontend must adapt.
 
