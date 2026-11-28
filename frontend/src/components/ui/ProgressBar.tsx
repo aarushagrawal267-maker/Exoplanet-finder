@@ -6,7 +6,7 @@ export type ProgressTone = "cosmic" | "model" | "planet" | "warn" | "danger";
 
 const fills: Record<ProgressTone, string> = {
   cosmic: "bg-cosmic",
-  model: "bg-gradient-to-r from-nebula to-cosmic",
+  model: "bg-cosmic",
   planet: "bg-signal-planet",
   warn: "bg-warn",
   danger: "bg-danger",

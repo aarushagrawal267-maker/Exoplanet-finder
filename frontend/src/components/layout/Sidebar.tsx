@@ -6,6 +6,7 @@
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { DipMarker } from "@/components/brand/Dip";
 import { Wordmark } from "@/components/brand/TransitMark";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { cn } from "@/lib/cn";
@@ -35,14 +36,11 @@ function NavEntry({ item, collapsed, active, onNavigate }: { item: NavItem; coll
       className={cn(
         "group relative flex items-center rounded-md text-base transition-colors duration-fast",
         collapsed ? "mx-auto size-10 justify-center short:size-9" : "h-9 gap-3 px-3 short:h-8",
-        active ? "bg-cosmic/[0.09] text-fg" : "text-fg-secondary hover:bg-fg/[0.05] hover:text-fg",
+        active ? "bg-fg/[0.06] text-fg" : "text-fg-secondary hover:bg-fg/[0.05] hover:text-fg",
       )}
     >
       {active ? (
-        <span
-          aria-hidden="true"
-          className={cn("absolute w-[2px] rounded-full bg-gradient-to-b from-nebula to-cosmic", collapsed ? "-left-[15px] inset-y-2" : "-left-3 inset-y-1.5")}
-        />
+        <DipMarker className={cn("absolute inset-y-1", collapsed ? "-left-4" : "-left-3.5")} />
       ) : null}
       <Icon size={18} strokeWidth={1.75} className={cn("shrink-0", active ? "text-cosmic" : "text-fg-secondary group-hover:text-fg")} />
       {!collapsed ? <span className="truncate">{item.label}</span> : null}
@@ -79,9 +77,9 @@ export function Sidebar({ collapsed, onToggleCollapsed, onNavigate, footer, hide
 
       <nav aria-label="Main" className={cn("relative min-h-0 flex-1 overflow-y-auto py-4 short:py-3", collapsed ? "px-3" : "px-4")}>
         {NAV_GROUPS.map((group, gi) => (
-          <div key={group.id} className={cn(gi > 0 && (collapsed ? "mt-3 border-t border-hairline pt-3 short:mt-2 short:pt-2" : "mt-5 short:mt-3"))}>
+          <div key={group.id} className={cn(gi > 0 && (collapsed ? "mt-3 border-t border-hairline pt-3 short:mt-2 short:pt-2" : "mt-6 short:mt-3"))}>
             {!collapsed ? (
-              <h2 className="eyebrow mb-1.5 px-3 text-fg-secondary short:mb-1" id={`nav-${group.id}`}>
+              <h2 className="eyebrow mb-2 px-3 text-fg-muted short:mb-1" id={`nav-${group.id}`}>
                 {group.label}
               </h2>
             ) : (

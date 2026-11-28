@@ -31,7 +31,7 @@ function Marker({ status, index }: { status: StepStatus; index: number }) {
       className={cn(
         "num relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium",
         status === "complete" && "border-signal-planet/60 bg-signal-planet/10 text-signal-planet",
-        status === "current" && "border-cosmic bg-cosmic/15 text-cosmic shadow-[0_0_0_4px_rgb(110_155_255/0.12)]",
+        status === "current" && "border-cosmic bg-cosmic/15 text-cosmic",
         status === "upcoming" && "border-hairline-strong bg-space text-fg-secondary",
         status === "error" && "border-danger/60 bg-danger/10 text-danger",
       )}
