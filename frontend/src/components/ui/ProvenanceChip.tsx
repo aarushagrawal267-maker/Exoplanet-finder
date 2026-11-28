@@ -16,7 +16,7 @@ interface ProvenanceStyle {
  *  - catalogue: published NASA Exoplanet Archive value (outlined blue)
  *  - measured:  computed by this app's pipeline from the light curve (outlined teal)
  *  - estimate:  derived with assumptions, e.g. radius from depth × R★ (dashed)
- *  - model:     output of a trained classifier (violet)
+ *  - model:     output of a trained classifier (blue tint)
  *  - manual:    entered by the user (grey)
  */
 export const PROVENANCE: Record<Provenance, ProvenanceStyle> = {
@@ -42,7 +42,7 @@ export const PROVENANCE: Record<Provenance, ProvenanceStyle> = {
     label: "Model",
     description: "Output of a machine-learning model trained in this app",
     icon: <Cpu aria-hidden="true" />,
-    className: "border-nebula/50 bg-nebula/10 text-nebula",
+    className: "border-cosmic/40 bg-cosmic/10 text-cosmic",
   },
   manual: {
     label: "Manual",
@@ -68,8 +68,8 @@ export function ProvenanceChip({ kind, label, source, size = "sm", className }: 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 whitespace-nowrap rounded-sm border font-mono uppercase tracking-[0.08em] [&_svg]:shrink-0",
-        size === "sm" ? "h-5 px-1.5 text-2xs [&_svg]:size-3" : "h-4 px-1 text-[10px] leading-3 [&_svg]:size-2.5",
+        "inline-flex items-center gap-1 whitespace-nowrap rounded-sm border font-mono [&_svg]:shrink-0",
+        size === "sm" ? "h-5 px-1.5 text-2xs [&_svg]:size-3" : "h-4 px-1 text-2xs leading-3 [&_svg]:size-2.5",
         p.className,
         className,
       )}

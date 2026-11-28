@@ -30,7 +30,7 @@ export function OrbitArt({ className, width = 168 }: OrbitArtProps) {
       {/* planet on the near arc, in front of the stellar disc: a transit */}
       <circle cx="92" cy="54.9" r="3.6" fill="var(--c-void)" stroke="var(--c-cosmic)" strokeWidth="1.2" />
       {/* light curve with the dip directly under the planet */}
-      <line x1="92" x2="92" y1="61" y2="88" stroke="var(--c-nebula)" strokeOpacity="0.55" strokeWidth="1" strokeDasharray="1.5 3" />
+      <line x1="92" x2="92" y1="61" y2="88" stroke="var(--c-text-muted)" strokeOpacity="0.8" strokeWidth="1" strokeDasharray="1.5 3" />
       <path
         d="M14 92 H82 C84.5 92 85 98 88 98.4 Q92 99 96 98.4 C99 98 99.5 92 102 92 H154"
         stroke="var(--c-cosmic)"

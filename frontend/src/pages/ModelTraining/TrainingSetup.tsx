@@ -31,7 +31,7 @@ function ModelCard({ card, selected, onSelect }: { card: ModelCardOut; selected:
     <div
       className={cn(
         "card-surface flex h-full flex-col gap-3 p-4 transition-colors duration-fast",
-        selected ? "border-nebula/70 bg-nebula/[0.05] shadow-[inset_0_0_0_1px_var(--c-nebula)]" : "hover:border-hairline-strong",
+        selected ? "border-cosmic/70 bg-cosmic/[0.05]" : "hover:border-hairline-strong",
       )}
     >
       <button type="button" role="radio" aria-checked={selected} onClick={onSelect} className="flex items-start justify-between gap-2 text-left">
@@ -39,7 +39,7 @@ function ModelCard({ card, selected, onSelect }: { card: ModelCardOut; selected:
           <span className="block text-md font-semibold text-fg">{card.name}</span>
           <span className="num text-xs text-fg-secondary">{card.n_params ? `${formatInt(card.n_params)} parameters` : "classical baseline"}</span>
         </span>
-        <span className={cn("mt-1 size-3.5 shrink-0 rounded-full border", selected ? "border-nebula bg-nebula" : "border-fg-muted")} aria-hidden="true" />
+        <span className={cn("mt-1 size-3.5 shrink-0 rounded-full border", selected ? "border-cosmic bg-cosmic" : "border-fg-muted")} aria-hidden="true" />
       </button>
       <p className="text-sm text-fg-secondary">{card.description}</p>
       <div>

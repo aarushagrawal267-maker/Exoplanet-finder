@@ -13,6 +13,7 @@
 import { useMemo } from "react";
 import type { Data, Layout, Shape } from "plotly.js";
 import { binMedian } from "@/lib/binning";
+import { colors } from "@/styles/tokens";
 import { Plot } from "./Plot";
 import { chartColors, MONO, plotlyAxis, plotlyLayout, withAlpha } from "./theme";
 
@@ -249,7 +250,7 @@ export function LightCurvePlot({
         title: { text: `Time (${timeSystem})` },
         tickformat: ".1f",
         rangeslider: rangeSlider
-          ? { visible: true, thickness: 0.09, bgcolor: "#0A0F1E", bordercolor: "#1F2A47", borderwidth: 1 }
+          ? { visible: true, thickness: 0.09, bgcolor: colors.space, bordercolor: colors.hairline, borderwidth: 1 }
           : undefined,
       }) as Layout["xaxis"],
       ...(layoutAxes as Partial<Layout>),

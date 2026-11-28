@@ -21,7 +21,7 @@ const dot: Record<StatusTone, string> = {
   warn: "bg-warn",
   error: "bg-danger",
   idle: "bg-fg-muted",
-  model: "bg-nebula",
+  model: "bg-cosmic",
 };
 
 export function StatusFooter({ rows, collapsed = false }: { rows: StatusRow[]; collapsed?: boolean }) {

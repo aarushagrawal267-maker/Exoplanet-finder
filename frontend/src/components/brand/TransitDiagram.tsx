@@ -36,9 +36,9 @@ export function TransitDiagram({ className }: { className?: string }) {
     >
       <defs>
         <radialGradient id={gid} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#EEF2FB" />
-          <stop offset="72%" stopColor="#C9D2EA" />
-          <stop offset="100%" stopColor="#7E8AB0" />
+          <stop offset="0%" stopColor="var(--c-star-core)" />
+          <stop offset="72%" stopColor="var(--c-star-mid)" />
+          <stop offset="100%" stopColor="var(--c-star-limb)" />
         </radialGradient>
       </defs>
 
@@ -54,7 +54,7 @@ export function TransitDiagram({ className }: { className?: string }) {
 
       {/* guides from planet positions down to the light curve */}
       {[SX - HALF, PX, SX + HALF].map((x) => (
-        <line key={x} x1={x} x2={x} y1={CY + PR + 6} y2={BASE + DEPTH + 1} stroke="var(--c-nebula)" strokeOpacity="0.35" strokeDasharray="1.5 3" />
+        <line key={x} x1={x} x2={x} y1={CY + PR + 6} y2={BASE + DEPTH + 1} stroke="var(--c-text-muted)" strokeOpacity="0.6" strokeDasharray="1.5 3" />
       ))}
 
       {/* light curve */}
@@ -74,8 +74,8 @@ export function TransitDiagram({ className }: { className?: string }) {
       </text>
 
       {/* labels */}
-      <text x="28" y={BASE - 8} fill="var(--c-text-secondary)" fontFamily="JetBrains Mono, monospace" fontSize="10" letterSpacing="1.2">
-        FLUX
+      <text x="28" y={BASE - 8} fill="var(--c-text-secondary)" fontFamily="JetBrains Mono, monospace" fontSize="11">
+        Flux
       </text>
       <text x="324" y={SY - SR + 6} textAnchor="end" fill="var(--c-text-secondary)" fontFamily="JetBrains Mono, monospace" fontSize="11">
         δ ≈ (Rp / R★)²

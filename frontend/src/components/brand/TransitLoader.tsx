@@ -25,9 +25,9 @@ export function TransitLoader({ size = 48, label = "Loading", className, showLab
       <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
         <defs>
           <radialGradient id={gid} cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stopColor="#F4F6FC" />
-            <stop offset="70%" stopColor="#D5DCEE" />
-            <stop offset="100%" stopColor="#8F9BBE" />
+            <stop offset="0%" stopColor="var(--c-star-core)" />
+            <stop offset="70%" stopColor="var(--c-star-mid)" />
+            <stop offset="100%" stopColor="var(--c-star-limb)" />
           </radialGradient>
           <clipPath id={clip}>
             <circle cx="24" cy="16" r="11" />
@@ -35,10 +35,10 @@ export function TransitLoader({ size = 48, label = "Loading", className, showLab
         </defs>
         <circle cx="24" cy="16" r="11" fill={`url(#${gid})`} opacity="0.95" />
         <g clipPath={`url(#${clip})`}>
-          <circle className="exo-loader-orbit" cx="24" cy="20.5" r="2.8" fill="var(--c-space, #0A0F1E)" />
+          <circle className="exo-loader-orbit" cx="24" cy="20.5" r="2.8" fill="var(--c-space)" />
         </g>
-        <path d={DIP} stroke="var(--c-cosmic, #6E9BFF)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        <line className="exo-loader-orbit" x1="24" x2="24" y1="28.5" y2="31" stroke="var(--c-nebula, #A08BFF)" strokeWidth="1.4" strokeLinecap="round" />
+        <path d={DIP} stroke="var(--c-cosmic)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <line className="exo-loader-orbit" x1="24" x2="24" y1="28.5" y2="31" stroke="var(--c-text-secondary)" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
       <span className={showLabel ? "eyebrow text-fg-secondary" : "sr-only"}>{label}</span>
       <style>{`

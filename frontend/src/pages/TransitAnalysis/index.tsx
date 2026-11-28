@@ -158,10 +158,10 @@ function BlsPanel({ request, setRequest, bls, ready, catalogPeriod, onUse }: {
           setRequest({ source: ready, min_period: minP, max_period: maxP });
         }}
       >
-        <Field label="Shortest period" className="w-[150px]" error={invalid ? "Must be below the longest period." : undefined}>
+        <Field label="Shortest period" className="w-[152px]" error={invalid ? "Must be below the longest period." : undefined}>
           <NumberInput value={minP} onChange={setMinP} min={0.1} step={0.1} precision={2} unit="d" allowEmpty hideSteppers placeholder="0.50" />
         </Field>
-        <Field label="Longest period" className="w-[150px]">
+        <Field label="Longest period" className="w-[152px]">
           <NumberInput value={maxP} onChange={setMaxP} min={0.2} step={1} precision={1} unit="d" allowEmpty hideSteppers placeholder="½ baseline" />
         </Field>
         <Button type="submit" variant="primary" icon={<Search />} disabled={!ready || invalid} loading={bls.isFetching} className="mb-0.5">
@@ -372,7 +372,7 @@ function InjectionResults({ r }: { r: InjectionOut }) {
   );
   return (
     <div className="flex flex-col gap-5">
-      <Banner tone="fixture-model" title="SYNTHETIC — not an observation">
+      <Banner tone="fixture-model" title="Synthetic — not an observation">
         {r.label}
       </Banner>
       <div className="flex flex-wrap items-center gap-2">
@@ -400,7 +400,7 @@ function InjectionResults({ r }: { r: InjectionOut }) {
                 <th scope="col" className="eyebrow h-9 px-3 text-left font-medium text-fg-secondary">
                   Parameter
                 </th>
-                <th scope="col" className="eyebrow h-9 px-3 text-right font-medium text-nebula">
+                <th scope="col" className="eyebrow h-9 px-3 text-right font-medium text-fg-secondary">
                   Injected
                 </th>
                 <th scope="col" className="h-9 px-3 text-right">
@@ -441,14 +441,14 @@ function InjectionPanel({ kepid, timeSystem }: { kepid: number; timeSystem: stri
   const inj = useInjection(req);
   const invalid = !(form.period && form.period > 0) || !(form.depth && form.depth > 0) || !(form.duration && form.duration > 0) || (form.period && form.duration ? form.duration >= form.period * 24 : false);
   return (
-    <Card className="border-dashed border-nebula/50">
+    <Card className="border-dashed border-fg-muted/50">
       <CardHeader
         eyebrow="04 · Sensitivity test"
         title={
           <span className="flex flex-wrap items-center gap-2">
             Injection–recovery
             <Badge tone="nebula" icon={<FlaskConical aria-hidden="true" />}>
-              SYNTHETIC
+              Synthetic
             </Badge>
           </span>
         }
@@ -468,10 +468,10 @@ function InjectionPanel({ kepid, timeSystem }: { kepid: number; timeSystem: stri
         <Field label="Depth" className="w-[140px]">
           <NumberInput value={form.depth} onChange={(v) => setForm({ ...form, depth: v })} min={1} step={10} precision={0} unit="ppm" allowEmpty hideSteppers />
         </Field>
-        <Field label="Duration" className="w-[130px]">
+        <Field label="Duration" className="w-32">
           <NumberInput value={form.duration} onChange={(v) => setForm({ ...form, duration: v })} min={0.2} step={0.1} precision={2} unit="h" allowEmpty hideSteppers />
         </Field>
-        <Field label="Epoch (optional)" className="w-[170px]">
+        <Field label="Epoch (optional)" className="w-[168px]">
           <NumberInput value={form.epoch} onChange={(v) => setForm({ ...form, epoch: v })} step={0.1} precision={3} unit={timeSystem} allowEmpty hideSteppers placeholder="auto" />
         </Field>
         <Button type="submit" variant="model" icon={<FlaskConical />} disabled={Boolean(invalid)} loading={inj.isFetching} className="mb-0.5">
@@ -641,7 +641,7 @@ export default function TransitAnalysisPage() {
           {st.kind === "catalog" && st.kepid !== null ? (
             <InjectionPanel kepid={st.kepid} timeSystem="BKJD" />
           ) : (
-            <Card className="border-dashed border-nebula/40">
+            <Card className="border-dashed border-fg-muted/50">
               <CardHeader eyebrow="04 · Sensitivity test" title="Injection–recovery" />
               <p className="text-sm text-fg-secondary">
                 The synthetic injection–recovery test runs on cached Kepler light curves of catalogue stars only.{" "}

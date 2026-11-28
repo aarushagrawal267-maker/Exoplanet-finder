@@ -35,7 +35,7 @@ function ExampleCard({ ex }: { ex: EvaluationExampleOut }) {
           {name ? <p className="truncate text-xs text-fg-secondary">{name}</p> : null}
         </div>
         <div className="shrink-0 text-right">
-          <div className="num text-md text-nebula" title="Calibrated probability of planet-like">
+          <div className="num text-md text-fg" title="Calibrated probability of planet-like">
             {formatProbability(ex.prob)}
           </div>
           <div className="num text-2xs text-fg-secondary" title="Uncalibrated model output">

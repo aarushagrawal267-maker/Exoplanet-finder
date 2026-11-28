@@ -39,17 +39,17 @@ export function TransitMark({ size = 32, className, title }: TransitMarkProps) {
       <defs>
         {/* Limb darkening: the stellar disc is brighter at the centre than at the edge. */}
         <radialGradient id={gid} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#EEF1FA" />
-          <stop offset="62%" stopColor="#C3CCE8" />
-          <stop offset="100%" stopColor="#7C88B4" />
+          <stop offset="0%" stopColor="var(--c-star-core)" />
+          <stop offset="62%" stopColor="var(--c-star-mid)" />
+          <stop offset="100%" stopColor="var(--c-star-limb)" />
         </radialGradient>
       </defs>
       <circle cx="20" cy="15" r="10" fill={`url(#${gid})`} />
       {/* the planet's transit chord, kept inside the disc (half-chord √(10² − 3.2²) ≈ 9.47):
           extended past the limb it read as a ring, turning the star into a ringed planet */}
-      <line x1="10.9" x2="29.1" y1="18.2" y2="18.2" stroke="var(--c-cosmic, #6E9BFF)" strokeOpacity="0.55" strokeWidth="0.9" strokeLinecap="round" />
-      <circle cx={PLANET_X} cy="18.2" r="2.5" fill="var(--c-space, #0A0F1E)" />
-      <path d={DIP_PATH} stroke="var(--c-cosmic, #6E9BFF)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="10.9" x2="29.1" y1="18.2" y2="18.2" stroke="var(--c-cosmic)" strokeOpacity="0.55" strokeWidth="0.9" strokeLinecap="round" />
+      <circle cx={PLANET_X} cy="18.2" r="2.5" fill="var(--c-space)" />
+      <path d={DIP_PATH} stroke="var(--c-cosmic)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -66,8 +66,8 @@ export function Wordmark({ collapsed = false, className }: WordmarkProps) {
       <TransitMark size={32} title={collapsed ? "Exoplanet Finder" : undefined} />
       {!collapsed && (
         <span className="flex min-w-0 flex-col leading-none">
-          <span className="font-display truncate text-[21px] leading-6 text-fg">Exoplanet Finder</span>
-          <span className="mt-1 whitespace-nowrap font-mono text-[10px] font-medium uppercase leading-3 tracking-[0.1em] text-fg-secondary">Kepler signal lab</span>
+          <span className="truncate text-md font-medium text-fg">Exoplanet Finder</span>
+          <span className="mt-1 whitespace-nowrap text-2xs text-fg-muted">Kepler signal lab</span>
         </span>
       )}
     </span>
